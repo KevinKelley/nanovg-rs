@@ -23,15 +23,18 @@ build_cmd = rustc -Llib  $(libs) --opt-level 3 --out-dir $(bin_path)
 EXAMPLE_FILES = examples/*.rs
 SOURCE_FILES = $(shell test -e src/ && find src -type f)
 
+# bindgen -builtins -o ../examples/demo.rs demo.c
+# bindgen -builtins -o ../examples/perf.rs perf.c
+
 all: lib examples
 
 lib: $(SOURCE_FILES)
 	mkdir -p $(lib_path)
-	rustc src/lib.rs --opt-level 3 --out-dir $(lib_path) $(libs)
+	rustc src/nanovg.rs --opt-level 3 --out-dir $(lib_path) $(libs)
 
-examples: $(EXAMPLE_FILES)
+examples: lib  $(EXAMPLE_FILES)
 	mkdir -p $(bin_path)
-	$(build_cmd) ./examples/demo.rs 
+	$(build_cmd) ./examples/example_gl3.rs 
 
 doc:
 	mkdir -p $(doc_path)
