@@ -13,7 +13,7 @@ glfw_lib_path 	= lib/glfw-rs/lib
 gl_path 		= lib/gl-rs
 gl_lib_path 	= lib/gl-rs/lib
 
-NANOVG_FLAGS = NANOVG_GL3_IMPLEMENTATION
+NANOVG_FLAGS = -DNANOVG_GL3_IMPLEMENTATION
 
 libs = -L$(nanovg_lib_path) -L$(glfw_lib_path) -L$(gl_lib_path)
 
@@ -34,7 +34,7 @@ lib: $(SOURCE_FILES)
 
 examples: lib  $(EXAMPLE_FILES)
 	mkdir -p $(bin_path)
-	$(build_cmd) ./examples/example_gl3.rs 
+	$(build_cmd) ./examples/example_gl3.rs
 
 doc:
 	mkdir -p $(doc_path)
@@ -42,18 +42,22 @@ doc:
 
 get-deps:
 	mkdir -p $(lib_path)
-	git clone $(nanovg_url) $(nanovg_path)
+	#git clone $(nanovg_url) $(nanovg_path)
 	git clone $(glfw_url) $(glfw_path)
 	git clone $(gl_url) $(gl_path)
 
-nanovg: 
+nanovg:
 	rm -rf $(nanovg_lib_path)
-	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=-D$(NANOVG_FLAGS) config=release nanovg
+	# add next 3 lines to /lib/nanovg/src/nanovg.c:
+	#include <GLFW/glfw3.h>
+	#define  NANOVG_GL3_IMPLEMENTATION
+	#include "nanovg_gl.h"
+	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
 	echo "MUST ReWrap!"
 
 deps: nanovg
+	make lib -C lib/gl-rs
 	make lib -C $(glfw_path)
-	make -C lib/gl-rs
 	#make -C lib/nalgebra
 	#make deps -C lib/ncollide
 	#make 3df32 -C lib/ncollide
@@ -100,11 +104,11 @@ deps: nanovg
 
 #MT = -f rust-empty.mk
 #
-#EXAMPLE_FILES 
+#EXAMPLE_FILES
 #
 #deps: glfw-rs
 #
-#glfw-rs: 
+#glfw-rs:
 #	cd deps/glfw-rs && make link && make -f rust-empty.mk
 #
 #examples: $(EXAMPLE_FILES)
@@ -118,6 +122,6 @@ deps: nanovg
 #lib:
 #	make $(MT) lib
 #
-#exe: 
+#exe:
 #	make $(MT) exe
 

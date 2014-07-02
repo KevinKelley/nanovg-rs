@@ -9,6 +9,8 @@
 //#include "perf.h"
 
 #![feature(globs)]
+#![feature(macro_rules)]
+//#![macro_escape]
 
 extern crate native;
 extern crate libc;
@@ -17,60 +19,29 @@ extern crate gl;
 extern crate nanovg;
 
 use glfw::Context;
+//use gl::*;
+use gl::types::*;
 use std::cell::Cell;
 
 use nanovg::NVGcolor;
 use nanovg::NVGcontext;
 
-//mod perf;
-pub mod perf {
-	use nanovg::NVGcontext;
 
-	pub enum Style {
-	    FPS,
 
-	    MS
-	}
+macro_rules! verify(
+    ($e: expr) => (
+        {
+            $e;
+            assert_eq!(gl::GetError(), 0);
+        }
+    )
+)
 
-	static CAP:int = 100;
 
-	pub struct PerfGraph {
-		pub style: Style,
-		pub name: String,
-		pub values: [f64, ..CAP],
-		pub head: int,
-		pub count: int,
-	}
-
-	//void initGraph(struct PerfGraph* fps, int style, const char* name);
-	pub fn init(grf: &PerfGraph, style: Style, name: &str)
-	{}
-	//void updateGraph(struct PerfGraph* fps, float frameTime);
-	pub fn update(grf: &mut PerfGraph, frameTime: f64)
-	{
-		if grf.count == CAP { grf.head = (grf.head + 1) % CAP }
-		grf.count = if grf.count < CAP { grf.count + 1 } else { CAP } ;
-		grf.values[((grf.head+grf.count) % CAP) as uint] = frameTime;
-	}
-	//void renderGraph(struct NVGcontext* vg, float x, float y, struct PerfGraph* fps);
-	pub fn render(grf: &PerfGraph, vg: &NVGcontext, x: f64, y: f64)
-	{}
-	//float getGraphAverage(struct PerfGraph* fps);
-	pub fn getGraphAverage(grf: &PerfGraph) -> f64
-	{
-		let mut sum: f64 = 0.0;
-		let mut i = grf.head;
-		while i < grf.head + grf.count {
-			let ix: uint = (i % CAP) as uint;
-			sum += grf.values[ix];
-			i = i+1;
-		}
-		sum / grf.count as f64
-	}
-} // mod perf
+mod perf;
 
 #[start]
-fn start(argc: int, argv: **u8) -> int {
+fn start(argc: int, argv: *const *const u8) -> int {
     native::start(argc, argv, main)
 }
 
@@ -81,17 +52,24 @@ fn error_callback(_: glfw::Error, description: String, error_count: &Cell<uint>)
     error_count.set(error_count.get() + 1);
 }
 
+fn init_gl() {
+    verify!(gl::FrontFace(gl::CCW));
+    verify!(gl::Enable(gl::DEPTH_TEST));
+    verify!(gl::Enable(gl::SCISSOR_TEST));
+    verify!(gl::DepthFunc(gl::LEQUAL));
+    verify!(gl::FrontFace(gl::CCW));
+    verify!(gl::Enable(gl::CULL_FACE));
+    verify!(gl::CullFace(gl::BACK));
+}
+
 
 static blowup: bool = false;
 static screenshot: bool = false;
 static premult: bool = false;
 
-fn main() {
-//  GLFWwindow* window;
+fn main()
+{
 //  struct DemoData data;
-//  struct NVGcontext* vg = NULL;
-//  struct PerfGraph fps;
-//  double prevt = 0;
 
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
@@ -103,23 +81,43 @@ fn main() {
 	    }
 	));
 
- 	glfw.window_hint(glfw::ClientApi(glfw::OpenGlEsApi));
-	glfw.window_hint(glfw::ContextVersion(3, 0));
+	//#ifndef _WIN32 // don't require this on win32, and works with more cards
+	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	//	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	//	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//#endif
+	//	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
+
+	glfw.window_hint(glfw::ContextVersion(3, 2));
+ 	glfw.window_hint(glfw::OpenglForwardCompat(true));
+ 	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
+ 	glfw.window_hint(glfw::OpenglDebugContext(true));
 
     let (window, events) = glfw.create_window(300, 300, "NanoVG GL3 exmaple", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
-//  glfwSetKeyCallback(window, key);
+	// window.set_key_callback(key);
     window.set_key_polling(true);
 
     window.make_current();
 
-//  vg = nvgCreateGLES3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
-//  if (vg == NULL) {
-//    printf("Could not init nanovg.\n");
-//    return -1;
-//  }
-//
+    // use glfw to load GL function pointers
+    verify!(gl::load_with(|name| glfw.get_proc_address(name)));
+    init_gl();
+
+    let vg: *mut nanovg::NVGcontext;
+    unsafe {
+     	vg = nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES);
+     	assert!(!vg.is_null());
+    }
+    println!("created NVGcontext: {}", vg);
+
+	//if (vg == NULL) {
+	//  printf("Could not init nanovg.\n");
+	//  return -1;
+	//}
+
 //  if (loadDemoData(vg, &data) == -1)
 //    return -1;
 
@@ -128,58 +126,50 @@ fn main() {
 	glfw.set_time(0.0);
 	let mut prevt = glfw.get_time();
 
-	let mut fps: perf::PerfGraph = perf::PerfGraph {
-		style: perf::FPS,
-		name: String::from_str("Frame Time"),
-		values: [0.0, ..100],
-		head: 0,
-		count: 0,
-	};
-//  initGraph(&fps, GRAPH_RENDER_FPS, "Frame Time");
+	let mut fps = perf::PerfGraph::init(perf::FPS, "Frame Time");
+
+	println!("starting event loop");
 
     while !window.should_close()
     {
-		// double mx, my, t, dt;
-		// int winWidth, winHeight;
-		// int fbWidth, fbHeight;
-		// float pxRatio;
-
     	let mut t: f64 = glfw.get_time();
     	let mut dt: f64 = t - prevt;
     	prevt = t;
-    	perf::update(&mut fps, dt);
+    	fps.update(dt);
 
         let (mx, my) = window.get_cursor_pos(); // (f64,f64)
         let (winWidth, winHeight) = window.get_size();  // (i32,i32)
         let (fbWidth, fbHeight) = window.get_framebuffer_size();
-        //// Calculate pixel ration for hi-dpi devices.
+        // Calculate pixel ration for hi-dpi devices.
         let pxRatio = fbWidth as f64 / winWidth as f64;
 
         // Update and render
-        gl::Viewport(0, 0, fbWidth, fbHeight);
+        verify!(gl::Viewport(0, 0, fbWidth, fbHeight));
         if premult {
-        	gl::ClearColor(0.0, 0.0, 0.0, 0.0);
+        	verify!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
         } else {
-        	gl::ClearColor(0.3, 0.3, 0.32, 1.0);
+        	verify!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
         }
-        gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT);
+        verify!(gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT));
 
-        gl::Enable(gl::BLEND);
-        gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
-        gl::Enable(gl::CULL_FACE);
-        gl::Disable(gl::DEPTH_TEST);
+        verify!(gl::Enable(gl::BLEND));
+        verify!(gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA));
+        verify!(gl::Enable(gl::CULL_FACE));
+        verify!(gl::Disable(gl::DEPTH_TEST));
 
-        //nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
-        //
+
+        //unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
+
         //renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
-        //renderGraph(vg, 5,5, &fps);
+        //fps.render(vg, 5.0, 5.0);
 
-        //nvgEndFrame(vg);
+        //unsafe { nanovg::nvgEndFrame(vg); }
+
 
         gl::Enable(gl::DEPTH_TEST);
 
-        //if (screenshot) {
-        //  screenshot = 0;
+        //if screenshot {
+        //  screenshot = false;
         //  saveScreenShot(fbWidth, fbHeight, premult, "dump.png");
         //}
 

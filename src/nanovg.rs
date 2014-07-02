@@ -20,11 +20,15 @@
 
 extern crate libc;
 
+use std::kinds::marker;
+
 use libc::{c_double, c_float, c_int};
 use libc::{c_uint, c_ushort, c_void};
 
 pub struct NVGcontext {
-    x: *::libc::c_void,
+    x: *const ::libc::c_void,
+    no_send: marker::NoSend,
+    no_share: marker::NoShare,
 }
 
 #[repr(C)]
@@ -91,16 +95,16 @@ pub static NVG_ALIGN_BOTTOM: ::libc::c_uint = 32;
 pub static NVG_ALIGN_BASELINE: ::libc::c_uint = 64;
 #[repr(C)]
 pub struct NVGglyphPosition {
-    pub _str: *::libc::c_char,
+    pub _str: *const ::libc::c_char,
     pub x: ::libc::c_float,
     pub minx: ::libc::c_float,
     pub maxx: ::libc::c_float,
 }
 #[repr(C)]
 pub struct NVGtextRow {
-    pub start: *::libc::c_char,
-    pub end: *::libc::c_char,
-    pub next: *::libc::c_char,
+    pub start: *const ::libc::c_char,
+    pub end: *const ::libc::c_char,
+    pub next: *const ::libc::c_char,
     pub width: ::libc::c_float,
     pub minx: ::libc::c_float,
     pub maxx: ::libc::c_float,
@@ -148,7 +152,7 @@ pub struct NVGparams {
                                                         arg3: ::libc::c_int,
                                                         arg4: ::libc::c_int,
                                                         arg5:
-                                                            *::libc::c_uchar)
+                                                            *const ::libc::c_uchar)
                                                        -> ::libc::c_int>,
     pub renderDeleteTexture: ::std::option::Option<extern "C" fn
                                                        (arg1:
@@ -164,7 +168,7 @@ pub struct NVGparams {
                                                         arg5: ::libc::c_int,
                                                         arg6: ::libc::c_int,
                                                         arg7:
-                                                            *::libc::c_uchar)
+                                                            *const ::libc::c_uchar)
                                                        -> ::libc::c_int>,
     pub renderGetTextureSize: ::std::option::Option<extern "C" fn
                                                         (arg1:
@@ -186,8 +190,8 @@ pub struct NVGparams {
                                                arg2: *mut NVGpaint,
                                                arg3: *mut NVGscissor,
                                                arg4: ::libc::c_float,
-                                               arg5: *::libc::c_float,
-                                               arg6: *NVGpath,
+                                               arg5: *const ::libc::c_float,
+                                               arg6: *const NVGpath,
                                                arg7: ::libc::c_int)>,
     pub renderStroke: ::std::option::Option<extern "C" fn
                                                 (arg1: *mut ::libc::c_void,
@@ -195,7 +199,7 @@ pub struct NVGparams {
                                                  arg3: *mut NVGscissor,
                                                  arg4: ::libc::c_float,
                                                  arg5: ::libc::c_float,
-                                                 arg6: *NVGpath,
+                                                 arg6: *const NVGpath,
                                                  arg7: ::libc::c_int)>,
     pub renderTriangles: ::std::option::Option<extern "C" fn
                                                    (arg1: *mut ::libc::c_void,
@@ -203,11 +207,13 @@ pub struct NVGparams {
                                                         *mut NVGpaint,
                                                     arg3:
                                                         *mut NVGscissor,
-                                                    arg4: *NVGvertex,
+                                                    arg4: *const NVGvertex,
                                                     arg5: ::libc::c_int)>,
     pub renderDelete: ::std::option::Option<extern "C" fn
                                                 (arg1: *mut ::libc::c_void)>,
 }
+
+#[link(name = "nanovg")]
 extern "C" {
     pub fn nvgBeginFrame(ctx: *mut NVGcontext,
                          windowWidth: ::libc::c_int,
@@ -271,27 +277,27 @@ extern "C" {
     pub fn nvgTransformSkewX(dst: *mut ::libc::c_float, a: ::libc::c_float);
     pub fn nvgTransformSkewY(dst: *mut ::libc::c_float, a: ::libc::c_float);
     pub fn nvgTransformMultiply(dst: *mut ::libc::c_float,
-                                src: *::libc::c_float);
+                                src: *const ::libc::c_float);
     pub fn nvgTransformPremultiply(dst: *mut ::libc::c_float,
-                                   src: *::libc::c_float);
+                                   src: *const ::libc::c_float);
     pub fn nvgTransformInverse(dst: *mut ::libc::c_float,
-                               src: *::libc::c_float) -> ::libc::c_int;
+                               src: *const ::libc::c_float) -> ::libc::c_int;
     pub fn nvgTransformPoint(dstx: *mut ::libc::c_float,
                              dsty: *mut ::libc::c_float,
-                             xform: *::libc::c_float, srcx: ::libc::c_float,
+                             xform: *const ::libc::c_float, srcx: ::libc::c_float,
                              srcy: ::libc::c_float);
     pub fn nvgDegToRad(deg: ::libc::c_float) -> ::libc::c_float;
     pub fn nvgRadToDeg(rad: ::libc::c_float) -> ::libc::c_float;
     pub fn nvgCreateImage(ctx: *mut NVGcontext,
-                          filename: *::libc::c_char) -> ::libc::c_int;
+                          filename: *const ::libc::c_char) -> ::libc::c_int;
     pub fn nvgCreateImageMem(ctx: *mut NVGcontext,
                              data: *mut ::libc::c_uchar, ndata: ::libc::c_int)
      -> ::libc::c_int;
     pub fn nvgCreateImageRGBA(ctx: *mut NVGcontext, w: ::libc::c_int,
-                              h: ::libc::c_int, data: *::libc::c_uchar) ->
+                              h: ::libc::c_int, data: *const ::libc::c_uchar) ->
      ::libc::c_int;
     pub fn nvgUpdateImage(ctx: *mut NVGcontext, image: ::libc::c_int,
-                          data: *::libc::c_uchar);
+                          data: *const ::libc::c_uchar);
     pub fn nvgImageSize(ctx: *mut NVGcontext, image: ::libc::c_int,
                         w: *mut ::libc::c_int, h: *mut ::libc::c_int);
     pub fn nvgDeleteImage(ctx: *mut NVGcontext, image: ::libc::c_int);
@@ -351,13 +357,13 @@ extern "C" {
                      cy: ::libc::c_float, r: ::libc::c_float);
     pub fn nvgFill(ctx: *mut NVGcontext);
     pub fn nvgStroke(ctx: *mut NVGcontext);
-    pub fn nvgCreateFont(ctx: *mut NVGcontext, name: *::libc::c_char,
-                         filename: *::libc::c_char) -> ::libc::c_int;
+    pub fn nvgCreateFont(ctx: *mut NVGcontext, name: *const ::libc::c_char,
+                         filename: *const ::libc::c_char) -> ::libc::c_int;
     pub fn nvgCreateFontMem(ctx: *mut NVGcontext,
-                            name: *::libc::c_char, data: *mut ::libc::c_uchar,
+                            name: *const ::libc::c_char, data: *mut ::libc::c_uchar,
                             ndata: ::libc::c_int, freeData: ::libc::c_int) ->
      ::libc::c_int;
-    pub fn nvgFindFont(ctx: *mut NVGcontext, name: *::libc::c_char) ->
+    pub fn nvgFindFont(ctx: *mut NVGcontext, name: *const ::libc::c_char) ->
      ::libc::c_int;
     pub fn nvgFontSize(ctx: *mut NVGcontext, size: ::libc::c_float);
     pub fn nvgFontBlur(ctx: *mut NVGcontext, blur: ::libc::c_float);
@@ -367,26 +373,26 @@ extern "C" {
                              lineHeight: ::libc::c_float);
     pub fn nvgTextAlign(ctx: *mut NVGcontext, align: ::libc::c_int);
     pub fn nvgFontFaceId(ctx: *mut NVGcontext, font: ::libc::c_int);
-    pub fn nvgFontFace(ctx: *mut NVGcontext, font: *::libc::c_char);
+    pub fn nvgFontFace(ctx: *mut NVGcontext, font: *const ::libc::c_char);
     pub fn nvgText(ctx: *mut NVGcontext, x: ::libc::c_float,
-                   y: ::libc::c_float, string: *::libc::c_char,
-                   end: *::libc::c_char) -> ::libc::c_float;
+                   y: ::libc::c_float, string: *const ::libc::c_char,
+                   end: *const ::libc::c_char) -> ::libc::c_float;
     pub fn nvgTextBox(ctx: *mut NVGcontext, x: ::libc::c_float,
                       y: ::libc::c_float, breakRowWidth: ::libc::c_float,
-                      string: *::libc::c_char, end: *::libc::c_char);
+                      string: *const ::libc::c_char, end: *const ::libc::c_char);
     pub fn nvgTextBounds(ctx: *mut NVGcontext, x: ::libc::c_float,
-                         y: ::libc::c_float, string: *::libc::c_char,
-                         end: *::libc::c_char, bounds: *mut ::libc::c_float)
+                         y: ::libc::c_float, string: *const ::libc::c_char,
+                         end: *const ::libc::c_char, bounds: *mut ::libc::c_float)
      -> ::libc::c_float;
     pub fn nvgTextBoxBounds(ctx: *mut NVGcontext, x: ::libc::c_float,
                             y: ::libc::c_float,
                             breakRowWidth: ::libc::c_float,
-                            string: *::libc::c_char, end: *::libc::c_char,
+                            string: *const ::libc::c_char, end: *const ::libc::c_char,
                             bounds: *mut ::libc::c_float);
     pub fn nvgTextGlyphPositions(ctx: *mut NVGcontext,
                                  x: ::libc::c_float, y: ::libc::c_float,
-                                 string: *::libc::c_char,
-                                 end: *::libc::c_char,
+                                 string: *const ::libc::c_char,
+                                 end: *const ::libc::c_char,
                                  positions: *mut NVGglyphPosition,
                                  maxPositions: ::libc::c_int) ->
      ::libc::c_int;
@@ -395,7 +401,7 @@ extern "C" {
                           descender: *mut ::libc::c_float,
                           lineh: *mut ::libc::c_float);
     pub fn nvgTextBreakLines(ctx: *mut NVGcontext,
-                             string: *::libc::c_char, end: *::libc::c_char,
+                             string: *const ::libc::c_char, end: *const ::libc::c_char,
                              breakRowWidth: ::libc::c_float,
                              rows: *mut NVGtextRow,
                              maxRows: ::libc::c_int) -> ::libc::c_int;
@@ -405,4 +411,52 @@ extern "C" {
     pub fn nvgInternalParams(ctx: *mut NVGcontext) ->
      *mut NVGparams;
     pub fn nvgDebugDumpPathCache(ctx: *mut NVGcontext);
+
+
+
+//// Creates NanoVG contexts for different OpenGL (ES) versions.
+//// Flags should be combination of the create flags above.
+//
+//#if defined NANOVG_GL2
+//
+//struct NVGcontext* nvgCreateGL2(int flags);
+//void nvgDeleteGL2(struct NVGcontext* ctx);
+//
+//#endif
+//
+//#if defined NANOVG_GL3
+//
+//struct NVGcontext* nvgCreateGL3(int flags);
+pub fn nvgCreateGL3(flags: c_uint) -> *mut NVGcontext;
+
+//void nvgDeleteGL3(struct NVGcontext* ctx);
+pub fn nvgDeleteGL3(ctx: *mut NVGcontext);
+//
+//#endif
+//
+//#if defined NANOVG_GLES2
+//
+//struct NVGcontext* nvgCreateGLES2(int flags);
+//void nvgDeleteGLES2(struct NVGcontext* ctx);
+//
+//#endif
+//
+//#if defined NANOVG_GLES3
+//
+//struct NVGcontext* nvgCreateGLES3(int flags);
+//pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
+//
+//void nvgDeleteGLES3(struct NVGcontext* ctx);
+//pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
+//
+//#endif
 }
+
+
+//type Enum_NVGflags = ::libc::c_uint;
+// Flag indicating if geoemtry based anti-aliasing is used (may not be needed when using MSAA).
+pub static NVG_ANTIALIAS: ::libc::c_uint = 1;
+// Flag indicating if strokes should be drawn using stencil buffer. The rendering will be a little
+// slower, but path overlaps (i.e. self-intersecting or sharp turns) will be drawn just once.
+pub static NVG_STENCIL_STROKES: ::libc::c_uint = 2;
+

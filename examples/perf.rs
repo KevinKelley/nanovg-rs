@@ -1,4 +1,3 @@
-
 use nanovg::NVGcontext;
 
 pub enum Style {
@@ -6,33 +5,55 @@ pub enum Style {
     MS
 }
 
-static GRAPH_HISTORY_COUNT:int = 100;
+static CAP:int = 100;
 
 pub struct PerfGraph {
-	style: Style,
-	name: String,
-	values: [f64, ..GRAPH_HISTORY_COUNT], 
+	pub style: Style,
+	pub name: String,
+	values: [f64, ..CAP],
 	head: int,
+	count: int,
 }
 
+impl PerfGraph
+{
+	//void initGraph(struct PerfGraph* fps, int style, const char* name);
+	pub fn init(style: Style, name: &str) -> PerfGraph
+	{
+		PerfGraph {
+			style: style,
+			name: String::from_str(name),
+			values: [0.0, ..CAP as uint],
+			head: 0,
+			count: 0,
+		}
+	}
 
-//void initGraph(struct PerfGraph* fps, int style, const char* name);
-pub fn initGraph(fps: &PerfGraph, style: Style,
-                 name: *::libc::c_char)
-{}
+	//void updateGraph(struct PerfGraph* fps, float frameTime);
+	pub fn update(&mut self, frameTime: f64)
+	{
+		if self.count == CAP { self.head = (self.head + 1) % CAP }
+		self.count = if self.count < CAP { self.count + 1 } else { CAP } ;
+		self.values[((self.head+self.count) % CAP) as uint] = frameTime;
+	}
 
-//void updateGraph(struct PerfGraph* fps, float frameTime);
-pub fn updateGraph(fps: &PerfGraph, frameTime: f64)
-{}
+	//void renderGraph(struct NVGcontext* vg, float x, float y, struct PerfGraph* fps);
+	pub fn render(&self, vg: *mut NVGcontext, x: f64, y: f64)
+	{}
+	//float getGraphAverage(struct PerfGraph* fps);
+	pub fn getGraphAverage(&self) -> f64
+	{
+		let mut sum: f64 = 0.0;
+		let mut i = self.head;
+		while i < self.head + self.count {
+			let ix: uint = (i % CAP) as uint;
+			sum += self.values[ix];
+			i = i+1;
+		}
+		sum / self.count as f64
+	}
 
-//void renderGraph(struct NVGcontext* vg, float x, float y, struct PerfGraph* fps);
-pub fn renderGraph(vg: &NVGcontext, x: ::libc::c_float,
-                   y: ::libc::c_float, fps: &PerfGraph)
-{}
-
-//float getGraphAverage(struct PerfGraph* fps);
-pub fn getGraphAverage(fps: &PerfGraph) -> ::libc::c_float
-{ 0.0 }
+}
 
 
 
@@ -51,5 +72,5 @@ pub fn getGraphAverage(fps: &PerfGraph) -> ::libc::c_float
 
 //int stopGPUTimer(struct GPUtimer* timer, float* times, int maxTimes);
 //pub fn stopGPUTimer(timer: *mut Struct_GPUtimer,
-//                    times: *mut ::libc::c_float, 
+//                    times: *mut ::libc::c_float,
 //                    maxTimes: ::libc::c_int) -> ::libc::c_int;
