@@ -128,8 +128,6 @@ fn main()
 
 	let mut fps = perf::PerfGraph::init(perf::FPS, "Frame Time");
 
-	println!("starting event loop");
-
     while !window.should_close()
     {
     	let mut t: f64 = glfw.get_time();
@@ -158,12 +156,12 @@ fn main()
         verify!(gl::Disable(gl::DEPTH_TEST));
 
 
-        //unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
+        unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
 
         //renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
-        //fps.render(vg, 5.0, 5.0);
+        fps.render(vg, 5.0, 5.0);
 
-        //unsafe { nanovg::nvgEndFrame(vg); }
+        unsafe { nanovg::nvgEndFrame(vg); }
 
 
         gl::Enable(gl::DEPTH_TEST);
