@@ -22,12 +22,12 @@ extern crate gl;
 extern crate nanovg;
 
 use glfw::Context;
-use std::cell::Cell;
+use std::cell::Cell; // for glfw error count
 use nanovg::Ctx;
 
 
-
-macro_rules! verify(
+/// evaluate the expression, then check for GL error.
+macro_rules! glcheck(
     ($e: expr) => (
         {
             $e;
@@ -46,19 +46,20 @@ fn start(argc: int, argv: *const *const u8) -> int {
 
 
 
+/// give GLFW a way to report errors, and count them.
 fn error_callback(_: glfw::Error, description: String, error_count: &Cell<uint>) {
     println!("GLFW error {}: {}", error_count.get(), description);
     error_count.set(error_count.get() + 1);
 }
 
 fn init_gl() {
-    verify!(gl::FrontFace(gl::CCW));
-    verify!(gl::Enable(gl::DEPTH_TEST));
-    verify!(gl::Enable(gl::SCISSOR_TEST));
-    verify!(gl::DepthFunc(gl::LEQUAL));
-    verify!(gl::FrontFace(gl::CCW));
-    verify!(gl::Enable(gl::CULL_FACE));
-    verify!(gl::CullFace(gl::BACK));
+    glcheck!(gl::FrontFace(gl::CCW));
+    glcheck!(gl::Enable(gl::DEPTH_TEST));
+    glcheck!(gl::Enable(gl::SCISSOR_TEST));
+    glcheck!(gl::DepthFunc(gl::LEQUAL));
+    glcheck!(gl::FrontFace(gl::CCW));
+    glcheck!(gl::Enable(gl::CULL_FACE));
+    glcheck!(gl::CullFace(gl::BACK));
 }
 
 
@@ -72,7 +73,7 @@ fn main()
 
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
-	//glfw.set_error_callback(glfw::FAIL_ON_ERRORS);
+	// set up GLFW error callback, with an error-counter
 	glfw.set_error_callback(Some(
 	    glfw::Callback {
 	        f: error_callback,
@@ -80,20 +81,13 @@ fn main()
 	    }
 	));
 
-	//#ifndef _WIN32 // don't require this on win32, and works with more cards
-	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	//	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	//	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	//#endif
-	//	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
 	glfw.window_hint(glfw::ContextVersion(3, 2));
  	glfw.window_hint(glfw::OpenglForwardCompat(true));
  	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
  	glfw.window_hint(glfw::OpenglDebugContext(true));
 
-    let (window, events) = glfw.create_window(300, 300, "NanoVG GL3 exmaple", glfw::Windowed)
+    let (window, events) = glfw.create_window(400, 300, "NanoVG GL3 exmaple", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
 	// window.set_key_callback(key);
@@ -102,10 +96,11 @@ fn main()
     window.make_current();
 
     // use glfw to load GL function pointers
-    verify!(gl::load_with(|name| glfw.get_proc_address(name)));
+    glcheck!(gl::load_with(|name| glfw.get_proc_address(name)));
     init_gl();
+
     //let vg: *mut nanovg::NVGcontext = unsafe { nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES); }
-   	let vg: nanovg::Ctx = nanovg::Ctx::CreateGL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
+   	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
     //println!("created nanovg Ctx: {}", vg);
 
@@ -138,28 +133,26 @@ fn main()
         let pxRatio = fbWidth as f64 / winWidth as f64;
 
         // Update and render
-        verify!(gl::Viewport(0, 0, fbWidth, fbHeight));
+        glcheck!(gl::Viewport(0, 0, fbWidth, fbHeight));
         if premult {
-        	verify!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
+        	glcheck!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
         } else {
-        	verify!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
+        	glcheck!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
         }
-        verify!(gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT));
+        glcheck!(gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT));
 
-        verify!(gl::Enable(gl::BLEND));
-        verify!(gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA));
-        verify!(gl::Enable(gl::CULL_FACE));
-        verify!(gl::Disable(gl::DEPTH_TEST));
+        glcheck!(gl::Enable(gl::BLEND));
+        glcheck!(gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA));
+        glcheck!(gl::Enable(gl::CULL_FACE));
+        glcheck!(gl::Disable(gl::DEPTH_TEST));
 
 
-        //unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
-        vg.BeginFrame(winWidth, winHeight, pxRatio as f32);
+        vg.begin_frame(winWidth, winHeight, pxRatio as f32);
 
         //renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
         fps.render(&vg, 5.0, 5.0);
 
-        //unsafe { nanovg::nvgEndFrame(vg); }
-        vg.EndFrame();
+        vg.end_frame();
 
 
         gl::Enable(gl::DEPTH_TEST);

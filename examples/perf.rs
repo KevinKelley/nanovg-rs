@@ -53,20 +53,20 @@ impl PerfGraph
 		let w = 200.0;
 		let h = 35.0;
 
-		vg.BeginPath();
-		vg.Rect(x,y, w,h);
-		vg.FillColor(RGBA(0,0,0,128));
-		vg.Fill();
+		vg.begin_path();
+		vg.rect(x,y, w,h);
+		vg.fill_color(rgba(0,0,0,128));
+		vg.fill();
 
-		vg.BeginPath();
-		vg.MoveTo(x, y+h);
+		vg.begin_path();
+		vg.move_to(x, y+h);
 		if self.style == FPS {
 			for i in range(0, CAP) { //(i = 0; i < CAP; i++) {
 				let mut v = 1.0 / (0.00001 + self.values[(self.head+i) % CAP]);
 				if v > 80.0 {v = 80.0;}
 				let vx = x + (i as f32 / (CAP-1) as f32) * w;
 				let vy = y + h - ((v / 80.0) * h);
-				vg.LineTo(vx, vy);
+				vg.line_to(vx, vy);
 			}
 		} else {
 			for i in range(0, CAP) {
@@ -74,38 +74,38 @@ impl PerfGraph
 				if v > 20.0 {v = 20.0;}
 				let vx = x + (i as f32 / (CAP-1) as f32) * w;
 				let vy = y + h - ((v / 20.0) * h);
-				vg.LineTo(vx, vy);
+				vg.line_to(vx, vy);
 			}
 		}
-		vg.LineTo(x+w, y+h);
-		vg.FillColor(RGBA(255,192,0,128));
-		vg.Fill();
+		vg.line_to(x+w, y+h);
+		vg.fill_color(rgba(255,192,0,128));
+		vg.fill();
 
-		vg.FontFace("sans");
+		vg.font_face("sans");
 
 		if self.name.is_empty() {
-			vg.FontSize(14.0);
-			//vg.TextAlign(ALIGN_LEFT|ALIGN_TOP);
-			vg.FillColor(RGBA(240,240,240,192));
+			vg.font_size(14.0);
+			vg.text_align(LEFT|TOP);
+			vg.fill_color(rgba(240,240,240,192));
 			//vg.Text(x+3.0,y+1.0, &self.name);
 		}
 
 		if self.style == FPS {
-			vg.FontSize(18.0);
-			//vg.TextAlign(ALIGN_RIGHT|ALIGN_TOP);
-			vg.FillColor(RGBA(240,240,240,255));
+			vg.font_size(18.0);
+			vg.text_align(RIGHT|TOP);
+			vg.fill_color(rgba(240,240,240,255));
 			let str = format!("{:3.2f} FPS", 1.0 / avg);
 			//vg.Text(x+w-3.0,y+1.0, &str);
 
-			vg.FontSize(15.0);
-			//vg.TextAlign(ALIGN_RIGHT|ALIGN_BOTTOM);
-			vg.FillColor(RGBA(240,240,240,160));
+			vg.font_size(15.0);
+			vg.text_align(RIGHT|BOTTOM);
+			vg.fill_color(rgba(240,240,240,160));
 			let str = format!("{:3.2f} ms", avg * 1000.0);
 			//vg.Text(x+w-3.0,y+h-1.0, &str);
 		} else {
-			vg.FontSize(18.0);
-			//vg.TextAlign(ALIGN_RIGHT|ALIGN_TOP);
-			vg.FillColor(RGBA(240,240,240,255));
+			vg.font_size(18.0);
+			vg.text_align(RIGHT|TOP);
+			vg.fill_color(rgba(240,240,240,255));
 			let str = format!("{:3.2f} ms", avg * 1000.0);
 			//vg.Text(x+w-3.0,y+1.0, &str);
 		}

@@ -5,6 +5,7 @@
 #![comment = "Binding for NanoVG vector-graphics library"]
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
+#![feature(unsafe_destructor)]  // use Option instead
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case_functions)]
 #![deny(unnecessary_parens)]
@@ -79,17 +80,17 @@ pub enum PatternRepeat {
 }
 
 ///
-#[repr(u32)]
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
-pub enum Align {
-    ALIGN_LEFT              = ffi::NVG_ALIGN_LEFT,
-    ALIGN_CENTER            = ffi::NVG_ALIGN_CENTER,
-    ALIGN_RIGHT             = ffi::NVG_ALIGN_RIGHT,
-    ALIGN_TOP               = ffi::NVG_ALIGN_TOP,
-    ALIGN_MIDDLE            = ffi::NVG_ALIGN_MIDDLE,
-    ALIGN_BOTTOM            = ffi::NVG_ALIGN_BOTTOM,
-    ALIGN_BASELINE          = ffi::NVG_ALIGN_BASELINE,
-}
+pub bitflags!(
+    flags Align: u32 {
+        static LEFT         = ffi::NVG_ALIGN_LEFT,
+        static CENTER       = ffi::NVG_ALIGN_CENTER,
+        static RIGHT        = ffi::NVG_ALIGN_RIGHT,
+        static TOP          = ffi::NVG_ALIGN_TOP,
+        static MIDDLE       = ffi::NVG_ALIGN_MIDDLE,
+        static BOTTOM       = ffi::NVG_ALIGN_BOTTOM,
+        static BASELINE     = ffi::NVG_ALIGN_BASELINE
+    }
+)
 
 /////
 //#[repr(u32)]
@@ -203,253 +204,261 @@ impl fmt::Show for Ctx {
     }
 }
 
+#[unsafe_destructor]
+impl Drop for Ctx {
+    fn drop(&mut self) {
+        self.delete_gl3();
+        self.ptr = ptr::mut_null();
+    }
+}
+
 impl Ctx {
 
     //#if defined NANOVG_GL3
-    pub fn CreateGL3(flags: CreationFlags) -> Ctx {
+    pub fn create_gL3(flags: CreationFlags) -> Ctx {
         Ctx {
             ptr: unsafe { ffi::nvgCreateGL3(flags.bits) },
             no_send: marker::NoSend,
             no_share: marker::NoShare,
         }
     }
-    pub fn DeleteGL3(&self) {
+    fn delete_gl3(&self) {
         unsafe { ffi::nvgDeleteGL3(self.ptr) }
     }
 
 
-    pub fn BeginFrame(&self, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float) {
+    pub fn begin_frame(&self, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float) {
 		unsafe { ffi::nvgBeginFrame(self.ptr, windowWidth, windowHeight, devicePixelRatio) }
 	}
-    pub fn EndFrame(&self) {
+    pub fn end_frame(&self) {
 		unsafe { ffi::nvgEndFrame(self.ptr) }
 	}
 
-    pub fn Save(&self) {
+    pub fn save(&self) {
 		unsafe { ffi::nvgSave(self.ptr) }
 	}
-    pub fn Restore(&self) {
+    pub fn restore(&self) {
 		unsafe { ffi::nvgRestore(self.ptr) }
 	}
-    pub fn Reset(&self) {
+    pub fn reset(&self) {
 		unsafe { ffi::nvgReset(self.ptr) }
 	}
 
-    pub fn StrokeColor(&self, color: NVGcolor) {
+    pub fn stroke_color(&self, color: NVGcolor) {
 		unsafe { ffi::nvgStrokeColor(self.ptr, color) }
 	}
-    pub fn StrokePaint(&self, paint: NVGpaint) {
+    pub fn stroke_paint(&self, paint: NVGpaint) {
 		unsafe { ffi::nvgStrokePaint(self.ptr, paint) }
 	}
-    pub fn FillColor(&self, color: NVGcolor) {
+    pub fn fill_color(&self, color: NVGcolor) {
 		unsafe { ffi::nvgFillColor(self.ptr, color) }
 	}
-    pub fn FillPaint(&self, paint: NVGpaint) {
+    pub fn fill_paint(&self, paint: NVGpaint) {
 		unsafe { ffi::nvgFillPaint(self.ptr, paint) }
 	}
-    pub fn MiterLimit(&self, limit: c_float) {
+    pub fn miter_limit(&self, limit: c_float) {
 		unsafe { ffi::nvgMiterLimit(self.ptr, limit) }
 	}
-    pub fn StrokeWidth(&self, size: c_float) {
+    pub fn stroke_width(&self, size: c_float) {
 		unsafe { ffi::nvgStrokeWidth(self.ptr, size) }
 	}
-    pub fn LineCap(&self, cap: c_int) {
+    pub fn line_cap(&self, cap: c_int) {
 		unsafe { ffi::nvgLineCap(self.ptr, cap) }
 	}
-    pub fn LineJoin(&self, join: c_int) {
+    pub fn line_join(&self, join: c_int) {
 		unsafe { ffi::nvgLineJoin(self.ptr, join) }
 	}
-    pub fn GlobalAlpha(&self, alpha: c_float) {
+    pub fn global_alpha(&self, alpha: c_float) {
 		unsafe { ffi::nvgGlobalAlpha(self.ptr, alpha) }
 	}
 
-    pub fn ResetTransform(&self) {
+    pub fn reset_transform(&self) {
 		unsafe { ffi::nvgResetTransform(self.ptr) }
 	}
-    pub fn Transform(&self, a: c_float, b: c_float, c: c_float, d: c_float, e: c_float, f: c_float) {
+    pub fn transform(&self, a: c_float, b: c_float, c: c_float, d: c_float, e: c_float, f: c_float) {
 		unsafe { ffi::nvgTransform(self.ptr, a, b, c, d, e, f) }
 	}
-    pub fn Translate(&self, x: c_float, y: c_float) {
+    pub fn translate(&self, x: c_float, y: c_float) {
 		unsafe { ffi::nvgTranslate(self.ptr, x, y) }
 	}
-    pub fn Rotate(&self, angle: c_float) {
+    pub fn rotate(&self, angle: c_float) {
 		unsafe { ffi::nvgRotate(self.ptr, angle) }
 	}
-    pub fn SkewX(&self, angle: c_float) {
+    pub fn skew_x(&self, angle: c_float) {
 		unsafe { ffi::nvgSkewX(self.ptr, angle) }
 	}
-    pub fn SkewY(&self, angle: c_float) {
+    pub fn skew_y(&self, angle: c_float) {
 		unsafe { ffi::nvgSkewY(self.ptr, angle) }
 	}
-    pub fn Scale(&self, x: c_float, y: c_float) {
+    pub fn scale(&self, x: c_float, y: c_float) {
 		unsafe { ffi::nvgScale(self.ptr, x, y) }
 	}
-    pub fn CurrentTransform(&self, xform: *mut c_float) {
+    pub fn current_transform(&self, xform: *mut c_float) {
 		unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
 	}
 
-    pub fn CreateImage(&self, filename: *const c_char) -> c_int {
+    pub fn create_image(&self, filename: *const c_char) -> c_int {
 		unsafe { ffi::nvgCreateImage(self.ptr, filename) }
 	}
-    pub fn CreateImageMem(&self, data: *mut c_uchar, ndata: c_int) -> c_int {
+    pub fn create_image_mem(&self, data: *mut c_uchar, ndata: c_int) -> c_int {
 		unsafe { ffi::nvgCreateImageMem(self.ptr, data, ndata) }
 	}
-    pub fn CreateImageRGBA(&self, w: c_int, h: c_int, data: *const c_uchar) -> c_int {
+    pub fn create_image_rgba(&self, w: c_int, h: c_int, data: *const c_uchar) -> c_int {
 		unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, data) }
 	}
-    pub fn UpdateImage(&self, image: c_int, data: *const c_uchar) {
+    pub fn update_image(&self, image: c_int, data: *const c_uchar) {
 		unsafe { ffi::nvgUpdateImage(self.ptr, image, data) }
 	}
-    pub fn ImageSize(&self, image: c_int, w: *mut c_int, h: *mut c_int) {
+    pub fn image_size(&self, image: c_int, w: *mut c_int, h: *mut c_int) {
 		unsafe { ffi::nvgImageSize(self.ptr, image, w, h) }
 	}
-    pub fn DeleteImage(&self, image: c_int) {
+    pub fn delete_image(&self, image: c_int) {
 		unsafe { ffi::nvgDeleteImage(self.ptr, image) }
 	}
 
-    pub fn LinearGradient(&self, sx: c_float, sy: c_float, ex: c_float, ey: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
+    pub fn linear_gradient(&self, sx: c_float, sy: c_float, ex: c_float, ey: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
 		unsafe { ffi::nvgLinearGradient(self.ptr, sx, sy, ex, ey, icol, ocol) }
 	}
-    pub fn BoxGradient(&self, x: c_float, y: c_float, w: c_float, h: c_float, r: c_float, f: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
+    pub fn box_gradient(&self, x: c_float, y: c_float, w: c_float, h: c_float, r: c_float, f: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
 		unsafe { ffi::nvgBoxGradient(self.ptr, x, y, w, h, r, f, icol, ocol) }
 	}
-    pub fn RadialGradient(&self, cx: c_float, cy: c_float, inr: c_float, outr: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
+    pub fn radial_gradient(&self, cx: c_float, cy: c_float, inr: c_float, outr: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
 		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol, ocol) }
 	}
-    pub fn ImagePattern(&self, ox: c_float, oy: c_float, ex: c_float, ey: c_float, angle: c_float, image: c_int, repeat: c_int, alpha: c_float) -> NVGpaint {
+    pub fn image_pattern(&self, ox: c_float, oy: c_float, ex: c_float, ey: c_float, angle: c_float, image: c_int, repeat: c_int, alpha: c_float) -> NVGpaint {
 		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat, alpha) }
 	}
 
-    pub fn Scissor(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
+    pub fn scissor(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
 		unsafe { ffi::nvgScissor(self.ptr, x, y, w, h) }
 	}
-    pub fn ResetScissor(&self) {
+    pub fn reset_scissor(&self) {
 		unsafe { ffi::nvgResetScissor(self.ptr) }
 	}
 
-    pub fn BeginPath(&self) {
+    pub fn begin_path(&self) {
 		unsafe { ffi::nvgBeginPath(self.ptr) }
 	}
-    pub fn MoveTo(&self, x: c_float, y: c_float) {
+    pub fn move_to(&self, x: c_float, y: c_float) {
 		unsafe { ffi::nvgMoveTo(self.ptr, x, y) }
 	}
-    pub fn LineTo(&self, x: c_float, y: c_float) {
+    pub fn line_to(&self, x: c_float, y: c_float) {
 		unsafe { ffi::nvgLineTo(self.ptr, x, y) }
 	}
-    pub fn BezierTo(&self, c1x: c_float, c1y: c_float, c2x: c_float, c2y: c_float, x: c_float, y: c_float) {
+    pub fn bezier_to(&self, c1x: c_float, c1y: c_float, c2x: c_float, c2y: c_float, x: c_float, y: c_float) {
 		unsafe { ffi::nvgBezierTo(self.ptr, c1x, c1y, c2x, c2y, x, y) }
 	}
-    pub fn QuadTo(&self, cx: c_float, cy: c_float, x: c_float, y: c_float) {
+    pub fn quad_to(&self, cx: c_float, cy: c_float, x: c_float, y: c_float) {
 		unsafe { ffi::nvgQuadTo(self.ptr, cx, cy, x, y) }
 	}
-    pub fn ArcTo(&self, x1: c_float, y1: c_float, x2: c_float, y2: c_float, radius: c_float) {
+    pub fn arc_to(&self, x1: c_float, y1: c_float, x2: c_float, y2: c_float, radius: c_float) {
 		unsafe { ffi::nvgArcTo(self.ptr, x1, y1, x2, y2, radius) }
 	}
-    pub fn ClosePath(&self) {
+    pub fn close_path(&self) {
 		unsafe { ffi::nvgClosePath(self.ptr) }
 	}
-    pub fn PathWinding(&self, dir: c_int) {
+    pub fn path_winding(&self, dir: c_int) {
 		unsafe { ffi::nvgPathWinding(self.ptr, dir) }
 	}
 
-    pub fn Arc(&self, cx: c_float, cy: c_float, r: c_float, a0: c_float, a1: c_float, dir: c_int) {
+    pub fn arc(&self, cx: c_float, cy: c_float, r: c_float, a0: c_float, a1: c_float, dir: c_int) {
 		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir) }
 	}
-    pub fn Rect(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
+    pub fn rect(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
 		unsafe { ffi::nvgRect(self.ptr, x, y, w, h) }
 	}
-    pub fn RoundedRect(&self, x: c_float, y: c_float, w: c_float, h: c_float, r: c_float) {
+    pub fn rounded_rect(&self, x: c_float, y: c_float, w: c_float, h: c_float, r: c_float) {
 		unsafe { ffi::nvgRoundedRect(self.ptr, x, y, w, h, r) }
 	}
-    pub fn Ellipse(&self, cx: c_float, cy: c_float, rx: c_float, ry: c_float) {
+    pub fn ellipse(&self, cx: c_float, cy: c_float, rx: c_float, ry: c_float) {
 		unsafe { ffi::nvgEllipse(self.ptr, cx, cy, rx, ry) }
 	}
-    pub fn Circle(&self, cx: c_float, cy: c_float, r: c_float) {
+    pub fn circle(&self, cx: c_float, cy: c_float, r: c_float) {
 		unsafe { ffi::nvgCircle(self.ptr, cx, cy, r) }
 	}
-    pub fn Fill(&self) {
+    pub fn fill(&self) {
 		unsafe { ffi::nvgFill(self.ptr) }
 	}
-    pub fn Stroke(&self) {
+    pub fn stroke(&self) {
 		unsafe { ffi::nvgStroke(self.ptr) }
 	}
 
-    pub fn CreateFont(&self, name: *const c_char, filename: *const c_char) -> c_int {
+    pub fn create_font(&self, name: *const c_char, filename: *const c_char) -> c_int {
 		unsafe { ffi::nvgCreateFont(self.ptr, name, filename) }
 	}
-    pub fn CreateFontMem(&self, name: *const c_char, data: *mut c_uchar, ndata: c_int, freeData: c_int) -> c_int {
+    pub fn create_font_mem(&self, name: *const c_char, data: *mut c_uchar, ndata: c_int, freeData: c_int) -> c_int {
 		unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, freeData) }
 	}
-    pub fn FindFont(&self, name: *const c_char) -> c_int {
+    pub fn find_font(&self, name: *const c_char) -> c_int {
 		unsafe { ffi::nvgFindFont(self.ptr, name) }
 	}
-    pub fn FontSize(&self, size: c_float) {
+    pub fn font_size(&self, size: c_float) {
 		unsafe { ffi::nvgFontSize(self.ptr, size) }
 	}
-    pub fn FontBlur(&self, blur: c_float) {
+    pub fn font_blur(&self, blur: c_float) {
 		unsafe { ffi::nvgFontBlur(self.ptr, blur) }
 	}
-    pub fn TextLetterSpacing(&self, spacing: c_float) {
+    pub fn text_letter_spacing(&self, spacing: c_float) {
 		unsafe { ffi::nvgTextLetterSpacing(self.ptr, spacing) }
 	}
-    pub fn TextLineHeight(&self, lineHeight: c_float) {
+    pub fn text_line_height(&self, lineHeight: c_float) {
 		unsafe { ffi::nvgTextLineHeight(self.ptr, lineHeight) }
 	}
-    pub fn TextAlign(&self, align: c_uint) {
-		unsafe { ffi::nvgTextAlign(self.ptr, align) }
+    pub fn text_align(&self, align: Align) {
+		unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
 	}
-    pub fn FontFaceId(&self, font: c_int) {
+    pub fn font_face_id(&self, font: c_int) {
 		unsafe { ffi::nvgFontFaceId(self.ptr, font) }
 	}
-    pub fn FontFace(&self, font: &str) {
+    pub fn font_face(&self, font: &str) {
         font.with_c_str(|font| {
 		unsafe { ffi::nvgFontFace(self.ptr, font) }
         })
 	}
-    pub fn Text(&self, x: c_float, y: c_float, text: &str) -> c_float {
+    pub fn text(&self, x: c_float, y: c_float, text: &str) -> c_float {
         text.with_c_str(|text| {
             unsafe { ffi::nvgText(self.ptr, x, y, text, ptr::null()) }
         })
     }
-    //pub fn Text(&self, x: c_float, y: c_float, text: &str, end: &str) -> c_float {
+    //pub fn text(&self, x: c_float, y: c_float, text: &str, end: &str) -> c_float {
     //    text.with_c_str(|text| {
     //        end.with_c_str(|end| {
     //            unsafe { ffi::nvgText(self.ptr, x, y, text, end) }
     //        })
     //    })
     //}
-    pub fn TextBox(&self, x: c_float, y: c_float, breakRowWidth: c_float, text: &str, end: &str) {
+    pub fn text_box(&self, x: c_float, y: c_float, breakRowWidth: c_float, text: &str, end: &str) {
         text.with_c_str(|text| {
             end.with_c_str(|end| {
 		unsafe { ffi::nvgTextBox(self.ptr, x, y, breakRowWidth, text, end) }
             })
         })
 	}
-    pub fn TextBounds(&self, x: c_float, y: c_float, text: &str, end: &str, bounds: *mut c_float) -> c_float {
+    pub fn text_bounds(&self, x: c_float, y: c_float, text: &str, end: &str, bounds: *mut c_float) -> c_float {
         text.with_c_str(|text| {
             end.with_c_str(|end| {
 		unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, end, bounds) }
             })
         })
 	}
-    pub fn TextBoxBounds(&self, x: c_float, y: c_float, breakRowWidth: c_float, text: &str, end: &str, bounds: *mut c_float) {
+    pub fn text_box_bounds(&self, x: c_float, y: c_float, breakRowWidth: c_float, text: &str, end: &str, bounds: *mut c_float) {
         text.with_c_str(|text| {
             end.with_c_str(|end| {
 		unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, breakRowWidth, text, end, bounds) }
             })
         })
 	}
-    pub fn TextGlyphPositions(&self, x: c_float, y: c_float, text: &str, end: &str, positions: *mut NVGglyphPosition, maxPositions: c_int) -> c_int {
+    pub fn text_glyph_positions(&self, x: c_float, y: c_float, text: &str, end: &str, positions: *mut NVGglyphPosition, maxPositions: c_int) -> c_int {
         text.with_c_str(|text| {
             end.with_c_str(|end| {
 		unsafe { ffi::nvgTextGlyphPositions(self.ptr, x, y, text, end, positions, maxPositions) }
             })
         })
 	}
-    pub fn TextMetrics(&self, ascender: *mut c_float, descender: *mut c_float, lineh: *mut c_float) {
+    pub fn text_metrics(&self, ascender: *mut c_float, descender: *mut c_float, lineh: *mut c_float) {
 		unsafe { ffi::nvgTextMetrics(self.ptr, ascender, descender, lineh) }
 	}
-    pub fn TextBreakLines(&self, text: &str, end: &str, breakRowWidth: c_float, rows: *mut NVGtextRow, maxRows: c_int) -> c_int {
+    pub fn text_break_lines(&self, text: &str, end: &str, breakRowWidth: c_float, rows: *mut NVGtextRow, maxRows: c_int) -> c_int {
         text.with_c_str(|text| {
             end.with_c_str(|end| {
 		unsafe { ffi::nvgTextBreakLines(self.ptr, text, end, breakRowWidth, rows, maxRows) }
@@ -478,11 +487,11 @@ impl Ctx {
 //    pub fn nvgInternalParams(ctx: *mut NVGcontext) -> *mut NVGparams;
 //    pub fn nvgDebugDumpPathCache(ctx: *mut NVGcontext);
 //
-pub fn RGB(r: u8, g: u8, b: u8) -> NVGcolor {
+pub fn rgb(r: u8, g: u8, b: u8) -> NVGcolor {
     unsafe { ffi::nvgRGB(r, g, b) }
 }
 //    pub fn nvgRGBf(r: c_float, g: c_float, b: c_float) -> NVGcolor;
-pub fn RGBA(r: u8, g: u8, b: u8, a: u8) -> NVGcolor {
+pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> NVGcolor {
     unsafe { ffi::nvgRGBA(r, g, b, a) }
 }
 //    pub fn nvgRGBAf(r: c_float, g: c_float, b: c_float, a: c_float) -> NVGcolor;
