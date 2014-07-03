@@ -2,6 +2,8 @@
 NanoVG Rust wrapper
 ===================
 
+(Work In Progress!  Not usable yet)
+
 This is a Rust-language wrapper for the NanoVG vector-graphis library.
 
 NanoVG is C code, and it supports several back-ends: GL2, GL3, GLES...
@@ -9,7 +11,7 @@ NanoVG is C code, and it supports several back-ends: GL2, GL3, GLES...
 NanoVG is not an extremely complete or extensive implementation of vector graphics.
 It is however small and hardware-accelerated, which is what I want.  If you need
 all the things, look at Cairo-graphics: it's everywhere, and it's good; eventually
-it'll even come with graphics card support. 
+it'll even come with graphics card support.
 
 
 Dependencies
@@ -43,5 +45,5 @@ MIT, for this binding. NanoVG is released under the zlib license.
 
 Links
 =====
-https://github.com/memononen/nanovg
-https://github.com/crabtw/rust-bindgen
+- https://github.com/memononen/nanovg
+- https://github.com/crabtw/rust-bindgen
