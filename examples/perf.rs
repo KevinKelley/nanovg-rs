@@ -1,5 +1,4 @@
 use nanovg::*;
-use std::ptr;
 
 #[repr(i32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
@@ -61,7 +60,7 @@ impl PerfGraph
 
 		vg.BeginPath();
 		vg.MoveTo(x, y+h);
-		if (self.style == FPS) {
+		if self.style == FPS {
 			for i in range(0, CAP) { //(i = 0; i < CAP; i++) {
 				let mut v = 1.0 / (0.00001 + self.values[(self.head+i) % CAP]);
 				if v > 80.0 {v = 80.0;}
@@ -91,7 +90,7 @@ impl PerfGraph
 			//vg.Text(x+3.0,y+1.0, &self.name);
 		}
 
-		if (self.style == FPS) {
+		if self.style == FPS {
 			vg.FontSize(18.0);
 			//vg.TextAlign(ALIGN_RIGHT|ALIGN_TOP);
 			vg.FillColor(RGBA(240,240,240,255));

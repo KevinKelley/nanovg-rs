@@ -22,7 +22,6 @@ extern crate gl;
 extern crate nanovg;
 
 use glfw::Context;
-use gl::types::*;
 use std::cell::Cell;
 use nanovg::Ctx;
 
@@ -105,11 +104,10 @@ fn main()
     // use glfw to load GL function pointers
     verify!(gl::load_with(|name| glfw.get_proc_address(name)));
     init_gl();
-
     //let vg: *mut nanovg::NVGcontext = unsafe { nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES); }
-   	let vg: nanovg::Ctx = nanovg::Ctx::CreateGL3(/*nanovg::ANTIALIAS |*/ nanovg::STENCIL_STROKES);
+   	let vg: nanovg::Ctx = nanovg::Ctx::CreateGL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
-    println!("created nanovg Ctx");
+    //println!("created nanovg Ctx: {}", vg);
 
 	//if (vg == NULL) {
 	//  printf("Could not init nanovg.\n");

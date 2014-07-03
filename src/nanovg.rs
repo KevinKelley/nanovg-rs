@@ -25,9 +25,11 @@
 extern crate libc;
 
 
+use std::fmt;
 use std::kinds::marker;
 use std::ptr;
 use std::str;
+use std::bitflags;
 use libc::{c_double, c_float, c_int, c_char, c_uint, c_ushort, c_uchar, c_void};
 
 pub use NVGcolor         = ffi::NVGcolor;
@@ -89,14 +91,20 @@ pub enum Align {
     ALIGN_BASELINE          = ffi::NVG_ALIGN_BASELINE,
 }
 
-///
-#[repr(u32)]
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
-pub enum CreationFlags {
-    ANTIALIAS               = ffi::NVG_ANTIALIAS,
-    STENCIL_STROKES         = ffi::NVG_STENCIL_STROKES,
-}
+/////
+//#[repr(u32)]
+//#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+//pub enum CreationFlags {
+//    ANTIALIAS        = ffi::NVG_ANTIALIAS,
+//    STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES,
+//}
 
+pub bitflags!(
+    flags CreationFlags: u32 {
+        static ANTIALIAS        = ffi::NVG_ANTIALIAS,
+        static STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
+    }
+)
 
 //#[repr(C)]
 //pub struct NVGcolor {
@@ -182,10 +190,17 @@ pub enum CreationFlags {
 //    pub convex: c_int,
 //}
 
+//#[deriving(Show)]
 pub struct Ctx {
     pub ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
     no_share: marker::NoShare,
+}
+
+impl fmt::Show for Ctx {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "opaque pointer @ {}", self.ptr)
+    }
 }
 
 impl Ctx {
@@ -193,7 +208,7 @@ impl Ctx {
     //#if defined NANOVG_GL3
     pub fn CreateGL3(flags: CreationFlags) -> Ctx {
         Ctx {
-            ptr: unsafe { ffi::nvgCreateGL3(flags as u32) },
+            ptr: unsafe { ffi::nvgCreateGL3(flags.bits) },
             no_send: marker::NoSend,
             no_share: marker::NoShare,
         }
