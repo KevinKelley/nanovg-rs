@@ -28,8 +28,10 @@ SOURCE_FILES = $(shell test -e src/ && find src -type f)
 
 all: lib examples
 
-lib: $(SOURCE_FILES)
+#lib: $(SOURCE_FILES)
+lib:
 	mkdir -p $(lib_path)
+	# ? need -C link-args=-fPIC
 	rustc src/nanovg.rs --opt-level 3 --out-dir $(lib_path) $(libs)
 
 examples: lib  $(EXAMPLE_FILES)
@@ -94,10 +96,11 @@ deps: nanovg
 #	make -C $(tmp) examples
 #	rm -rf $(tmp)
 
-.PHONY:nanovg
-.PHONY:deps
-.PHONY:doc
-.PHONY:examples
+.PHONY: nanovg\
+	deps\
+	doc\
+	lib\
+	examples
 
 
 

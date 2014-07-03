@@ -11,6 +11,9 @@
 #![feature(globs)]
 #![feature(macro_rules)]
 //#![macro_escape]
+#![allow(dead_code)]
+#![allow(unreachable_code)]
+#![allow(unused_variable)]
 
 extern crate native;
 extern crate libc;
@@ -19,12 +22,9 @@ extern crate gl;
 extern crate nanovg;
 
 use glfw::Context;
-//use gl::*;
 use gl::types::*;
 use std::cell::Cell;
-
-use nanovg::NVGcolor;
-use nanovg::NVGcontext;
+use nanovg::Ctx;
 
 
 
@@ -106,12 +106,10 @@ fn main()
     verify!(gl::load_with(|name| glfw.get_proc_address(name)));
     init_gl();
 
-    let vg: *mut nanovg::NVGcontext;
-    unsafe {
-     	vg = nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES);
-     	assert!(!vg.is_null());
-    }
-    println!("created NVGcontext: {}", vg);
+    //let vg: *mut nanovg::NVGcontext = unsafe { nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES); }
+   	let vg: nanovg::Ctx = nanovg::Ctx::CreateGL3(/*nanovg::ANTIALIAS |*/ nanovg::STENCIL_STROKES);
+   	assert!(!vg.ptr.is_null());
+    println!("created nanovg Ctx");
 
 	//if (vg == NULL) {
 	//  printf("Could not init nanovg.\n");
@@ -130,8 +128,8 @@ fn main()
 
     while !window.should_close()
     {
-    	let mut t: f64 = glfw.get_time();
-    	let mut dt: f64 = t - prevt;
+    	let t: f64 = glfw.get_time();
+    	let dt: f64 = t - prevt;
     	prevt = t;
     	fps.update(dt);
 
@@ -156,12 +154,14 @@ fn main()
         verify!(gl::Disable(gl::DEPTH_TEST));
 
 
-        unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
+        //unsafe { nanovg::nvgBeginFrame(vg, winWidth, winHeight, pxRatio as f32); }
+        vg.BeginFrame(winWidth, winHeight, pxRatio as f32);
 
         //renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
-        fps.render(vg, 5.0, 5.0);
+        fps.render(&vg, 5.0, 5.0);
 
-        unsafe { nanovg::nvgEndFrame(vg); }
+        //unsafe { nanovg::nvgEndFrame(vg); }
+        vg.EndFrame();
 
 
         gl::Enable(gl::DEPTH_TEST);
