@@ -26,7 +26,11 @@ SOURCE_FILES = $(shell test -e src/ && find src -type f)
 # bindgen -builtins -o ../examples/demo.rs demo.c
 # bindgen -builtins -o ../examples/perf.rs perf.c
 
+
 all: lib examples
+
+run: lib examples
+	cd bin; ./example_gl3
 
 #lib: $(SOURCE_FILES)
 lib:

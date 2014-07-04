@@ -55,6 +55,7 @@ fn cpToUTF8(cp:char) -> String
 }
 
 pub struct DemoData {
+	//vg: &Ctx,
 	fontNormal: i32,
 	fontBold: i32,
 	fontIcons: i32,
@@ -67,6 +68,7 @@ impl DemoData
 	pub fn load(vg: &Ctx) -> DemoData
 	{
 		let mut data = DemoData {
+			//vg: vg,
 			fontNormal: -1,
 			fontBold:   -1,
 			fontIcons:  -1,
@@ -74,44 +76,39 @@ impl DemoData
 		};
 
 		for i in range(1, 12u) {
-			let filename = format!("../example/images/image{}.jpg", i);
+			let filename = format!("../res/images/image{}.jpg", i);
 			data.images[i] = vg.create_image(filename.as_slice());
 			if (data.images[i] == 0) {
 				println!("Could not load {}.", filename);
-				//return -1;
 			}
 		}
 
-		data.fontIcons = vg.create_font("icons", "../example/entypo.ttf");
+		data.fontIcons = vg.create_font("icons", "../res/entypo.ttf");
 		if (data.fontIcons == -1) {
-			println!("Could not add font icons.");
-			//return -1;
+			println!("Could not add font 'icons'.");
 		}
-		data.fontNormal = vg.create_font("sans", "../example/Roboto-Regular.ttf");
+		data.fontNormal = vg.create_font("sans", "../res/Roboto-Regular.ttf");
 		if (data.fontNormal == -1) {
-			println!("Could not add font italic.");
-			//return -1;
+			println!("Could not add font 'sans'.");
 		}
-		data.fontBold = vg.create_font("sans-bold", "../example/Roboto-Bold.ttf");
+		data.fontBold = vg.create_font("sans-bold", "../res/Roboto-Bold.ttf");
 		if (data.fontBold == -1) {
-			println!("Could not add font bold.");
-			//return -1;
+			println!("Could not add font 'sans-bold'.");
 		}
 
 		return data;
 	}
 }
 
-
-
-//void freeDemoData(struct NVGcontext* vg, struct DemoData* data)
-pub fn free_demo_data(vg: &Ctx,
-                    data: *mut DemoData)
-{
-//	for i in range(0, 12) {
-//		vg.delete_image(data.images[i]);
-//	}
+impl Drop for DemoData {
+	fn drop(&mut self) {
+		for i in range(0, 12u) {
+//			self.vg.delete_image(self.images[i]);
+			self.images[i] = -1;
+		}
+	}
 }
+
 
 
 //void renderDemo(struct NVGcontext* vg, f32 mx, f32 my, f32 width, f32 height, f32 t, int blowup, struct DemoData* data)
@@ -120,9 +117,9 @@ pub fn render_demo(vg: &Ctx, mx: f32,
                   height: f32, t: f32,
                   blowup: bool, data: &DemoData)
 {
-	draw_eyes(vg, width - 150.0, 50.0, 150.0, 100.0, mx, my, t);
+	draw_eyes(vg, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
 //	draw_paragraph(vg, width - 450, 50, 150, 100, mx, my);
-//	draw_graph(vg, 0, height/2, width, height/2, t);
+	draw_graph(vg, 0.0, height/2.0, width, height/2.0, t);
 //	draw_colorwheel(vg, width - 300, height - 300, 250.0, 250.0, t);
 //
 //	// Line joints
@@ -577,78 +574,83 @@ fn draw_eyes(vg: &Ctx, x: c_float,
 	vg.fill();
 }
 
-//fn draw_graph(vg: &Ctx, x: c_float,
-//             y: c_float, w: c_float,
-//             h: c_float, t: c_float)
-//{
-////	f32 samples[6];
-////	f32 sx[6], sy[6];
-////	f32 dx = w/5.0;
-////	int i;
-////
-////	samples[0] = (1+sin(t*1.2345+cos(t*0.33457)*0.44))*0.5;
-////	samples[1] = (1+sin(t*0.68363+cos(t*1.3)*1.55))*0.5;
-////	samples[2] = (1+sin(t*1.1642+cos(t*0.33457)*1.24))*0.5;
-////	samples[3] = (1+sin(t*0.56345+cos(t*1.63)*0.14))*0.5;
-////	samples[4] = (1+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
-////	samples[5] = (1+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
-////
-////	for (i = 0; i < 6; i++) {
-////		sx[i] = x+i*dx;
-////		sy[i] = y+h*samples[i]*0.8;
-////	}
-////
-////	// Graph background
-////	let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
-////	vg.begin_path();
-////	vg.move_to(sx[0], sy[0]);
-////	for (i = 1; i < 6; i++)
-////		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
-////	vg.line_to(x+w, y+h);
-////	vg.line_to(x, y+h);
-////	vg.fill_paint(bg);
-////	vg.fill();
-////
-////	// Graph line
-////	vg.begin_path();
-////	vg.move_to(sx[0], sy[0]+2);
-////	for (i = 1; i < 6; i++)
-////		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2, sx[i]-dx*0.5,sy[i]+2, sx[i],sy[i]+2);
-////	vg.stroke_color(rgba(0,0,0,32));
-////	vg.stroke_width(3.0);
-////	vg.stroke();
-////
-////	vg.begin_path();
-////	vg.move_to(sx[0], sy[0]);
-////	for (i = 1; i < 6; i++)
-////		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
-////	vg.stroke_color(rgba(0,160,192,255));
-////	vg.stroke_width(3.0);
-////	vg.stroke();
-////
-////	// Graph sample pos
-////	for (i = 0; i < 6; i++) {
-////		bg = vg.radial_gradient(sx[i],sy[i]+2, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
-////		vg.begin_path();
-////		vg.rect(sx[i]-10, sy[i]-10+2, 20,20);
-////		vg.fill_paint(bg);
-////		vg.fill();
-////	}
-////
-////	vg.begin_path();
-////	for (i = 0; i < 6; i++)
-////		vg.circle(sx[i], sy[i], 4.0);
-////	vg.fill_color(rgba(0,160,192,255));
-////	vg.fill();
-////	vg.begin_path();
-////	for (i = 0; i < 6; i++)
-////		vg.circle(sx[i], sy[i], 2.0);
-////	vg.fill_color(rgba(220,220,220,255));
-////	vg.fill();
-////
-////	vg.stroke_width(1.0);
-//}
-//
+fn draw_graph(vg: &Ctx, x: c_float,
+             y: c_float, w: c_float,
+             h: c_float, t: c_float)
+{
+	let mut samples: [f32, ..6] = [0.0, ..6];
+	let mut sx: [f32, ..6] = [0.0, ..6];
+	let mut sy: [f32, ..6] = [0.0, ..6];
+	let dx = w/5.0;
+
+	samples[0] = (1.0+sin(t*1.2345+cos(t*0.33457)*0.44))*0.5;
+	samples[1] = (1.0+sin(t*0.68363+cos(t*1.3)*1.55))*0.5;
+	samples[2] = (1.0+sin(t*1.1642+cos(t*0.33457)*1.24))*0.5;
+	samples[3] = (1.0+sin(t*0.56345+cos(t*1.63)*0.14))*0.5;
+	samples[4] = (1.0+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
+	samples[5] = (1.0+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
+
+	for i in range(0, 6u) {
+		sx[i] = x+ (i as f32)*dx;
+		sy[i] = y+h*samples[i]*0.8;
+	}
+
+	// Graph background
+	let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
+	vg.begin_path();
+	vg.move_to(sx[0], sy[0]);
+	for i in range(1, 6u) {
+		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
+	}
+	vg.line_to(x+w, y+h);
+	vg.line_to(x, y+h);
+	vg.fill_paint(bg);
+	vg.fill();
+
+	// Graph line
+	vg.begin_path();
+	vg.move_to(sx[0], sy[0]+2.0);
+	for i in range(1, 6u) {
+		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2.0, sx[i]-dx*0.5,sy[i]+2.0, sx[i],sy[i]+2.0);
+	}
+	vg.stroke_color(rgba(0,0,0,32));
+	vg.stroke_width(3.0);
+	vg.stroke();
+
+	vg.begin_path();
+	vg.move_to(sx[0], sy[0]);
+	for i in range(1, 6u) {
+		vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
+	}
+	vg.stroke_color(rgba(0,160,192,255));
+	vg.stroke_width(3.0);
+	vg.stroke();
+
+	// Graph sample pos
+	for i in range(0, 6u) {
+		let bg = vg.radial_gradient(sx[i],sy[i]+2.0, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
+		vg.begin_path();
+		vg.rect(sx[i]-10.0, sy[i]-10.0+2.0, 20.0,20.0);
+		vg.fill_paint(bg);
+		vg.fill();
+	}
+
+	vg.begin_path();
+	for i in range(0, 6u) {
+		vg.circle(sx[i], sy[i], 4.0);
+	}
+	vg.fill_color(rgba(0,160,192,255));
+	vg.fill();
+	vg.begin_path();
+	for i in range(0, 6u) {
+		vg.circle(sx[i], sy[i], 2.0);
+	}
+	vg.fill_color(rgba(220,220,220,255));
+	vg.fill();
+
+	vg.stroke_width(1.0);
+}
+
 //fn draw_spinner(vg: &Ctx, cx: c_float,
 //               cy: c_float, r: c_float,
 //               t: c_float)
