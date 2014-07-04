@@ -55,24 +55,24 @@ impl DemoData
 			images: [-1, ..12]
 		};
 
-		for i in range(1, 12u) {
-			let filename = format!("../res/images/image{}.jpg", i);
+		for i in range(0, 12u) {
+			let filename = format!("../res/images/image{}.jpg", i+1);
 			data.images[i] = vg.create_image(filename.as_slice());
-			if (data.images[i] == 0) {
+			if data.images[i] == 0 {
 				println!("Could not load {}.", filename);
 			}
 		}
 
 		data.fontIcons = vg.create_font("icons", "../res/entypo.ttf");
-		if (data.fontIcons == -1) {
+		if data.fontIcons == -1 {
 			println!("Could not add font 'icons'.");
 		}
 		data.fontNormal = vg.create_font("sans", "../res/Roboto-Regular.ttf");
-		if (data.fontNormal == -1) {
+		if data.fontNormal == -1 {
 			println!("Could not add font 'sans'.");
 		}
 		data.fontBold = vg.create_font("sans-bold", "../res/Roboto-Bold.ttf");
-		if (data.fontBold == -1) {
+		if data.fontBold == -1 {
 			println!("Could not add font 'sans-bold'.");
 		}
 
@@ -112,7 +112,7 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 	draw_caps(vg, 10.0, 300.0, 30.0);
 
 	vg.save();
-	if (blowup) {
+	if blowup {
 		vg.rotate(sin(t*0.3)*5.0/180.0*PI);
 		vg.scale(2.0, 2.0);
 	}
@@ -160,7 +160,7 @@ pub fn save_screenshot(w: c_int, h: c_int,
 {
 //	let image: [u8, ..w*h*4];
 //	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image);
-//	if (premult) {
+//	if premult {
 //		unpremultiplyAlpha(image, w, h, w*4);
 //	}
 //	else {
@@ -378,7 +378,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 	let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
 	vg.begin_path();
 	vg.rounded_rect(x+1.0,y+1.0, w-2.0,h-2.0, cornerRadius-1.0);
-	if (!is_black(col)) {
+	if !is_black(col) {
 		vg.fill_color(col);
 		vg.fill();
 	}
@@ -394,14 +394,14 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 	vg.font_face("sans-bold");
 	let mut bounds: f32 = 0.0;
 	tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
-	if (preicon != NO_ICON) {
+	if preicon != NO_ICON {
 		vg.font_size(h*1.3);
 		vg.font_face("icons");
 		iw = vg.text_bounds(0.0,0.0, cpToUTF8(preicon).as_slice(), &mut bounds);
 		iw += h*0.15;
 	}
 
-	if (preicon != NO_ICON) {
+	if preicon != NO_ICON {
 		vg.font_size(h*1.3);
 		vg.font_face("icons");
 		vg.fill_color(rgba(255,255,255,96));
@@ -490,7 +490,7 @@ fn draw_eyes(vg: &Ctx, x: c_float,
 	let mut dx = (mx - rx) / (ex * 10.0);
 	let mut dy = (my - ry) / (ey * 10.0);
 	let mut d = sqrt(dx*dx+dy*dy);
-	if (d > 1.0) {
+	if d > 1.0 {
 		dx /= d; dy /= d;
 	}
 	dx *= ex*0.4;
@@ -503,7 +503,7 @@ fn draw_eyes(vg: &Ctx, x: c_float,
 	dx = (mx - rx) / (ex * 10.0);
 	dy = (my - ry) / (ey * 10.0);
 	d = sqrt(dx*dx+dy*dy);
-	if (d > 1.0) {
+	if d > 1.0 {
 		dx /= d; dy /= d;
 	}
 	dx *= ex*0.4;
@@ -603,151 +603,151 @@ fn draw_graph(vg: &Ctx, x: c_float,
 	vg.stroke_width(1.0);
 }
 
-//fn draw_spinner(vg: &Ctx, cx: c_float,
-//               cy: c_float, r: c_float,
-//               t: c_float)
-//{
-//	let a0 = 0.0 + t*6;
-//	let a1 = PI + t*6;
-//	let r0 = r;
-//	let r1 = r * 0.75;
-//
-//	vg.save();
-//
-//	vg.begin_path();
-//	vg.arc(cx,cy, r0, a0, a1, CW);
-//	vg.arc(cx,cy, r1, a1, a0, CCW);
-//	vg.close_path();
-//	let ax = cx + cos(a0) * (r0+r1)*0.5;
-//	let ay = cy + sin(a0) * (r0+r1)*0.5;
-//	let bx = cx + cos(a1) * (r0+r1)*0.5;
-//	let by = cy + sin(a1) * (r0+r1)*0.5;
-//	let paint = vg.linear_gradient(ax,ay, bx,by, rgba(0,0,0,0), rgba(0,0,0,128));
-//	vg.fill_paint(paint);
-//	vg.fill();
-//
-//	vg.restore();
-//}
+fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
+{
+	let a0 = 0.0 + t*6.0;
+	let a1 = PI + t*6.0;
+	let r0 = r;
+	let r1 = r * 0.75;
+
+	vg.save();
+
+	vg.begin_path();
+	vg.arc(cx,cy, r0, a0, a1, CW);
+	vg.arc(cx,cy, r1, a1, a0, CCW);
+	vg.close_path();
+	let ax = cx + cos(a0) * (r0+r1)*0.5;
+	let ay = cy + sin(a0) * (r0+r1)*0.5;
+	let bx = cx + cos(a1) * (r0+r1)*0.5;
+	let by = cy + sin(a1) * (r0+r1)*0.5;
+	let paint = vg.linear_gradient(ax,ay, bx,by, rgba(0,0,0,0), rgba(0,0,0,128));
+	vg.fill_paint(paint);
+	vg.fill();
+
+	vg.restore();
+}
 
 fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
-                  images: [i32, ..12], nimages: int, t: f32)
+                  images: [i32, ..12], nimages: uint, t: f32)
 {
-//	let cornerRadius = 3.0;
-//
-//	f32 ix,iy,iw,ih;
-//	f32 thumb = 60.0;
-//	f32 arry = 30.5;
-//	int imgw, imgh;
-//	f32 stackh = (nimages/2) * (thumb+10) + 10;
-//	int i;
-//	f32 u = (1+cos(t*0.5))*0.5;
-//	f32 u2 = (1-cos(t*0.2))*0.5;
-//	f32 scrollh, dv;
-//
-//	vg.save();
-////	vg.clear_state();
-//
-//	// Drop shadow
-//	let shadowPaint = vg.box_gradient(x,y+4, w,h, cornerRadius*2, 20, rgba(0,0,0,128), rgba(0,0,0,0));
-//	vg.begin_path();
-//	vg.rect(x-10,y-10, w+20,h+30);
-//	vg.rounded_rect(x,y, w,h, cornerRadius);
-//	vg.path_winding(HOLE);
-//	vg.fill_paint(shadowPaint);
-//	vg.fill();
-//
-//	// Window
-//	vg.begin_path();
-//	vg.rounded_rect(x,y, w,h, cornerRadius);
-//	vg.move_to(x-10,y+arry);
-//	vg.line_to(x+1,y+arry-11);
-//	vg.line_to(x+1,y+arry+11);
-//	vg.fill_color(rgba(200,200,200,255));
-//	vg.fill();
-//
-//	vg.save();
-//	vg.scissor(x,y,w,h);
-//	vg.translate(0, -(stackh - h)*u);
-//
-//	dv = 1.0 / (f32)(nimages-1);
-//
-//	for (i = 0; i < nimages; i++) {
-//		f32 tx, ty, v, a;
-//		tx = x+10;
-//		ty = y+10;
-//		tx += (i%2) * (thumb+10);
-//		ty += (i/2) * (thumb+10);
-//		vg.image_size(images[i], &imgw, &imgh);
-//		if (imgw < imgh) {
-//			iw = thumb;
-//			ih = iw * (f32)imgh/(f32)imgw;
-//			ix = 0;
-//			iy = -(ih-thumb)*0.5;
-//		} else {
-//			ih = thumb;
-//			iw = ih * (f32)imgw/(f32)imgh;
-//			ix = -(iw-thumb)*0.5;
-//			iy = 0;
-//		}
-//
-//		v = i * dv;
-//		a = clampf((u2-v) / dv, 0, 1);
-//
-//		if (a < 1.0)
-//			drawSpinner(vg, tx+thumb/2,ty+thumb/2, thumb*0.25, t);
-//
-//		imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, images[i], NVG_NOREPEAT, a);
-//		vg.begin_path();
-//		vg.rounded_rect(tx,ty, thumb,thumb, 5);
-//		vg.fill_paint(imgPaint);
-//		vg.fill();
-//
-//		shadowPaint = vg.box_gradient(tx-1,ty, thumb+2,thumb+2, 5, 3, rgba(0,0,0,128), rgba(0,0,0,0));
-//		vg.begin_path();
-//		vg.rect(tx-5,ty-5, thumb+10,thumb+10);
-//		vg.rounded_rect(tx,ty, thumb,thumb, 6);
-//		vg.path_winding(HOLE);
-//		vg.fill_paint(shadowPaint);
-//		vg.fill();
-//
-//		vg.begin_path();
-//		vg.rounded_rect(tx+0.5,ty+0.5, thumb-1,thumb-1, 4-0.5);
-//		vg.stroke_width(1.0);
-//		vg.stroke_color(rgba(255,255,255,192));
-//		vg.stroke();
-//	}
-//	vg.restore();
-//
-//	// Hide fades
-//	let fadePaint = vg.linear_gradient(x,y,x,y+6, rgba(200,200,200,255), rgba(200,200,200,0));
-//	vg.begin_path();
-//	vg.rect(x+4,y,w-8,6);
-//	vg.fill_paint(fadePaint);
-//	vg.fill();
-//
-//	fadePaint = vg.linear_gradient(x,y+h,x,y+h-6, rgba(200,200,200,255), rgba(200,200,200,0));
-//	vg.begin_path();
-//	vg.rect(x+4,y+h-6,w-8,6);
-//	vg.fill_paint(fadePaint);
-//	vg.fill();
-//
-//	// Scroll bar
-//	shadowPaint = vg.box_gradient(x+w-12+1,y+4+1, 8,h-8, 3,4, rgba(0,0,0,32), rgba(0,0,0,92));
-//	vg.begin_path();
-//	vg.rounded_rect(x+w-12,y+4, 8,h-8, 3);
-//	vg.fill_paint(shadowPaint);
-////	vg.fill_color(rgba(255,0,0,128));
-//	vg.fill();
-//
-//	scrollh = (h/stackh) * (h-8);
-//	shadowPaint = vg.box_gradient(x+w-12-1,y+4+(h-8-scrollh)*u-1, 8,scrollh, 3,4, rgba(220,220,220,255), rgba(128,128,128,255));
-//	vg.begin_path();
-//	vg.rounded_rect(x+w-12+1,y+4+1 + (h-8-scrollh)*u, 8-2,scrollh-2, 2);
-//	vg.fill_paint(shadowPaint);
-////	vg.fill_color(rgba(0,0,0,128));
-//	vg.fill();
-//
-//	vg.restore();
+	let cornerRadius = 3.0;
+
+	let thumb: f32 = 60.0;
+	let arry : f32 = 30.5;
+	let stackh: f32 = (nimages/2) as f32 * (thumb+10.0) + 10.0;
+	let u : f32 = (1.0+cos(t*0.5))*0.5;
+	let u2: f32 = (1.0-cos(t*0.2))*0.5;
+
+	vg.save();
+//	vg.clear_state();
+
+	// Drop shadow
+	let mut shadowPaint = vg.box_gradient(x,y+4.0, w,h, cornerRadius*2.0, 20.0, rgba(0,0,0,128), rgba(0,0,0,0));
+	vg.begin_path();
+	vg.rect(x-10.0,y-10.0, w+20.0,h+30.0);
+	vg.rounded_rect(x,y, w,h, cornerRadius);
+	vg.path_winding(HOLE);
+	vg.fill_paint(shadowPaint);
+	vg.fill();
+
+	// Window
+	vg.begin_path();
+	vg.rounded_rect(x,y, w,h, cornerRadius);
+	vg.move_to(x-10.0,y+arry);
+	vg.line_to(x+1.0,y+arry-11.0);
+	vg.line_to(x+1.0,y+arry+11.0);
+	vg.fill_color(rgba(200,200,200,255));
+	vg.fill();
+
+	vg.save();
+	vg.scissor(x,y,w,h);
+	vg.translate(0.0, -(stackh-h)*u);
+
+	let dv = 1.0 / (nimages as f32 - 1.0);
+
+	for i in range(0, nimages) {
+		let mut tx = x+10.0;
+		let mut ty = y+10.0;
+		tx += (i%2) as f32 * (thumb+10.0);
+		ty += (i/2) as f32 * (thumb+10.0);
+		let mut imgw: i32 = 0;
+		let mut imgh: i32 = 0;
+		let ix: f32;
+		let iy: f32;
+		let iw: f32;
+		let ih: f32;
+		vg.image_size(images[i], &mut imgw, &mut imgh);
+		if imgw < imgh {
+			iw = thumb;
+			ih = iw * (imgh as f32) / (imgw as f32);
+			ix = 0.0;
+			iy = -(ih-thumb)*0.5;
+		} else {
+			ih = thumb;
+			iw = ih * (imgw as f32) / (imgh as f32);
+			ix = -(iw-thumb)*0.5;
+			iy = 0.0;
+		}
+
+		let v = i as f32 * dv;
+		let a = clamp((u2-v) / dv, 0.0, 1.0);
+
+		if a < 1.0 {
+			draw_spinner(vg, tx+thumb/2.0,ty+thumb/2.0, thumb*0.25, t);
+		}
+
+		let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, images[i], NOREPEAT, a);
+		vg.begin_path();
+		vg.rounded_rect(tx,ty, thumb,thumb, 5.0);
+		vg.fill_paint(imgPaint);
+		vg.fill();
+
+		shadowPaint = vg.box_gradient(tx-1.0,ty, thumb+2.0,thumb+2.0, 5.0, 3.0, rgba(0,0,0,128), rgba(0,0,0,0));
+		vg.begin_path();
+		vg.rect(tx-5.0,ty-5.0, thumb+10.0,thumb+10.0);
+		vg.rounded_rect(tx,ty, thumb,thumb, 6.0);
+		vg.path_winding(HOLE);
+		vg.fill_paint(shadowPaint);
+		vg.fill();
+
+		vg.begin_path();
+		vg.rounded_rect(tx+0.5,ty+0.5, thumb-1.0,thumb-1.0, 4.0-0.5);
+		vg.stroke_width(1.0);
+		vg.stroke_color(rgba(255,255,255,192));
+		vg.stroke();
+	}
+	vg.restore();
+
+	// Hide fades
+	let mut fadePaint = vg.linear_gradient(x,y,x,y+6.0, rgba(200,200,200,255), rgba(200,200,200,0));
+	vg.begin_path();
+	vg.rect(x+0.4,y,w-8.0,6.0);
+	vg.fill_paint(fadePaint);
+	vg.fill();
+
+	fadePaint = vg.linear_gradient(x,y+h,x,y+h-6.0, rgba(200,200,200,255), rgba(200,200,200,0));
+	vg.begin_path();
+	vg.rect(x+4.0,y+h-6.0,w-8.0,6.0);
+	vg.fill_paint(fadePaint);
+	vg.fill();
+
+	// Scroll bar
+	shadowPaint = vg.box_gradient(x+w-12.0+1.0,y+4.0+1.0, 8.0,h-8.0, 3.0,4.0, rgba(0,0,0,32), rgba(0,0,0,92));
+	vg.begin_path();
+	vg.rounded_rect(x+w-12.0,y+4.0, 8.0,h-8.0, 3.0);
+	vg.fill_paint(shadowPaint);
+//	vg.fill_color(rgba(255,0,0,128));
+	vg.fill();
+
+	let scrollh = (h/stackh) * (h-8.0);
+	shadowPaint = vg.box_gradient(x+w-12.0-1.0,y+4.0+(h-8.0-scrollh)*u-1.0, 8.0,scrollh, 3.0,4.0, rgba(220,220,220,255), rgba(128,128,128,255));
+	vg.begin_path();
+	vg.rounded_rect(x+w-12.0+1.0,y+4.0+1.0 + (h-8.0-scrollh)*u, 8.0-2.0,scrollh-2.0, 2.0);
+	vg.fill_paint(shadowPaint);
+//	vg.fill_color(rgba(0,0,0,128));
+	vg.fill();
+
+	vg.restore();
 }
 
 fn draw_colorwheel(vg: &Ctx, x: c_float,
@@ -941,7 +941,7 @@ fn draw_paragraph(vg: &Ctx, x: c_float,
 //	start = text;
 //	end = text + strlen(text);
 //	while ((nrows = vg.text_break_lines(start, end, width, rows, 3))) {
-//		for (i = 0; i < nrows; i++) {
+//		for i in range(0, nrows) {
 //			struct NVGtextRow* row = &rows[i];
 //			int hit = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
 //
@@ -953,15 +953,15 @@ fn draw_paragraph(vg: &Ctx, x: c_float,
 //			vg.fill_color(rgba(255,255,255,255));
 //			vg.text(x, y, row.start, row.end);
 //
-//			if (hit) {
+//			if hit {
 //				caretx = if mx < x+row.width/2 { x } else { x+row.width };
 //				px = x;
 //				nglyphs = vg.text_glyph_positions(x, y, row.start, row.end, glyphs, 100);
-//				for (j = 0; j < nglyphs; j++) {
+//				for j in range(0, nglyphs) {
 //					f32 x0 = glyphs[j].x;
-//					f32 x1 = if (j+1 < nglyphs) { glyphs[j+1].x } else { x+row.width };
+//					f32 x1 = if j+1 < nglyphs { glyphs[j+1].x } else { x+row.width };
 //					f32 gx = x0 * 0.3 + x1 * 0.7;
-//					if (mx >= px && mx < gx)
+//					if mx >= px && mx < gx
 //						caretx = glyphs[j].x;
 //					px = gx;
 //				}
@@ -981,7 +981,7 @@ fn draw_paragraph(vg: &Ctx, x: c_float,
 //		start = rows[nrows-1].next;
 //	}
 //
-//	if (gutter) {
+//	if gutter {
 //		char txt[16];
 //		snprintf(txt, sizeof(txt), "%d", gutter);
 //		vg.font_size(13.0);
@@ -1089,7 +1089,7 @@ fn draw_caps(vg: &Ctx, x: f32,
 ////		unsigned char *row = &image[y*stride];
 ////		for x in range(0, w) {
 ////			int r = row[0], g = row[1], b = row[2], a = row[3];
-////			if (a != 0) {
+////			if a != 0 {
 ////				row[0] = (int)mini(r*255/a, 255);
 ////				row[1] = (int)mini(g*255/a, 255);
 ////				row[2] = (int)mini(b*255/a, 255);
@@ -1107,32 +1107,32 @@ fn draw_caps(vg: &Ctx, x: f32,
 ////			let mut b = 0;
 ////			let mut a = row[3];
 ////			let mut n = 0;
-////			if (a == 0) {
-////				if (x-1 > 0 && row[-1] != 0) {
+////			if a == 0 {
+////				if x-1 > 0 && row[-1] != 0 {
 ////					r += row[-4];
 ////					g += row[-3];
 ////					b += row[-2];
 ////					n++;
 ////				}
-////				if (x+1 < w && row[7] != 0) {
+////				if x+1 < w && row[7] != 0 {
 ////					r += row[4];
 ////					g += row[5];
 ////					b += row[6];
 ////					n++;
 ////				}
-////				if (y-1 > 0 && row[-stride+3] != 0) {
+////				if y-1 > 0 && row[-stride+3] != 0 {
 ////					r += row[-stride];
 ////					g += row[-stride+1];
 ////					b += row[-stride+2];
 ////					n++;
 ////				}
-////				if (y+1 < h && row[stride+3] != 0) {
+////				if y+1 < h && row[stride+3] != 0 {
 ////					r += row[stride];
 ////					g += row[stride+1];
 ////					b += row[stride+2];
 ////					n++;
 ////				}
-////				if (n > 0) {
+////				if n > 0 {
 ////					row[0] = r/n;
 ////					row[1] = g/n;
 ////					row[2] = b/n;

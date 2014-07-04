@@ -327,8 +327,8 @@ impl Ctx {
     pub fn radial_gradient(&self, cx: c_float, cy: c_float, inr: c_float, outr: c_float, icol: NVGcolor, ocol: NVGcolor) -> NVGpaint {
 		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol, ocol) }
 	}
-    pub fn image_pattern(&self, ox: c_float, oy: c_float, ex: c_float, ey: c_float, angle: c_float, image: c_int, repeat: c_int, alpha: c_float) -> NVGpaint {
-		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat, alpha) }
+    pub fn image_pattern(&self, ox: c_float, oy: c_float, ex: c_float, ey: c_float, angle: c_float, image: c_int, repeat: PatternRepeat, alpha: c_float) -> NVGpaint {
+		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat as i32, alpha) }
 	}
 
     pub fn scissor(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
