@@ -172,7 +172,7 @@ fn main()
 
 //  freeDemoData(vg, &data);
 //
-//  nvgDeleteGLES3(vg);
+//  nvgDeleteGLES3(vg);  // impl Drop instead
 //
 //  glfwTerminate();
 //  return 0;

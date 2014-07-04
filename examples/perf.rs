@@ -1,4 +1,6 @@
 use nanovg::*;
+use std::str;
+use std::vec;
 
 #[repr(i32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
@@ -87,27 +89,27 @@ impl PerfGraph
 			vg.font_size(14.0);
 			vg.text_align(LEFT|TOP);
 			vg.fill_color(rgba(240,240,240,192));
-			//vg.Text(x+3.0,y+1.0, &self.name);
+			vg.text(x+3.0,y+1.0, self.name.as_slice());
 		}
 
 		if self.style == FPS {
 			vg.font_size(18.0);
 			vg.text_align(RIGHT|TOP);
 			vg.fill_color(rgba(240,240,240,255));
-			let str = format!("{:3.2f} FPS", 1.0 / avg);
-			//vg.Text(x+w-3.0,y+1.0, &str);
+			let txt = format!("{:3.2f} FPS", 1.0 / avg);
+			vg.text(x+w-3.0,y+1.0, txt.as_slice());
 
 			vg.font_size(15.0);
 			vg.text_align(RIGHT|BOTTOM);
 			vg.fill_color(rgba(240,240,240,160));
-			let str = format!("{:3.2f} ms", avg * 1000.0);
-			//vg.Text(x+w-3.0,y+h-1.0, &str);
+			let txt = format!("{:3.2f} ms", avg * 1000.0);
+			vg.text(x+w-3.0,y+h-1.0, txt.as_slice());
 		} else {
 			vg.font_size(18.0);
 			vg.text_align(RIGHT|TOP);
 			vg.fill_color(rgba(240,240,240,255));
-			let str = format!("{:3.2f} ms", avg * 1000.0);
-			//vg.Text(x+w-3.0,y+1.0, &str);
+			let txt = format!("{:3.2f} ms", avg * 1000.0);
+			vg.text(x+w-3.0,y+1.0, txt.as_slice());
 		}
 
 	}
