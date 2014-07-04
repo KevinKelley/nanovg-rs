@@ -87,7 +87,7 @@ fn main()
  	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
  	glfw.window_hint(glfw::OpenglDebugContext(true));
 
-    let (window, events) = glfw.create_window(800, 400, "NanoVG GL3 exmaple", glfw::Windowed)
+    let (window, events) = glfw.create_window(800, 800, "NanoVG GL3 exmaple", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
 	// window.set_key_callback(key);

@@ -262,11 +262,11 @@ impl Ctx {
     pub fn stroke_width(&self, size: c_float) {
 		unsafe { ffi::nvgStrokeWidth(self.ptr, size) }
 	}
-    pub fn line_cap(&self, cap: c_int) {
-		unsafe { ffi::nvgLineCap(self.ptr, cap) }
+    pub fn line_cap(&self, cap: LineCap) {
+		unsafe { ffi::nvgLineCap(self.ptr, cap as i32) }
 	}
-    pub fn line_join(&self, join: c_int) {
-		unsafe { ffi::nvgLineJoin(self.ptr, join) }
+    pub fn line_join(&self, join: LineCap) {
+		unsafe { ffi::nvgLineJoin(self.ptr, join as i32) }
 	}
     pub fn global_alpha(&self, alpha: c_float) {
 		unsafe { ffi::nvgGlobalAlpha(self.ptr, alpha) }
@@ -363,8 +363,8 @@ impl Ctx {
 		unsafe { ffi::nvgPathWinding(self.ptr, dir as i32) }
 	}
 
-    pub fn arc(&self, cx: c_float, cy: c_float, r: c_float, a0: c_float, a1: c_float, dir: c_int) {
-		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir) }
+    pub fn arc(&self, cx: f32, cy: f32, r: f32, a0: f32, a1: f32, dir: Winding) {
+		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir as i32) }
 	}
     pub fn rect(&self, x: c_float, y: c_float, w: c_float, h: c_float) {
 		unsafe { ffi::nvgRect(self.ptr, x, y, w, h) }
