@@ -12,12 +12,13 @@ use nanovg::*;
 
 //#include "stb_image_write.h"
 
-static ICON_SEARCH :       char = '\U0001F50D'; // 0x1F50D;
-static ICON_CIRCLED_CROSS: char =  '\u2716'; // 0x2716;
-static ICON_CHEVRON_RIGHT: char =  '\uE75E'; // 0xE75E;
-static ICON_CHECK:         char =  '\u2713'; // 0x2713;
-static ICON_LOGIN:         char =  '\uE740'; // 0xE740;
-static ICON_TRASH:         char =  '\uE729'; // 0xE729;
+static NO_ICON: 		   char = '\0';
+static ICON_SEARCH:        char = '\U0001F50D';
+static ICON_CIRCLED_CROSS: char = '\u2716';
+static ICON_CHEVRON_RIGHT: char = '\uE75E';
+static ICON_CHECK:         char = '\u2713';
+static ICON_LOGIN:         char = '\uE740';
+static ICON_TRASH:         char = '\uE729';
 
 static PI: f32 = 3.1415926535;
 
@@ -31,28 +32,7 @@ fn sqrt(x: f32) -> f32 { x.sqrt() }
 fn cos(x: f32) -> f32 { x.cos() }
 fn sin(x: f32) -> f32 { x.sin() }
 
-//static char* cpToUTF8(int cp, char* utf)
-fn cpToUTF8(cp:char) -> String
-{
-	format!("{}", cp)
-//	int n = 0;
-//	if (cp < 0x80) n = 1;
-//	else if (cp < 0x800) n = 2;
-//	else if (cp < 0x10000) n = 3;
-//	else if (cp < 0x200000) n = 4;
-//	else if (cp < 0x4000000) n = 5;
-//	else if (cp <= 0x7fffffff) n = 6;
-//	utf[n] = '\0';
-//	switch (n) {
-//	case 6: utf[5] = 0x80 | (cp & 0x3f); cp = cp >> 6; cp |= 0x4000000;
-//	case 5: utf[4] = 0x80 | (cp & 0x3f); cp = cp >> 6; cp |= 0x200000;
-//	case 4: utf[3] = 0x80 | (cp & 0x3f); cp = cp >> 6; cp |= 0x10000;
-//	case 3: utf[2] = 0x80 | (cp & 0x3f); cp = cp >> 6; cp |= 0x800;
-//	case 2: utf[1] = 0x80 | (cp & 0x3f); cp = cp >> 6; cp |= 0xc0;
-//	case 1: utf[0] = cp;
-//	}
-//	return utf;
-}
+fn cpToUTF8(cp:char) -> String { format!("{}", cp) }
 
 pub struct DemoData {
 	//vg: &Ctx,
@@ -146,29 +126,29 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 	let mut popy = y + 14.0;
 	y += 45.0;
 
-//	// Form
-//	draw_label(vg, "Login", x,y, 280,20);
-//	y += 25;
-//	draw_editbox(vg, "Email",  x,y, 280,28);
-//	y += 35;
-//	draw_editbox(vg, "Password", x,y, 280,28);
-//	y += 38;
-//	draw_checkbox(vg, "Remember me", x,y, 140,28);
-//	draw_button(vg, ICON_LOGIN, "Sign in", x+138, y, 140, 28, rgba(0,96,128,255));
-//	y += 45;
-//
-//	// Slider
-//	draw_label(vg, "Diameter", x,y, 280,20);
-//	y += 25;
-//	draw_editbox_num(vg, "123.00", "px", x+180,y, 100,28);
-//	draw_slider(vg, 0.4, x,y, 170,28);
-//	y += 55;
-//
-//	draw_button(vg, ICON_TRASH, "Delete", x, y, 160, 28, rgba(128,16,8,255));
-//	draw_button(vg, 0, "Cancel", x+170, y, 110, 28, rgba(0,0,0,0));
-//
-//	// Thumbnails box
-//	draw_thumbnails(vg, 365, popy-30, 160, 300, data.images, 12, t);
+	// Form
+	draw_label(vg, "Login", x,y, 280.0,20.0);
+	y += 25.0;
+	draw_editbox(vg, "Email",  x,y, 280.0,28.0);
+	y += 35.0;
+	draw_editbox(vg, "Password", x,y, 280.0,28.0);
+	y += 38.0;
+	draw_checkbox(vg, "Remember me", x,y, 140.0,28.0);
+	draw_button(vg, ICON_LOGIN, "Sign in", x+138.0, y, 140.0, 28.0, rgba(0,96,128,255));
+	y += 45.0;
+
+	// Slider
+	draw_label(vg, "Diameter", x,y, 280.0,20.0);
+	y += 25.0;
+	draw_editbox_num(vg, "123.00", "px", x+180.0,y, 100.0,28.0);
+	draw_slider(vg, 0.4, x,y, 170.0,28.0);
+	y += 55.0;
+
+	draw_button(vg, ICON_TRASH, "Delete", x, y, 160.0, 28.0, rgba(128,16,8,255));
+	draw_button(vg, NO_ICON, "Cancel", x+170.0, y, 110.0, 28.0, rgba(0,0,0,0));
+
+	// Thumbnails box
+	draw_thumbnails(vg, 365.0, popy-30.0, 160.0, 300.0, data.images, 12, t);
 
 	vg.restore();
 }
@@ -320,182 +300,165 @@ fn draw_label(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 	vg.text(x,y+h*0.5,text);
 }
 
-//fn draw_editbox_base(vg: &Ctx, x: c_float,
-//                   y: c_float, w: c_float,
-//                   h: c_float)
-//{
-//	// Edit
-//	let bg = vg.box_gradient(x+1,y+1+1.5, w-2,h-2, 3,4, rgba(255,255,255,32), rgba(32,32,32,32));
-//	vg.begin_path();
-//	vg.rounded_rect(x+1,y+1, w-2,h-2, 4-1);
-//	vg.fill_paint(bg);
-//	vg.fill();
-//
-//	vg.begin_path();
-//	vg.rounded_rect(x+0.5,y+0.5, w-1,h-1, 4-0.5);
-//	vg.stroke_color(rgba(0,0,0,48));
-//	vg.stroke();
-//}
-//
-//fn draw_editbox(vg: &Ctx, text: *c_char,
-//               x: c_float, y: c_float,
-//               w: c_float, h: c_float)
-//{
-//	draw_editbox_base(vg, x,y, w,h);
-//
-//	vg.font_size(20.0);
-//	vg.font_face("sans");
-//	vg.fill_color(rgba(255,255,255,64));
-//	vg.text_align(LEFT|MIDDLE);
-//	vg.text(x+h*0.3,y+h*0.5,text);
-//}
-//
-//fn draw_editbox_num(vg: &Ctx, text: *c_char,
-//                  units: *c_char, x: c_float,
-//                  y: c_float, w: c_float,
-//				  h: c_float)
-//{
-//	draw_editbox_base(vg, x,y, w,h);
-//
-//	let mut bounds: f32 = 0.0;
-//	let uw = vg.text_bounds(0,0, units, &bounds);
-//
-//	vg.font_size(18.0);
-//	vg.font_face("sans");
-//	vg.fill_color(rgba(255,255,255,64));
-//	vg.text_align(RIGHT|MIDDLE);
-//	vg.text(x+w-h*0.3,y+h*0.5,units);
-//
-//	vg.font_size(20.0);
-//	vg.font_face("sans");
-//	vg.fill_color(rgba(255,255,255,128));
-//	vg.text_align(RIGHT|MIDDLE);
-//	vg.text(x+w-uw-h*0.5,y+h*0.5,text);
-//}
-//
-//fn draw_checkbox(vg: &Ctx, text: *c_char,
-//                x: c_float, y: c_float,
-//                w: c_float, h: c_float)
-//{
-////	char icon[8];
-////	NOTUSED(w);
-//
-//	vg.font_size(18.0);
-//	vg.font_face("sans");
-//	vg.fill_color(rgba(255,255,255,160));
-//
-//	vg.text_align(LEFT|MIDDLE);
-////	vg.text(x+28,y+h*0.5,text, NULL);
-//
-//	let bg = vg.box_gradient(x+1,y+floor(h*0.5)-9+1, 18,18, 3,3, rgba(0,0,0,32), rgba(0,0,0,92));
-//	vg.begin_path();
-//	vg.rounded_rect(x+1,y+floor(h*0.5)-9, 18,18, 3);
-//	vg.fill_paint(bg);
-//	vg.fill();
-//
-//	vg.font_size(40);
-//	vg.font_face("icons");
-//	vg.fill_color(rgba(255,255,255,128));
-//	vg.text_align(CENTER|MIDDLE);
-////	vg.text(x+9+2, y+h*0.5, cpToUTF8(ICON_CHECK,icon), NULL);
-//}
-//
-//fn draw_button(vg: &Ctx, preicon: c_int,
-//              text: *c_char, x: c_float,
-//              y: c_float, w: c_float,
-//			  h: c_float, col: NVGcolor)
-//{
-//	let mut icon: [u8, ..8];
-//	let cornerRadius = 4.0;
-//	let tw = 0.0;
-//	let iw = 0.0;
-//
-//	let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
-//	vg.begin_path();
-//	vg.rounded_rect(x+1,y+1, w-2,h-2, cornerRadius-1);
-//	if (!is_black(col)) {
-//		vg.fill_color(col);
-//		vg.fill();
-//	}
-//	vg.fill_paint(bg);
-//	vg.fill();
-//
-//	vg.begin_path();
-//	vg.rounded_rect(x+0.5,y+0.5, w-1,h-1, cornerRadius-0.5);
-//	vg.stroke_color(rgba(0,0,0,48));
-//	vg.stroke();
-//
-//	vg.font_size(20.0);
-//	vg.font_face("sans-bold");
-//	let mut bounds: f32 = 0.0;
-//	tw = vg.text_bounds(0,0, text, &bounds);
-//	if (preicon != 0) {
-//		vg.font_size(h*1.3);
-//		vg.font_face("icons");
-//		iw = vg.text_bounds(0,0, cpToUTF8(preicon,icon), &bounds);
-//		iw += h*0.15;
-//	}
-//
-//	if (preicon != 0) {
-//		vg.font_size(h*1.3);
-//		vg.font_face("icons");
-//		vg.fill_color(rgba(255,255,255,96));
-//		vg.text_align(LEFT|MIDDLE);
-//		vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cpToUTF8(preicon,icon));
-//	}
-//
-//	vg.font_size(20.0);
-//	vg.font_face("sans-bold");
-//	vg.text_align(LEFT|MIDDLE);
-//	vg.fill_color(rgba(0,0,0,160));
-//	vg.text(x+w*0.5-tw*0.5+iw*0.25,y+h*0.5-1,text);
-//	vg.fill_color(rgba(255,255,255,160));
-//	vg.text(x+w*0.5-tw*0.5+iw*0.25,y+h*0.5,text);
-//}
-//
-//fn draw_slider(vg: &Ctx, pos: c_float,
-//              x: c_float, y: c_float,
-//              w: c_float, h: c_float)
-//{
-//	let cy: f32 = y+floor(h*0.5);
-//	let kr: f32 = floor(h*0.25);
-//
-//	vg.save();
-////	vg.clear_state();
-//
-//	// Slot
-//	let bg = vg.box_gradient(x,cy-2+1, w,4, 2,2, rgba(0,0,0,32), rgba(0,0,0,128));
-//	vg.begin_path();
-//	vg.rounded_rect(x,cy-2, w,4, 2);
-//	vg.fill_paint(bg);
-//	vg.fill();
-//
-//	// Knob Shadow
-//	let shadow = vg.radial_gradient(x+floor(pos*w),cy+1, kr-3,kr+3, rgba(0,0,0,64), rgba(0,0,0,0));
-//	vg.begin_path();
-//	vg.rect(x+floor(pos*w)-kr-5,cy-kr-5,kr*2+5+5,kr*2+5+5+3);
-//	vg.circle(x+floor(pos*w),cy, kr);
-//	vg.path_winding(HOLE);
-//	vg.fill_paint(shadow);
-//	vg.fill();
-//
-//	// Knob
-//	let knob = vg.linear_gradient(x,cy-kr,x,cy+kr, rgba(255,255,255,16), rgba(0,0,0,16));
-//	vg.begin_path();
-//	vg.circle(x+floor(pos*w),cy, kr-1);
-//	vg.fill_color(rgba(40,43,48,255));
-//	vg.fill();
-//	vg.fill_paint(knob);
-//	vg.fill();
-//
-//	vg.begin_path();
-//	vg.circle(x+floor(pos*w),cy, kr-0.5);
-//	vg.stroke_color(rgba(0,0,0,92));
-//	vg.stroke();
-//
-//	vg.restore();
-//}
-//
+fn draw_editbox_base(vg: &Ctx, x: f32, y: f32, w: f32, h: f32)
+{
+	// Edit
+	let bg = vg.box_gradient(x+1.0,y+1.0+1.5, w-2.0,h-2.0, 3.0,4.0, rgba(255,255,255,32), rgba(32,32,32,32));
+	vg.begin_path();
+	vg.rounded_rect(x+1.0,y+1.0, w-2.0,h-2.0, 4.0-1.0);
+	vg.fill_paint(bg);
+	vg.fill();
+
+	vg.begin_path();
+	vg.rounded_rect(x+0.5,y+0.5, w-1.0,h-1.0, 4.0-0.5);
+	vg.stroke_color(rgba(0,0,0,48));
+	vg.stroke();
+}
+
+fn draw_editbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+{
+	draw_editbox_base(vg, x,y, w,h);
+
+	vg.font_size(20.0);
+	vg.font_face("sans");
+	vg.fill_color(rgba(255,255,255,64));
+	vg.text_align(LEFT|MIDDLE);
+	vg.text(x+h*0.3,y+h*0.5,text);
+}
+
+fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h: f32)
+{
+	draw_editbox_base(vg, x,y, w,h);
+
+	let mut bounds: f32 = 0.0;
+	let uw = vg.text_bounds(0.0,0.0, units, &mut bounds);
+
+	vg.font_size(18.0);
+	vg.font_face("sans");
+	vg.fill_color(rgba(255,255,255,64));
+	vg.text_align(RIGHT|MIDDLE);
+	vg.text(x+w-h*0.3,y+h*0.5,units);
+
+	vg.font_size(20.0);
+	vg.font_face("sans");
+	vg.fill_color(rgba(255,255,255,128));
+	vg.text_align(RIGHT|MIDDLE);
+	vg.text(x+w-uw-h*0.5,y+h*0.5,text);
+}
+
+fn draw_checkbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+{
+	vg.font_size(18.0);
+	vg.font_face("sans");
+	vg.fill_color(rgba(255,255,255,160));
+
+	vg.text_align(LEFT|MIDDLE);
+//	vg.text(x+28,y+h*0.5,text, NULL);
+
+	let bg = vg.box_gradient(x+1.0,y+floor(h*0.5)-9.0+1.0, 18.0,18.0, 3.0,3.0, rgba(0,0,0,32), rgba(0,0,0,92));
+	vg.begin_path();
+	vg.rounded_rect(x+1.0,y+floor(h*0.5)-9.0, 18.0,18.0, 3.0);
+	vg.fill_paint(bg);
+	vg.fill();
+
+	vg.font_size(40.0);
+	vg.font_face("icons");
+	vg.fill_color(rgba(255,255,255,128));
+	vg.text_align(CENTER|MIDDLE);
+//	vg.text(x+9+2, y+h*0.5, cpToUTF8(ICON_CHECK,icon), NULL);
+}
+
+fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: NVGcolor)
+{
+	let mut icon: [u8, ..8];
+	let cornerRadius = 4.0;
+	let mut tw = 0.0;
+	let mut iw = 0.0;
+
+	let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
+	vg.begin_path();
+	vg.rounded_rect(x+1.0,y+1.0, w-2.0,h-2.0, cornerRadius-1.0);
+	if (!is_black(col)) {
+		vg.fill_color(col);
+		vg.fill();
+	}
+	vg.fill_paint(bg);
+	vg.fill();
+
+	vg.begin_path();
+	vg.rounded_rect(x+0.5,y+0.5, w-1.0,h-1.0, cornerRadius-0.5);
+	vg.stroke_color(rgba(0,0,0,48));
+	vg.stroke();
+
+	vg.font_size(20.0);
+	vg.font_face("sans-bold");
+	let mut bounds: f32 = 0.0;
+	tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
+	if (preicon != NO_ICON) {
+		vg.font_size(h*1.3);
+		vg.font_face("icons");
+		iw = vg.text_bounds(0.0,0.0, cpToUTF8(preicon).as_slice(), &mut bounds);
+		iw += h*0.15;
+	}
+
+	if (preicon != NO_ICON) {
+		vg.font_size(h*1.3);
+		vg.font_face("icons");
+		vg.fill_color(rgba(255,255,255,96));
+		vg.text_align(LEFT|MIDDLE);
+		vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cpToUTF8(preicon).as_slice());
+	}
+
+	vg.font_size(20.0);
+	vg.font_face("sans-bold");
+	vg.text_align(LEFT|MIDDLE);
+	vg.fill_color(rgba(0,0,0,160));
+	vg.text(x+w*0.5-tw*0.5+iw*0.25,y+h*0.5-1.0,text);
+	vg.fill_color(rgba(255,255,255,160));
+	vg.text(x+w*0.5-tw*0.5+iw*0.25,y+h*0.5,text);
+}
+
+fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
+{
+	let cy: f32 = y+floor(h*0.5);
+	let kr: f32 = floor(h*0.25);
+
+	vg.save();
+//	vg.clear_state();
+
+	// Slot
+	let bg = vg.box_gradient(x,cy-2.0+1.0, w,4.0, 2.0,2.0, rgba(0,0,0,32), rgba(0,0,0,128));
+	vg.begin_path();
+	vg.rounded_rect(x,cy-2.0, w,4.0, 2.0);
+	vg.fill_paint(bg);
+	vg.fill();
+
+	// Knob Shadow
+	let shadow = vg.radial_gradient(x+floor(pos*w),cy+1.0, kr-3.0,kr+3.0, rgba(0,0,0,64), rgba(0,0,0,0));
+	vg.begin_path();
+	vg.rect(x+floor(pos*w)-kr-5.0,cy-kr-5.0,kr*2.0+5.0+5.0,kr*2.0+5.0+5.0+3.0);
+	vg.circle(x+floor(pos*w),cy, kr);
+	vg.path_winding(HOLE);
+	vg.fill_paint(shadow);
+	vg.fill();
+
+	// Knob
+	let knob = vg.linear_gradient(x,cy-kr,x,cy+kr, rgba(255,255,255,16), rgba(0,0,0,16));
+	vg.begin_path();
+	vg.circle(x+floor(pos*w),cy, kr-1.0);
+	vg.fill_color(rgba(40,43,48,255));
+	vg.fill();
+	vg.fill_paint(knob);
+	vg.fill();
+
+	vg.begin_path();
+	vg.circle(x+floor(pos*w),cy, kr-0.5);
+	vg.stroke_color(rgba(0,0,0,92));
+	vg.stroke();
+
+	vg.restore();
+}
+
 fn draw_eyes(vg: &Ctx, x: c_float,
             y: c_float, w: c_float,
             h: c_float, mx: c_float,
@@ -665,130 +628,128 @@ fn draw_graph(vg: &Ctx, x: c_float,
 //
 //	vg.restore();
 //}
+
+fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
+                  images: [i32, ..12], nimages: int, t: f32)
+{
+//	let cornerRadius = 3.0;
 //
-//fn draw_thumbnails(vg: &Ctx, x: c_float,
-//                  y: c_float, w: c_float,
-//                  h: c_float, images: *c_int,
-//                  nimages: c_int, t: c_float)
-//{
-////	let cornerRadius = 3.0;
-////
-////	f32 ix,iy,iw,ih;
-////	f32 thumb = 60.0;
-////	f32 arry = 30.5;
-////	int imgw, imgh;
-////	f32 stackh = (nimages/2) * (thumb+10) + 10;
-////	int i;
-////	f32 u = (1+cos(t*0.5))*0.5;
-////	f32 u2 = (1-cos(t*0.2))*0.5;
-////	f32 scrollh, dv;
-////
-////	vg.save();
-//////	vg.clear_state();
-////
-////	// Drop shadow
-////	let shadowPaint = vg.box_gradient(x,y+4, w,h, cornerRadius*2, 20, rgba(0,0,0,128), rgba(0,0,0,0));
-////	vg.begin_path();
-////	vg.rect(x-10,y-10, w+20,h+30);
-////	vg.rounded_rect(x,y, w,h, cornerRadius);
-////	vg.path_winding(HOLE);
-////	vg.fill_paint(shadowPaint);
-////	vg.fill();
-////
-////	// Window
-////	vg.begin_path();
-////	vg.rounded_rect(x,y, w,h, cornerRadius);
-////	vg.move_to(x-10,y+arry);
-////	vg.line_to(x+1,y+arry-11);
-////	vg.line_to(x+1,y+arry+11);
-////	vg.fill_color(rgba(200,200,200,255));
-////	vg.fill();
-////
-////	vg.save();
-////	vg.scissor(x,y,w,h);
-////	vg.translate(0, -(stackh - h)*u);
-////
-////	dv = 1.0 / (f32)(nimages-1);
-////
-////	for (i = 0; i < nimages; i++) {
-////		f32 tx, ty, v, a;
-////		tx = x+10;
-////		ty = y+10;
-////		tx += (i%2) * (thumb+10);
-////		ty += (i/2) * (thumb+10);
-////		vg.image_size(images[i], &imgw, &imgh);
-////		if (imgw < imgh) {
-////			iw = thumb;
-////			ih = iw * (f32)imgh/(f32)imgw;
-////			ix = 0;
-////			iy = -(ih-thumb)*0.5;
-////		} else {
-////			ih = thumb;
-////			iw = ih * (f32)imgw/(f32)imgh;
-////			ix = -(iw-thumb)*0.5;
-////			iy = 0;
-////		}
-////
-////		v = i * dv;
-////		a = clampf((u2-v) / dv, 0, 1);
-////
-////		if (a < 1.0)
-////			drawSpinner(vg, tx+thumb/2,ty+thumb/2, thumb*0.25, t);
-////
-////		imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, images[i], NVG_NOREPEAT, a);
-////		vg.begin_path();
-////		vg.rounded_rect(tx,ty, thumb,thumb, 5);
-////		vg.fill_paint(imgPaint);
-////		vg.fill();
-////
-////		shadowPaint = vg.box_gradient(tx-1,ty, thumb+2,thumb+2, 5, 3, rgba(0,0,0,128), rgba(0,0,0,0));
-////		vg.begin_path();
-////		vg.rect(tx-5,ty-5, thumb+10,thumb+10);
-////		vg.rounded_rect(tx,ty, thumb,thumb, 6);
-////		vg.path_winding(HOLE);
-////		vg.fill_paint(shadowPaint);
-////		vg.fill();
-////
-////		vg.begin_path();
-////		vg.rounded_rect(tx+0.5,ty+0.5, thumb-1,thumb-1, 4-0.5);
-////		vg.stroke_width(1.0);
-////		vg.stroke_color(rgba(255,255,255,192));
-////		vg.stroke();
-////	}
-////	vg.restore();
-////
-////	// Hide fades
-////	let fadePaint = vg.linear_gradient(x,y,x,y+6, rgba(200,200,200,255), rgba(200,200,200,0));
-////	vg.begin_path();
-////	vg.rect(x+4,y,w-8,6);
-////	vg.fill_paint(fadePaint);
-////	vg.fill();
-////
-////	fadePaint = vg.linear_gradient(x,y+h,x,y+h-6, rgba(200,200,200,255), rgba(200,200,200,0));
-////	vg.begin_path();
-////	vg.rect(x+4,y+h-6,w-8,6);
-////	vg.fill_paint(fadePaint);
-////	vg.fill();
-////
-////	// Scroll bar
-////	shadowPaint = vg.box_gradient(x+w-12+1,y+4+1, 8,h-8, 3,4, rgba(0,0,0,32), rgba(0,0,0,92));
-////	vg.begin_path();
-////	vg.rounded_rect(x+w-12,y+4, 8,h-8, 3);
-////	vg.fill_paint(shadowPaint);
-//////	vg.fill_color(rgba(255,0,0,128));
-////	vg.fill();
-////
-////	scrollh = (h/stackh) * (h-8);
-////	shadowPaint = vg.box_gradient(x+w-12-1,y+4+(h-8-scrollh)*u-1, 8,scrollh, 3,4, rgba(220,220,220,255), rgba(128,128,128,255));
-////	vg.begin_path();
-////	vg.rounded_rect(x+w-12+1,y+4+1 + (h-8-scrollh)*u, 8-2,scrollh-2, 2);
-////	vg.fill_paint(shadowPaint);
-//////	vg.fill_color(rgba(0,0,0,128));
-////	vg.fill();
-////
-////	vg.restore();
-//}
+//	f32 ix,iy,iw,ih;
+//	f32 thumb = 60.0;
+//	f32 arry = 30.5;
+//	int imgw, imgh;
+//	f32 stackh = (nimages/2) * (thumb+10) + 10;
+//	int i;
+//	f32 u = (1+cos(t*0.5))*0.5;
+//	f32 u2 = (1-cos(t*0.2))*0.5;
+//	f32 scrollh, dv;
 //
+//	vg.save();
+////	vg.clear_state();
+//
+//	// Drop shadow
+//	let shadowPaint = vg.box_gradient(x,y+4, w,h, cornerRadius*2, 20, rgba(0,0,0,128), rgba(0,0,0,0));
+//	vg.begin_path();
+//	vg.rect(x-10,y-10, w+20,h+30);
+//	vg.rounded_rect(x,y, w,h, cornerRadius);
+//	vg.path_winding(HOLE);
+//	vg.fill_paint(shadowPaint);
+//	vg.fill();
+//
+//	// Window
+//	vg.begin_path();
+//	vg.rounded_rect(x,y, w,h, cornerRadius);
+//	vg.move_to(x-10,y+arry);
+//	vg.line_to(x+1,y+arry-11);
+//	vg.line_to(x+1,y+arry+11);
+//	vg.fill_color(rgba(200,200,200,255));
+//	vg.fill();
+//
+//	vg.save();
+//	vg.scissor(x,y,w,h);
+//	vg.translate(0, -(stackh - h)*u);
+//
+//	dv = 1.0 / (f32)(nimages-1);
+//
+//	for (i = 0; i < nimages; i++) {
+//		f32 tx, ty, v, a;
+//		tx = x+10;
+//		ty = y+10;
+//		tx += (i%2) * (thumb+10);
+//		ty += (i/2) * (thumb+10);
+//		vg.image_size(images[i], &imgw, &imgh);
+//		if (imgw < imgh) {
+//			iw = thumb;
+//			ih = iw * (f32)imgh/(f32)imgw;
+//			ix = 0;
+//			iy = -(ih-thumb)*0.5;
+//		} else {
+//			ih = thumb;
+//			iw = ih * (f32)imgw/(f32)imgh;
+//			ix = -(iw-thumb)*0.5;
+//			iy = 0;
+//		}
+//
+//		v = i * dv;
+//		a = clampf((u2-v) / dv, 0, 1);
+//
+//		if (a < 1.0)
+//			drawSpinner(vg, tx+thumb/2,ty+thumb/2, thumb*0.25, t);
+//
+//		imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, images[i], NVG_NOREPEAT, a);
+//		vg.begin_path();
+//		vg.rounded_rect(tx,ty, thumb,thumb, 5);
+//		vg.fill_paint(imgPaint);
+//		vg.fill();
+//
+//		shadowPaint = vg.box_gradient(tx-1,ty, thumb+2,thumb+2, 5, 3, rgba(0,0,0,128), rgba(0,0,0,0));
+//		vg.begin_path();
+//		vg.rect(tx-5,ty-5, thumb+10,thumb+10);
+//		vg.rounded_rect(tx,ty, thumb,thumb, 6);
+//		vg.path_winding(HOLE);
+//		vg.fill_paint(shadowPaint);
+//		vg.fill();
+//
+//		vg.begin_path();
+//		vg.rounded_rect(tx+0.5,ty+0.5, thumb-1,thumb-1, 4-0.5);
+//		vg.stroke_width(1.0);
+//		vg.stroke_color(rgba(255,255,255,192));
+//		vg.stroke();
+//	}
+//	vg.restore();
+//
+//	// Hide fades
+//	let fadePaint = vg.linear_gradient(x,y,x,y+6, rgba(200,200,200,255), rgba(200,200,200,0));
+//	vg.begin_path();
+//	vg.rect(x+4,y,w-8,6);
+//	vg.fill_paint(fadePaint);
+//	vg.fill();
+//
+//	fadePaint = vg.linear_gradient(x,y+h,x,y+h-6, rgba(200,200,200,255), rgba(200,200,200,0));
+//	vg.begin_path();
+//	vg.rect(x+4,y+h-6,w-8,6);
+//	vg.fill_paint(fadePaint);
+//	vg.fill();
+//
+//	// Scroll bar
+//	shadowPaint = vg.box_gradient(x+w-12+1,y+4+1, 8,h-8, 3,4, rgba(0,0,0,32), rgba(0,0,0,92));
+//	vg.begin_path();
+//	vg.rounded_rect(x+w-12,y+4, 8,h-8, 3);
+//	vg.fill_paint(shadowPaint);
+////	vg.fill_color(rgba(255,0,0,128));
+//	vg.fill();
+//
+//	scrollh = (h/stackh) * (h-8);
+//	shadowPaint = vg.box_gradient(x+w-12-1,y+4+(h-8-scrollh)*u-1, 8,scrollh, 3,4, rgba(220,220,220,255), rgba(128,128,128,255));
+//	vg.begin_path();
+//	vg.rounded_rect(x+w-12+1,y+4+1 + (h-8-scrollh)*u, 8-2,scrollh-2, 2);
+//	vg.fill_paint(shadowPaint);
+////	vg.fill_color(rgba(0,0,0,128));
+//	vg.fill();
+//
+//	vg.restore();
+}
+
 fn draw_colorwheel(vg: &Ctx, x: c_float,
                   y: c_float, w: c_float,
                   h: c_float, t: c_float)

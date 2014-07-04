@@ -440,7 +440,7 @@ impl Ctx {
             })
         })
 	}
-    pub fn text_bounds(&self, x: c_float, y: c_float, text: &str, bounds: *mut c_float) -> c_float {
+    pub fn text_bounds(&self, x: c_float, y: c_float, text: &str, bounds: &mut c_float) -> c_float {
         text.with_c_str(|text| {
     	unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds) }
         })

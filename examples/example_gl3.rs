@@ -65,9 +65,9 @@ fn init_gl() {
 }
 
 
-static blowup: bool = false;
-static screenshot: bool = false;
-static premult: bool = false;
+static mut blowup: bool = false;
+static mut screenshot: bool = false;
+static mut premult: bool = false;
 
 fn main()
 {
@@ -87,7 +87,7 @@ fn main()
  	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
  	glfw.window_hint(glfw::OpenglDebugContext(true));
 
-    let (window, events) = glfw.create_window(800, 800, "NanoVG GL3 exmaple", glfw::Windowed)
+    let (window, events) = glfw.create_window(1100, 800, "NanoVG GL3 exmaple", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
 	// window.set_key_callback(key);
@@ -99,7 +99,6 @@ fn main()
     glcheck!(gl::load_with(|name| glfw.get_proc_address(name)));
     init_gl();
 
-    //let vg: *mut nanovg::NVGcontext = unsafe { nanovg::nvgCreateGL3(nanovg::NVG_ANTIALIAS | nanovg::NVG_STENCIL_STROKES); }
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
     //println!("created nanovg Ctx: {}", vg);
@@ -123,6 +122,9 @@ fn main()
 
     while !window.should_close()
     {
+    	let premult = unsafe { premult };
+    	let blowup  = unsafe { blowup  };
+
     	let t: f64 = glfw.get_time();
     	let dt: f64 = t - prevt;
     	prevt = t;
@@ -184,6 +186,15 @@ fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
     match event {
         glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => {
             window.set_should_close(true)
+        }
+        glfw::KeyEvent(glfw::KeySpace, _, glfw::Press, _) => {
+            unsafe {blowup = !blowup};
+        }
+        glfw::KeyEvent(glfw::KeyS, _, glfw::Press, _) => {
+            unsafe {screenshot = true};
+        }
+        glfw::KeyEvent(glfw::KeyP, _, glfw::Press, _) => {
+            unsafe {premult = !premult};
         }
         _ => {}
     }
