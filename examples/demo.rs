@@ -54,46 +54,54 @@ fn cpToUTF8(cp:char) -> String
 //	return utf;
 }
 
-struct DemoData {
+pub struct DemoData {
 	fontNormal: i32,
 	fontBold: i32,
 	fontIcons: i32,
 	images: [i32, ..12],
 }
 
-
-
-//int loadDemoData(struct NVGcontext* vg, struct DemoData* data)
-pub fn load_demo_data(vg: &Ctx,
-                    data: &mut DemoData) -> c_int
+impl DemoData
 {
-	for i in range(1, 12u) {
-		let filename = format!("../example/images/image{}.jpg", i);
-		data.images[i] = vg.create_image(filename.as_slice());
-		if (data.images[i] == 0) {
-			println!("Could not load {}.", filename);
-			return -1;
+	//int loadDemoData(struct NVGcontext* vg, struct DemoData* data)
+	pub fn load(vg: &Ctx) -> DemoData
+	{
+		let mut data = DemoData {
+			fontNormal: -1,
+			fontBold:   -1,
+			fontIcons:  -1,
+			images: [-1, ..12]
+		};
+
+		for i in range(1, 12u) {
+			let filename = format!("../example/images/image{}.jpg", i);
+			data.images[i] = vg.create_image(filename.as_slice());
+			if (data.images[i] == 0) {
+				println!("Could not load {}.", filename);
+				//return -1;
+			}
 		}
-	}
 
-	data.fontIcons = vg.create_font("icons", "../example/entypo.ttf");
-	if (data.fontIcons == -1) {
-		println!("Could not add font icons.");
-		return -1;
-	}
-	data.fontNormal = vg.create_font("sans", "../example/Roboto-Regular.ttf");
-	if (data.fontNormal == -1) {
-		println!("Could not add font italic.");
-		return -1;
-	}
-	data.fontBold = vg.create_font("sans-bold", "../example/Roboto-Bold.ttf");
-	if (data.fontBold == -1) {
-		println!("Could not add font bold.");
-		return -1;
-	}
+		data.fontIcons = vg.create_font("icons", "../example/entypo.ttf");
+		if (data.fontIcons == -1) {
+			println!("Could not add font icons.");
+			//return -1;
+		}
+		data.fontNormal = vg.create_font("sans", "../example/Roboto-Regular.ttf");
+		if (data.fontNormal == -1) {
+			println!("Could not add font italic.");
+			//return -1;
+		}
+		data.fontBold = vg.create_font("sans-bold", "../example/Roboto-Bold.ttf");
+		if (data.fontBold == -1) {
+			println!("Could not add font bold.");
+			//return -1;
+		}
 
-	return 0;
+		return data;
+	}
 }
+
 
 
 //void freeDemoData(struct NVGcontext* vg, struct DemoData* data)
@@ -107,12 +115,12 @@ pub fn free_demo_data(vg: &Ctx,
 
 
 //void renderDemo(struct NVGcontext* vg, f32 mx, f32 my, f32 width, f32 height, f32 t, int blowup, struct DemoData* data)
-pub fn render_demo(vg: &Ctx, mx: c_float,
-                  my: c_float, width: c_float,
-                  height: c_float, t: c_float,
-                  blowup: c_int, data: *mut DemoData)
+pub fn render_demo(vg: &Ctx, mx: f32,
+                  my: f32, width: f32,
+                  height: f32, t: f32,
+                  blowup: bool, data: &DemoData)
 {
-	draw_eyes(vg, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
+	draw_eyes(vg, width - 150.0, 50.0, 150.0, 100.0, mx, my, t);
 //	draw_paragraph(vg, width - 450, 50, 150, 100, mx, my);
 //	draw_graph(vg, 0, height/2, width, height/2, t);
 //	draw_colorwheel(vg, width - 300, height - 300, 250.0, 250.0, t);

@@ -71,8 +71,6 @@ static premult: bool = false;
 
 fn main()
 {
-//  struct DemoData data;
-
     let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
 	// set up GLFW error callback, with an error-counter
@@ -105,6 +103,8 @@ fn main()
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
     //println!("created nanovg Ctx: {}", vg);
+
+    let mut data = demo::DemoData::load(&vg);
 
 	//if (vg == NULL) {
 	//  printf("Could not init nanovg.\n");
@@ -151,7 +151,7 @@ fn main()
 
         vg.begin_frame(winWidth, winHeight, pxRatio as f32);
 
-        //renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
+        demo::render_demo(&vg, mx as f32,my as f32, winWidth as f32,winHeight as f32, t as f32, blowup, &data);
         fps.render(&vg, 5.0, 5.0);
 
         vg.end_frame();
