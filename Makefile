@@ -96,7 +96,12 @@ deps: nanovg
 #	make -C $(tmp) examples
 #	rm -rf $(tmp)
 
-.PHONY: nanovg\
+clean:
+	rm lib/*.rlib
+
+.PHONY: \
+	clean\
+	nanovg\
 	deps\
 	doc\
 	lib\

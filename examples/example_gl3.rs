@@ -15,6 +15,7 @@
 #![allow(unreachable_code)]
 #![allow(unused_variable)]
 
+extern crate num;
 extern crate native;
 extern crate libc;
 extern crate glfw;
@@ -38,6 +39,7 @@ macro_rules! glcheck(
 
 
 mod perf;
+mod demo;
 
 #[start]
 fn start(argc: int, argv: *const *const u8) -> int {

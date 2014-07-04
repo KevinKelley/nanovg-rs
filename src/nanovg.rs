@@ -297,8 +297,10 @@ impl Ctx {
 		unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
 	}
 
-    pub fn create_image(&self, filename: *const c_char) -> c_int {
-		unsafe { ffi::nvgCreateImage(self.ptr, filename) }
+    pub fn create_image(&self, filename: &str) -> c_int {
+        filename.with_c_str(|filename| {
+            unsafe { ffi::nvgCreateImage(self.ptr, filename) }
+        })
 	}
     pub fn create_image_mem(&self, data: *mut c_uchar, ndata: c_int) -> c_int {
 		unsafe { ffi::nvgCreateImageMem(self.ptr, data, ndata) }
@@ -357,8 +359,8 @@ impl Ctx {
     pub fn close_path(&self) {
 		unsafe { ffi::nvgClosePath(self.ptr) }
 	}
-    pub fn path_winding(&self, dir: c_int) {
-		unsafe { ffi::nvgPathWinding(self.ptr, dir) }
+    pub fn path_winding(&self, dir: Solidity) {
+		unsafe { ffi::nvgPathWinding(self.ptr, dir as i32) }
 	}
 
     pub fn arc(&self, cx: c_float, cy: c_float, r: c_float, a0: c_float, a1: c_float, dir: c_int) {
@@ -383,8 +385,12 @@ impl Ctx {
 		unsafe { ffi::nvgStroke(self.ptr) }
 	}
 
-    pub fn create_font(&self, name: *const c_char, filename: *const c_char) -> c_int {
+    pub fn create_font(&self, name: &str, filename: &str) -> c_int {
+        name.with_c_str(|name| {
+            filename.with_c_str(|filename| {
 		unsafe { ffi::nvgCreateFont(self.ptr, name, filename) }
+            })
+        })
 	}
     pub fn create_font_mem(&self, name: *const c_char, data: *mut c_uchar, ndata: c_int, freeData: c_int) -> c_int {
 		unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, freeData) }
@@ -434,11 +440,9 @@ impl Ctx {
             })
         })
 	}
-    pub fn text_bounds(&self, x: c_float, y: c_float, text: &str, end: &str, bounds: *mut c_float) -> c_float {
+    pub fn text_bounds(&self, x: c_float, y: c_float, text: &str, bounds: *mut c_float) -> c_float {
         text.with_c_str(|text| {
-            end.with_c_str(|end| {
-		unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, end, bounds) }
-            })
+    	unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds) }
         })
 	}
     pub fn text_box_bounds(&self, x: c_float, y: c_float, breakRowWidth: c_float, text: &str, end: &str, bounds: *mut c_float) {
@@ -500,6 +504,8 @@ pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> NVGcolor {
 //    pub fn nvgTransRGBAf(c0: NVGcolor, a: c_float) -> NVGcolor;
 //    pub fn nvgHSL(h: c_float, s: c_float, l: c_float) -> NVGcolor;
 //    pub fn nvgHSLA(h: c_float, s: c_float, l: c_float, a: c_uchar) -> NVGcolor;
-
+pub fn hsla(h: f32, s: f32, l: f32, a: u8) -> NVGcolor {
+    unsafe { ffi:: nvgHSLA(h,s,l, a) }
+}
 
 

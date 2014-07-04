@@ -19,6 +19,8 @@ pub struct PerfGraph {
 	count: uint,
 }
 
+
+
 impl PerfGraph
 {
 	//void initGraph(struct PerfGraph* fps, int style, const char* name);
