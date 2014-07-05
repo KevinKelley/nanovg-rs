@@ -1,12 +1,16 @@
 
+extern crate gl;
+extern crate libc;
+
 use std::fmt;
 use std::ptr;
 use std::str;
 use std::bitflags;
-
 use std::num::*;
 use std::num::Float;
 use nanovg::*;
+use gl;
+use libc::{c_void};
 
 //#include "stb_image_write.h"
 
@@ -151,23 +155,24 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 	vg.restore();
 }
 
-
 //void saveScreenShot(int w, int h, int premult, const char* name)
-pub fn save_screenshot(w: i32, h: i32,
-                      premult: i32, name: &str)
+pub fn save_screenshot(w: i32, h: i32, premult: bool, name: &str)
 {
-//	let image: [u8, ..w*h*4];
-//	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image);
-//	if premult {
-//		unpremultiplyAlpha(image, w, h, w*4);
-//	}
-//	else {
-//		setAlpha(image, w, h, w*4, 255);
-//	}
-//	flipHorizontal(image, w, h, w*4);
-// 	stbi_write_png(name, w, h, 4, image, w*4);
+	let sz: uint = (w*h*4) as uint;
+	let mut image: Vec<u8> = Vec::with_capacity(sz);
+	unsafe {image.set_len(sz);}
+	let addr: *mut u8 = &mut image.as_mut_slice()[0];
+	let vptr: *mut c_void = unsafe { addr as *mut c_void };
+	unsafe {gl::ReadPixels(0, 0, w, h, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
+	if premult {
+		unpremultiply_alpha(image.as_mut_slice(), w, h, w*4);
+	}
+	else {
+		set_alpha(image.as_mut_slice(), w, h, w*4, 255);
+	}
+	flip_horizontal(image.as_mut_slice(), w, h, w*4);
+ 	write_png(name, w, h, 4, &image.as_slice()[0], w*4);
 }
-
 
 
 fn is_black(col: Color) -> bool {
@@ -1109,90 +1114,90 @@ fn draw_caps(vg: &Ctx, x: f32,
 
 
 
-//fn unpremultiplyAlpha(image: &mut [u8], w: int, h: int, stride: int)
-//{
-////	// Unpremultiply
-////	for y in range(0, h) {
-////		unsigned char *row = &image[y*stride];
-////		for x in range(0, w) {
-////			int r = row[0], g = row[1], b = row[2], a = row[3];
-////			if a != 0 {
-////				row[0] = (int)mini(r*255/a, 255);
-////				row[1] = (int)mini(g*255/a, 255);
-////				row[2] = (int)mini(b*255/a, 255);
-////			}
-////			row += 4;
-////		}
-////	}
-////
-////	// Defringe
-////	for y in range(0, h) {
-////		unsigned char *row = &image[y*stride];
-////		for x in range(0, w) {
-////			let mut r = 0;
-////			let mut g = 0;
-////			let mut b = 0;
-////			let mut a = row[3];
-////			let mut n = 0;
-////			if a == 0 {
-////				if x-1 > 0 && row[-1] != 0 {
-////					r += row[-4];
-////					g += row[-3];
-////					b += row[-2];
-////					n++;
-////				}
-////				if x+1 < w && row[7] != 0 {
-////					r += row[4];
-////					g += row[5];
-////					b += row[6];
-////					n++;
-////				}
-////				if y-1 > 0 && row[-stride+3] != 0 {
-////					r += row[-stride];
-////					g += row[-stride+1];
-////					b += row[-stride+2];
-////					n++;
-////				}
-////				if y+1 < h && row[stride+3] != 0 {
-////					r += row[stride];
-////					g += row[stride+1];
-////					b += row[stride+2];
-////					n++;
-////				}
-////				if n > 0 {
-////					row[0] = r/n;
-////					row[1] = g/n;
-////					row[2] = b/n;
-////				}
-////			}
-////			row += 4;
-////		}
-////	}
-//}
+fn unpremultiply_alpha(image: &mut [u8], w: i32, h: i32, stride: i32)
+{
+//	// Unpremultiply
+//	for y in range(0, h) {
+//		unsigned char *row = &image[y*stride];
+//		for x in range(0, w) {
+//			int r = row[0], g = row[1], b = row[2], a = row[3];
+//			if a != 0 {
+//				row[0] = (int)mini(r*255/a, 255);
+//				row[1] = (int)mini(g*255/a, 255);
+//				row[2] = (int)mini(b*255/a, 255);
+//			}
+//			row += 4;
+//		}
+//	}
 //
-//fn setAlpha(image: *mut u8, w: int, h: int, stride: int, a: u8)
-//{
-////	for y in range(0, h) {
-////		unsigned char* row = &image[y*stride];
-////		for x in range(0, w) {
-////			row[x*4+3] = a;
-////		}
-////	}
-//}
-//
-//fn flipHorizontal(image: *mut u8, w: int, h: int, stride: int)
-//{
-////	let i = 0;
-////	let j = h-1;
-////	while (i < j) {
-////		unsigned char* ri = &image[i * stride];
-////		unsigned char* rj = &image[j * stride];
-////		for k in range(0, w*4) {
-////			let t = ri[k];
-////			ri[k] = rj[k];
-////			rj[k] = t;
-////		}
-////		i++;
-////		j--;
-////	}
-//}
+//	// Defringe
+//	for y in range(0, h) {
+//		unsigned char *row = &image[y*stride];
+//		for x in range(0, w) {
+//			let mut r = 0;
+//			let mut g = 0;
+//			let mut b = 0;
+//			let mut a = row[3];
+//			let mut n = 0;
+//			if a == 0 {
+//				if x-1 > 0 && row[-1] != 0 {
+//					r += row[-4];
+//					g += row[-3];
+//					b += row[-2];
+//					n++;
+//				}
+//				if x+1 < w && row[7] != 0 {
+//					r += row[4];
+//					g += row[5];
+//					b += row[6];
+//					n++;
+//				}
+//				if y-1 > 0 && row[-stride+3] != 0 {
+//					r += row[-stride];
+//					g += row[-stride+1];
+//					b += row[-stride+2];
+//					n++;
+//				}
+//				if y+1 < h && row[stride+3] != 0 {
+//					r += row[stride];
+//					g += row[stride+1];
+//					b += row[stride+2];
+//					n++;
+//				}
+//				if n > 0 {
+//					row[0] = r/n;
+//					row[1] = g/n;
+//					row[2] = b/n;
+//				}
+//			}
+//			row += 4;
+//		}
+//	}
+}
+
+fn set_alpha(image: &mut [u8], w: i32, h: i32, stride: i32, a: u8)
+{
+//	for y in range(0, h) {
+//		unsigned char* row = &image[y*stride];
+//		for x in range(0, w) {
+//			row[x*4+3] = a;
+//		}
+//	}
+}
+
+fn flip_horizontal(image: &mut [u8], w: i32, h: i32, stride: i32)
+{
+//	let i = 0;
+//	let j = h-1;
+//	while (i < j) {
+//		unsigned char* ri = &image[i * stride];
+//		unsigned char* rj = &image[j * stride];
+//		for k in range(0, w*4) {
+//			let t = ri[k];
+//			ri[k] = rj[k];
+//			rj[k] = t;
+//		}
+//		i++;
+//		j--;
+//	}
+}

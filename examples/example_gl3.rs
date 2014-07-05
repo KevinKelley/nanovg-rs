@@ -161,10 +161,12 @@ fn main()
 
         gl::Enable(gl::DEPTH_TEST);
 
-        //if screenshot {
-        //  screenshot = false;
-        //  saveScreenShot(fbWidth, fbHeight, premult, "dump.png");
-        //}
+        unsafe {
+	        if screenshot {
+	        	screenshot = false;
+	        	demo::save_screenshot(fbWidth, fbHeight, premult, "dump.png");
+	        }
+        }
 
     	window.swap_buffers();
 
@@ -174,12 +176,10 @@ fn main()
         }
     }
 
+// cleanup should be handled by Drop trait
 //  freeDemoData(vg, &data);
-//
-//  nvgDeleteGLES3(vg);  // impl Drop instead
-//
+//  nvgDeleteGLES3(vg);
 //  glfwTerminate();
-//  return 0;
 }
 
 fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
@@ -199,16 +199,3 @@ fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
         _ => {}
     }
 }
-//static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
-//{
-//  NVG_NOTUSED(scancode);
-//  NVG_NOTUSED(mods);
-//  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-//    glfwSetWindowShouldClose(window, GL_TRUE);
-//  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-//    blowup = !blowup;
-//  if (key == GLFW_KEY_S && action == GLFW_PRESS)
-//    screenshot = 1;
-//  if (key == GLFW_KEY_P && action == GLFW_PRESS)
-//    premult = !premult;
-//}

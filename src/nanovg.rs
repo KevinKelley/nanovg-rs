@@ -11,26 +11,23 @@
 #![deny(unnecessary_parens)]
 #![deny(non_uppercase_statics)]
 #![allow(unnecessary_qualification)]
-//#![warn(missing_doc)] // FIXME: should be denied.
+//#![warn(missing_doc)]
 #![deny(unused_result)]
 #![allow(unused_imports)]
 #![allow(unused_attribute)]
 #![deny(unnecessary_typecast)]
-#![warn(visible_private_types)] // FIXME: should be denied.
+#![warn(visible_private_types)]
 #![allow(dead_code)]
-//#![feature(globs)]
-//#![feature(macro_rules)]
-//#![feature(managed_boxes)]
-//#![feature(unsafe_destructor)]
+
 
 extern crate libc;
-
 
 use std::fmt;
 use std::kinds::marker;
 use std::ptr;
 use std::str;
 use std::bitflags;
+use libc::{c_char, c_int, c_void};
 
 pub use Color            = ffi::NVGcolor;
 pub use NVGpaint         = ffi::NVGpaint;
@@ -463,7 +460,6 @@ impl Ctx
         if text.len() == 0 { return 0; }
         let st: *const u8 = &text[0];
         let en: *const u8 = unsafe { st.offset(text.len() as int) };
-        //let en: *const u8 = &text[text.len()];
         text.with_c_str(|text| {
             unsafe { ffi::nvgTextBreakLines(self.ptr, st as *i8, en as *i8, breakRowWidth, rows, maxRows) }
         })
@@ -540,4 +536,36 @@ pub fn rad_to_deg(rad: f32) -> f32 {
 //pub fn internal_params(ctx: *mut Ctx) -> *mut NVGparams {
 //	unsafe { ffi::nvgInternalParams(ctx) }
 //}
+
+
+
+#[link(name = "nanovg")]
+extern "C"
+{
+    pub fn stbi_write_png(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void, stride_in_bytes: c_int) -> c_int;
+    pub fn stbi_write_bmp(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
+    pub fn stbi_write_tga(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
+}
+
+// image-write functions from nanovg/examples/stb_image_write.h
+//
+//extern int stbi_write_png(char const *filename, int w, int h, int comp, const void *data, int stride_in_bytes);
+pub fn write_png(filename: &str, w: i32, h: i32, comp: i32, data: *const u8, stride_in_bytes: i32) -> i32 {
+    filename.with_c_str(|filename| {
+        unsafe { stbi_write_png(filename, w, h, comp, data as *const c_void, stride_in_bytes) }
+    })
+}
+//extern int stbi_write_bmp(char const *filename, int w, int h, int comp, const void *data);
+pub fn write_bmp(filename: &str, w: i32, h: i32, comp: i32, data: *const u8) -> i32 {
+    filename.with_c_str(|filename| {
+        unsafe { stbi_write_bmp(filename, w, h, comp, data as *const c_void) }
+    })
+}
+//extern int stbi_write_tga(char const *filename, int w, int h, int comp, const void *data);
+pub fn write_tga(filename: &str, w: i32, h: i32, comp: i32, data: *const u8) -> i32 {
+    filename.with_c_str(|filename| {
+        unsafe { stbi_write_tga(filename, w, h, comp, data as *const c_void) }
+    })
+}
+
 

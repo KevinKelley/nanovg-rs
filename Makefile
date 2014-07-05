@@ -54,10 +54,12 @@ get-deps:
 
 nanovg:
 	rm -rf $(nanovg_lib_path)
-	# add next 3 lines to /lib/nanovg/src/nanovg.c:
+	# add next 5 lines to /lib/nanovg/src/nanovg.c:
 	#include <GLFW/glfw3.h>
 	#define  NANOVG_GL3_IMPLEMENTATION
 	#include "nanovg_gl.h"
+	#define STB_IMAGE_WRITE_IMPLEMENTATION
+	#include "stb_image_write.h"
 	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
 	echo "MUST ReWrap!"
 
