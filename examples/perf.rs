@@ -1,6 +1,8 @@
-use nanovg::*;
 use std::str;
 use std::vec;
+use nanovg::*;
+use nanovg::rgba;
+use nanovg::hsla;
 
 #[repr(i32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]

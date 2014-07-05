@@ -49,25 +49,47 @@ pub struct NVGcolor {
     pub r: c_float,
     pub g: c_float,
     pub b: c_float,
-    pub a: c_float,
+    pub a: c_float
+}
+//impl NVGcolor {
+//    pub fn rgb(r: u8, g: u8, b: u8) -> NVGcolor {
+//        unsafe { nvgRGB(r, g, b) }
+//    }
+//    pub fn rgb_f(r: f32, g: f32, b: f32) -> NVGcolor {
+//        unsafe { nvgRGBf(r, g, b) }
+//    }
+//    pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> NVGcolor {
+//        unsafe { nvgRGBA(r, g, b, a) }
+//    }
+//    pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> NVGcolor {
+//        unsafe { nvgRGBAf(r, g, b, a) }
+//    }
+//    pub fn lerp_rgba(c0: NVGcolor, c1: NVGcolor, u: f32) -> NVGcolor {
+//        unsafe { nvgLerpRGBA(c0, c1, u) }
+//    }
+//    pub fn trans_rgba(c0: NVGcolor, a: u8) -> NVGcolor {
+//        unsafe { nvgTransRGBA(c0, a) }
+//    }
+//    pub fn trans_rgba_f(c0: NVGcolor, a: f32) -> NVGcolor {
+//        unsafe { nvgTransRGBAf(c0, a) }
+//    }
+//    pub fn hsl(h: f32, s: f32, l: f32) -> NVGcolor {
+//        unsafe { nvgHSL(h, s, l) }
+//    }
+//    pub fn hsla(h: f32, s: f32, l: f32, a: u8) -> NVGcolor {
+//        unsafe {  nvgHSLA(h,s,l, a) }
+//    }
+//}
+//#[repr(C)]
+//pub struct Union_Unnamed1 {
+//    pub data: [u32, ..4u],
+//}
+//impl Union_Unnamed1 {
+//    pub fn rgba(&mut self) -> *mut [c_float, ..4u] {
+//        unsafe { ::std::mem::transmute(self) }
+//    }
+//}
 
-}
-#[repr(C)]
-pub struct Union_Unnamed1 {
-    pub data: [u32, ..4u],
-}
-impl Union_Unnamed1 {
-    pub fn rgba(&mut self) -> *mut [c_float, ..4u] {
-        unsafe { ::std::mem::transmute(self) }
-    }
-}
-#[repr(C)]
-pub struct Unnamed2 {
-    pub r: c_float,
-    pub g: c_float,
-    pub b: c_float,
-    pub a: c_float,
-}
 
 #[repr(C)]
 pub struct NVGpaint {

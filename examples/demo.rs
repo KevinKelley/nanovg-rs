@@ -3,11 +3,9 @@ use std::fmt;
 use std::ptr;
 use std::str;
 use std::bitflags;
-use libc::{c_double, c_float, c_int, c_char, c_uint, c_ushort, c_uchar, c_void};
 
 use std::num::*;
 use std::num::Float;
-use nanovg;
 use nanovg::*;
 
 //#include "stb_image_write.h"
@@ -98,7 +96,7 @@ pub fn render_demo(vg: &Ctx, mx: f32,
                   blowup: bool, data: &DemoData)
 {
 	draw_eyes(vg, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
-//	draw_paragraph(vg, width - 450.0, 50.0, 150.0, 100.0, mx, my);
+	draw_paragraph(vg, width - 450.0, 50.0, 150.0, 100.0, mx, my);
 	draw_graph(vg, 0.0, height/2.0, width, height/2.0, t);
 	draw_colorwheel(vg, width - 300.0, height - 300.0, 250.0, 250.0, t);
 
@@ -119,11 +117,11 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 
 	// Widgets
 	draw_window(vg, "Widgets `n Stuff", 50.0, 50.0, 300.0, 400.0);
-	let mut x = 60.0; let mut y = 95.0;
+	let x = 60.0; let mut y = 95.0;
 	draw_searchbox(vg, "Search", x,y,280.0,25.0);
 	y += 40.0;
 	draw_dropdown(vg, "Effects", x,y,280.0,28.0);
-	let mut popy = y + 14.0;
+	let popy = y + 14.0;
 	y += 45.0;
 
 	// Form
@@ -155,8 +153,8 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 
 
 //void saveScreenShot(int w, int h, int premult, const char* name)
-pub fn save_screenshot(w: c_int, h: c_int,
-                      premult: c_int, name: *c_char)
+pub fn save_screenshot(w: i32, h: i32,
+                      premult: i32, name: &str)
 {
 //	let image: [u8, ..w*h*4];
 //	glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, &image);
@@ -172,7 +170,7 @@ pub fn save_screenshot(w: c_int, h: c_int,
 
 
 
-fn is_black(col: NVGcolor) -> bool {
+fn is_black(col: Color) -> bool {
 	col.r == 0.0 && col.g == 0.0 && col.b == 0.0 && col.a == 0.0
 }
 
@@ -368,9 +366,8 @@ fn draw_checkbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 //	vg.text(x+9+2, y+h*0.5, cpToUTF8(ICON_CHECK,icon), NULL);
 }
 
-fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: NVGcolor)
+fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: Color)
 {
-	let mut icon: [u8, ..8];
 	let cornerRadius = 4.0;
 	let mut tw = 0.0;
 	let mut iw = 0.0;
@@ -459,10 +456,10 @@ fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
 	vg.restore();
 }
 
-fn draw_eyes(vg: &Ctx, x: c_float,
-            y: c_float, w: c_float,
-            h: c_float, mx: c_float,
-            my: c_float, t: c_float)
+fn draw_eyes(vg: &Ctx, x: f32,
+            y: f32, w: f32,
+            h: f32, mx: f32,
+            my: f32, t: f32)
 {
 	let ex = w *0.23;
 	let ey = h * 0.5;
@@ -526,9 +523,9 @@ fn draw_eyes(vg: &Ctx, x: c_float,
 	vg.fill();
 }
 
-fn draw_graph(vg: &Ctx, x: c_float,
-             y: c_float, w: c_float,
-             h: c_float, t: c_float)
+fn draw_graph(vg: &Ctx, x: f32,
+             y: f32, w: f32,
+             h: f32, t: f32)
 {
 	let mut samples: [f32, ..6] = [0.0, ..6];
 	let mut sx: [f32, ..6] = [0.0, ..6];
@@ -750,9 +747,9 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 	vg.restore();
 }
 
-fn draw_colorwheel(vg: &Ctx, x: c_float,
-                  y: c_float, w: c_float,
-                  h: c_float, t: c_float)
+fn draw_colorwheel(vg: &Ctx, x: f32,
+                  y: f32, w: f32,
+                  h: f32, t: f32)
 {
 	//f32 r0, r1, ax,ay, bx,by, cx,cy, aeps, r;
 	let hue = sin(t * 0.12);
@@ -908,124 +905,154 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
 	vg.restore();
 }
 
-fn draw_paragraph(vg: &Ctx, x: c_float,
-                 y: c_float, width: c_float,
-                 height: c_float, mx: c_float,
-                 my: c_float)
+fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my: f32)
 {
-//	//struct NVGtextRow rows[3];
-//	let mut rows: [NVGtextRow, ..3];
-//	//struct NVGglyphPosition glyphs[100];
-//	let mut glyphs: [NVGglyphPosition, ..100];
-//	let text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.";
-//	const char* start;
-//	const char* end;
-//	int nrows, i, nglyphs, j, lnum = 0;
-//	f32 lineh;
-//	f32 caretx, px;
-//	f32 bounds[4];
-//	f32 a;
-//	f32 gx,gy;
-//	int gutter = 0;
-//
-//	vg.save();
-//
-//	vg.font_size(18.0);
-//	vg.font_face("sans");
-//	vg.text_align(LEFT|TOP);
-//	vg.text_metrics(NULL, NULL, &lineh);
-//
-//	// The text break API can be used to fill a large buffer of rows,
-//	// or to iterate over the text just few lines (or just one) at a time.
-//	// The "next" variable of the last returned item tells where to continue.
-//	start = text;
-//	end = text + strlen(text);
-//	while ((nrows = vg.text_break_lines(start, end, width, rows, 3))) {
-//		for i in range(0, nrows) {
-//			struct NVGtextRow* row = &rows[i];
-//			int hit = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
-//
-//			vg.begin_path();
-//			vg.fill_color(rgba(255,255,255, if hit {64} else {16}));
-//			vg.rect(x, y, row.width, lineh);
-//			vg.fill();
-//
-//			vg.fill_color(rgba(255,255,255,255));
-//			vg.text(x, y, row.start, row.end);
-//
-//			if hit {
-//				caretx = if mx < x+row.width/2 { x } else { x+row.width };
-//				px = x;
-//				nglyphs = vg.text_glyph_positions(x, y, row.start, row.end, glyphs, 100);
-//				for j in range(0, nglyphs) {
-//					f32 x0 = glyphs[j].x;
-//					f32 x1 = if j+1 < nglyphs { glyphs[j+1].x } else { x+row.width };
-//					f32 gx = x0 * 0.3 + x1 * 0.7;
-//					if mx >= px && mx < gx
-//						caretx = glyphs[j].x;
-//					px = gx;
-//				}
-//				vg.begin_path();
-//				vg.fill_color(rgba(255,192,0,255));
-//				vg.rect(caretx, y, 1, lineh);
-//				vg.fill();
-//
-//				gutter = lnum+1;
-//				gx = x - 10;
-//				gy = y + lineh/2;
-//			}
-//			lnum++;
-//			y += lineh;
-//		}
-//		// Keep going...
-//		start = rows[nrows-1].next;
-//	}
-//
-//	if gutter {
-//		char txt[16];
-//		snprintf(txt, sizeof(txt), "%d", gutter);
-//		vg.font_size(13.0);
-//		vg.text_align(RIGHT|MIDDLE);
-//
-//		vg.text_bounds(gx,gy, txt, NULL, bounds);
-//
-//		vg.begin_path();
-//		vg.fill_color(rgba(255,192,0,255));
-//		vg.rounded_rect((int)bounds[0]-4,(int)bounds[1]-2, (int)(bounds[2]-bounds[0])+8, (int)(bounds[3]-bounds[1])+4, ((int)(bounds[3]-bounds[1])+4)/2-1);
-//		vg.fill();
-//
-//		vg.fill_color(rgba(32,32,32,255));
-//		vg.text(gx,gy, txt, NULL);
-//	}
-//
-//	y += 20.0;
-//
-//	vg.font_size(13.0);
-//	vg.text_align(LEFT|TOP);
-//	vg.text_line_height(1.2);
-//
-//	vg.text_box_bounds(x,y, 150, "Hover your mouse over the text to see calculated caret position.", NULL, bounds);
-//
-//	// Fade the tooltip out when close to it.
-//	gx = fabsf((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2]));
-//	gy = fabsf((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3]));
-//	a = maxf(gx, gy) - 0.5;
-//	a = clampf(a, 0, 1);
-//	vg.global_alpha(a);
-//
-//	vg.begin_path();
-//	vg.fill_color(rgba(220,220,220,255));
-//	vg.rounded_rect(bounds[0]-2,bounds[1]-2, (int)(bounds[2]-bounds[0])+4, (int)(bounds[3]-bounds[1])+4, 3);
-//	px = (int)((bounds[2]+bounds[0])/2);
-//	vg.move_to(px,bounds[1] - 10);
-//	vg.line_to(px+7,bounds[1]+1);
-//	vg.line_to(px-7,bounds[1]+1);
-//	vg.fill();
-//
-//	vg.fill_color(rgba(0,0,0,220));
-//	vg.text_box(x,y, 150, "Hover your mouse over the text to see calculated caret position.", NULL);
-//
-//	vg.restore();
+	let mut y:f32 = y;
+	let mut rows: [NVGtextRow, ..3] = [NVGtextRow{
+    	start: ptr::null(),
+    	end: ptr::null(),
+    	next: ptr::null(),
+    	width: 0.0,
+    	minx: 0.0,
+    	maxx: 0.0
+	}, ..3];
+	let mut glyphs: [NVGglyphPosition, ..100] = [NVGglyphPosition{
+    	_str: ptr::null(),
+    	x: 0.0,
+    	minx: 0.0,
+    	maxx: 0.0
+	}, ..100];
+	let text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.";
+	let start: uint; // byte pos in utf8 str; use int instead of char*
+	let end  : uint; // byte pos in utf8 str; use int instead of char*
+	//int nrows, i, nglyphs, j, lnum = 0;
+	let mut asc: f32 = 0.0;
+	let mut desc: f32 = 0.0;
+	let mut lineh: f32 = 0.0;
+	//let caretx: f32;
+	//let px: f32;
+	//f32 a;
+	let mut gx: f32 = 0.0;
+	let mut gy: f32 = 0.0;
+	let mut gutter:i32 = 0;
+	let mut bounds: [f32, ..4] = [0.0, ..4];
+
+	vg.save();
+
+	vg.font_size(18.0);
+	vg.font_face("sans");
+	vg.text_align(LEFT|TOP);
+	vg.text_metrics(&mut asc, &mut desc, &mut lineh);
+
+	// The text break API can be used to fill a large buffer of rows,
+	// or to iterate over the text just few lines (or just one) at a time.
+	// The "next" variable of the last returned item tells where to continue.
+	let mut start: uint = 0;    // byte pos in utf8 'text' str
+	let end: uint = text.len(); // exclusive
+	let mut lnum = 0;
+	'chunks: loop {
+		let remaining_text = text.slice(start, end);
+		let nrows: uint = vg.text_break_lines(remaining_text, width, &mut rows[0], 3) as uint;
+		if nrows == 0 { break 'chunks; }
+
+		for i in range(0, nrows) {
+			let row = &rows[i];
+			let hit: bool = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
+
+			vg.begin_path();
+			vg.fill_color(rgba(255,255,255, if hit {64} else {16}));
+			vg.rect(x, y, row.width, lineh);
+			vg.fill();
+
+			vg.fill_color(rgba(255,255,255,255));
+			let line = text.slice(
+				relative_index(text, row.start),
+				relative_index(text, row.end));
+			vg.text(x, y, line);
+
+			if hit { // test for mouse-hit and display cursor
+				let mut caretx = if mx < x+row.width/2.0 { x } else { x+row.width };
+				let mut px = x;
+				let nglyphs: uint = vg.text_glyph_positions(x, y, line, &mut glyphs[0], 100) as uint;
+				for j in range(0, nglyphs) {
+					let x0:f32 = glyphs[j].x;
+					let x1:f32 = if j+1 < nglyphs { glyphs[j+1].x } else { x+row.width };
+					let gx:f32 = x0 * 0.3 + x1 * 0.7;
+					if mx >= px && mx < gx {
+						caretx = glyphs[j].x;
+					}
+					px = gx;
+				}
+				vg.begin_path();
+				vg.fill_color(rgba(255,192,0,255));
+				vg.rect(caretx, y, 1.0, lineh);
+				vg.fill();
+
+				gutter = lnum+1;
+				gx = x - 10.0;
+				gy = y + lineh/2.0;
+			}
+			lnum += 1;
+			y += lineh;
+		}
+		// Keep going...
+		start = relative_index(text, rows[nrows-1].next);
+	}
+
+	if gutter > 0 {
+		//char txt[16]; snprintf(txt, sizeof(txt), "%d", gutter);
+		let txt = format!("{}", gutter);
+		vg.font_size(13.0);
+		vg.text_align(RIGHT|MIDDLE);
+
+		vg.text_bounds(gx,gy, txt.as_slice(), &mut bounds[0]);
+
+		vg.begin_path();
+		vg.fill_color(rgba(255,192,0,255));
+		vg.rounded_rect(
+			floor(bounds[0]) - 4.0,
+			floor(bounds[1]) - 2.0,
+			floor(bounds[2]-bounds[0]) + 8.0,
+			floor(bounds[3]-bounds[1]) + 4.0,
+		   (floor(bounds[3]-bounds[1]) + 4.0) / 2.0 - 1.0);
+		vg.fill();
+
+		vg.fill_color(rgba(32,32,32,255));
+		vg.text(gx,gy, txt.as_slice());
+	}
+
+	y += 20.0;
+
+	vg.font_size(13.0);
+	vg.text_align(LEFT|TOP);
+	vg.text_line_height(1.2);
+
+	vg.text_box_bounds(x,y, 150.0, "Hover your mouse over the text to see calculated caret position.", &mut bounds[0]);
+
+	// Fade the tooltip out when close to it.
+	gx = abs((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2]));
+	gy = abs((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3]));
+	let a = clamp( max(gx, gy) - 0.5,  0.0, 1.0);
+	vg.global_alpha(a);
+
+	vg.begin_path();
+	vg.fill_color(rgba(220,220,220,255));
+	vg.rounded_rect(
+		bounds[0]-2.0,
+		bounds[1]-2.0,
+		floor(bounds[2]-bounds[0])+4.0,
+		floor(bounds[3]-bounds[1])+4.0,
+		3.0);
+	let px = floor((bounds[2]+bounds[0])/2.0);
+	vg.move_to(px,bounds[1] - 10.0);
+	vg.line_to(px+7.0,bounds[1]+1.0);
+	vg.line_to(px-7.0,bounds[1]+1.0);
+	vg.fill();
+
+	vg.fill_color(rgba(0,0,0,220));
+	vg.text_box(x,y, 150.0, "Hover your mouse over the text to see calculated caret position.");
+
+	vg.restore();
 }
 
 fn draw_widths(vg: &Ctx, x: f32,
