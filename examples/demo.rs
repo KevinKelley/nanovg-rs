@@ -155,25 +155,6 @@ pub fn render_demo(vg: &Ctx, mx: f32,
 	vg.restore();
 }
 
-//void saveScreenShot(int w, int h, int premult, const char* name)
-pub fn save_screenshot(w: i32, h: i32, premult: bool, name: &str)
-{
-	let sz: uint = (w*h*4) as uint;
-	let mut image: Vec<u8> = Vec::with_capacity(sz);
-	unsafe {image.set_len(sz);}
-	let addr: *mut u8 = &mut image.as_mut_slice()[0];
-	let vptr: *mut c_void = unsafe { addr as *mut c_void };
-	unsafe {gl::ReadPixels(0, 0, w, h, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
-	if premult {
-		unpremultiply_alpha(image.as_mut_slice(), w, h, w*4);
-	}
-	else {
-		set_alpha(image.as_mut_slice(), w, h, w*4, 255);
-	}
-	flip_horizontal(image.as_mut_slice(), w, h, w*4);
- 	write_png(name, w, h, 4, &image.as_slice()[0], w*4);
-}
-
 
 fn is_black(col: Color) -> bool {
 	col.r == 0.0 && col.g == 0.0 && col.b == 0.0 && col.a == 0.0
@@ -1114,7 +1095,7 @@ fn draw_caps(vg: &Ctx, x: f32,
 
 
 
-fn unpremultiply_alpha(image: &mut [u8], w: i32, h: i32, stride: i32)
+fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
 //	// Unpremultiply
 //	for y in range(0, h) {
@@ -1175,29 +1156,56 @@ fn unpremultiply_alpha(image: &mut [u8], w: i32, h: i32, stride: i32)
 //	}
 }
 
-fn set_alpha(image: &mut [u8], w: i32, h: i32, stride: i32, a: u8)
+fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
-//	for y in range(0, h) {
-//		unsigned char* row = &image[y*stride];
-//		for x in range(0, w) {
-//			row[x*4+3] = a;
-//		}
-//	}
+	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+	for y in range(0, h) {
+		let row = image.mut_slice(y*stride, w*4); //&image[y*stride];
+		for x in range(0, w) {
+			row[x*4+3] = a;
+		}
+	}
 }
 
-fn flip_horizontal(image: &mut [u8], w: i32, h: i32, stride: i32)
+fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-//	let i = 0;
-//	let j = h-1;
-//	while (i < j) {
-//		unsigned char* ri = &image[i * stride];
-//		unsigned char* rj = &image[j * stride];
-//		for k in range(0, w*4) {
-//			let t = ri[k];
-//			ri[k] = rj[k];
-//			rj[k] = t;
-//		}
-//		i++;
-//		j--;
-//	}
+	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+	let mut i: uint = 0;
+	let mut j: uint = h-1;
+	println!("w:{}, h:{}, i:{}, j:{}, len:{}", w,h,i,j, image.len());
+	while (i < j) {
+		//let ri = image.mut_slice(i*stride, w*4); //&image[i * stride]; //unsigned char*
+		//let rj = image.mut_slice(j*stride, (w*4) as uint); //&image[j * stride]; //unsigned char*
+		let ix: uint = i*stride;
+		let jx: uint = j*stride;
+		println!("ix:{}, jx:{}, len:{}", ix, jx, image.len());
+		for k in range(0, w*4) {
+			let t       = image[ix+k];
+			image[ix+k] = image[jx+k];
+			image[jx+k] = t;
+		}
+		i += 1;
+		j -= 1;
+	}
 }
+
+pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
+{
+	let sz: uint = (w*h*4) as uint;
+	//let mut image: [u8, ..sz] = [0, ..sz];
+	let mut image: Vec<u8> = Vec::with_capacity(sz);
+	unsafe {image.set_len(sz);}
+	assert!(image.len() == sz);
+	let addr: *mut u8 = &mut image.as_mut_slice()[0];
+	let vptr: *mut c_void = unsafe { addr as *mut c_void };
+	unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
+	if premult {
+		unpremultiply_alpha(image.as_mut_slice(), w, h, w*4);
+	}
+	else {
+		set_alpha(image.as_mut_slice(), w, h, w*4, 255);
+	}
+	flip_image(image.as_mut_slice(), w, h, w*4);
+ 	write_png(name, w, h, 4, &image.as_slice()[0], w*4);
+}
+

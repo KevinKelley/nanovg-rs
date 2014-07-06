@@ -450,6 +450,7 @@ impl Ctx
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str, positions: *mut NVGglyphPosition, maxPositions: i32) -> i32 {
+        if text.len() == 0 { return 0; }
         let st: *const u8 = &text[0];
         let en: *const u8 = unsafe { st.offset(text.len() as int) };
         text.with_c_str(|text| {
@@ -550,21 +551,21 @@ extern "C"
 // image-write functions from nanovg/examples/stb_image_write.h
 //
 //extern int stbi_write_png(char const *filename, int w, int h, int comp, const void *data, int stride_in_bytes);
-pub fn write_png(filename: &str, w: i32, h: i32, comp: i32, data: *const u8, stride_in_bytes: i32) -> i32 {
+pub fn write_png(filename: &str, w: u32, h: u32, comp: i32, data: *const u8, stride_in_bytes: u32) -> i32 {
     filename.with_c_str(|filename| {
-        unsafe { stbi_write_png(filename, w, h, comp, data as *const c_void, stride_in_bytes) }
+        unsafe { stbi_write_png(filename, w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
     })
 }
 //extern int stbi_write_bmp(char const *filename, int w, int h, int comp, const void *data);
-pub fn write_bmp(filename: &str, w: i32, h: i32, comp: i32, data: *const u8) -> i32 {
+pub fn write_bmp(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
     filename.with_c_str(|filename| {
-        unsafe { stbi_write_bmp(filename, w, h, comp, data as *const c_void) }
+        unsafe { stbi_write_bmp(filename, w as c_int, h as c_int, comp, data as *const c_void) }
     })
 }
 //extern int stbi_write_tga(char const *filename, int w, int h, int comp, const void *data);
-pub fn write_tga(filename: &str, w: i32, h: i32, comp: i32, data: *const u8) -> i32 {
+pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
     filename.with_c_str(|filename| {
-        unsafe { stbi_write_tga(filename, w, h, comp, data as *const c_void) }
+        unsafe { stbi_write_tga(filename, w as c_int, h as c_int, comp, data as *const c_void) }
     })
 }
 

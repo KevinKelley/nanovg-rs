@@ -164,7 +164,7 @@ fn main()
         unsafe {
 	        if screenshot {
 	        	screenshot = false;
-	        	demo::save_screenshot(fbWidth, fbHeight, premult, "dump.png");
+	        	demo::save_screenshot(fbWidth as u32, fbHeight as u32, premult, "dump.png");
 	        }
         }
 
