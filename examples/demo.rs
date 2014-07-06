@@ -2,18 +2,13 @@
 extern crate gl;
 extern crate libc;
 
-use std::fmt;
 use std::ptr;
-use std::str;
-use std::bitflags;
 use std::num::*;
-use std::num::Float;
 use nanovg::*;
-use gl;
+use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
 use libc::{c_void};
 
-//#include "stb_image_write.h"
-
+/// use unicode characters for icons
 static NO_ICON: 		   char = '\0';
 static ICON_SEARCH:        char = '\U0001F50D';
 static ICON_CIRCLED_CROSS: char = '\u2716';
@@ -34,6 +29,7 @@ fn sqrt(x: f32) -> f32 { x.sqrt() }
 fn cos(x: f32) -> f32 { x.cos() }
 fn sin(x: f32) -> f32 { x.sin() }
 
+
 fn cpToUTF8(cp:char) -> String { format!("{}", cp) }
 
 pub struct DemoData {
@@ -44,9 +40,9 @@ pub struct DemoData {
 	images: [i32, ..12],
 }
 
+/// load and hold resources used in demo
 impl DemoData
 {
-	//int loadDemoData(struct NVGcontext* vg, struct DemoData* data)
 	pub fn load(vg: &Ctx) -> DemoData
 	{
 		let mut data = DemoData {
@@ -85,6 +81,8 @@ impl DemoData
 impl Drop for DemoData {
 	fn drop(&mut self) {
 		for i in range(0, 12u) {
+			// need to borrow & hold nanovg context, or
+			// need to be able to pass it to 'drop'
 //			self.vg.delete_image(self.images[i]);
 			self.images[i] = -1;
 		}
@@ -93,11 +91,7 @@ impl Drop for DemoData {
 
 
 
-//void renderDemo(struct NVGcontext* vg, f32 mx, f32 my, f32 width, f32 height, f32 t, int blowup, struct DemoData* data)
-pub fn render_demo(vg: &Ctx, mx: f32,
-                  my: f32, width: f32,
-                  height: f32, t: f32,
-                  blowup: bool, data: &DemoData)
+pub fn render_demo(vg: &Ctx, mx: f32, my: f32, width: f32, height: f32, t: f32, blowup: bool, data: &DemoData)
 {
 	draw_eyes(vg, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
 	draw_paragraph(vg, width - 450.0, 50.0, 150.0, 100.0, mx, my);
@@ -1094,77 +1088,79 @@ fn draw_caps(vg: &Ctx, x: f32,
 }
 
 
-
 fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-//	// Unpremultiply
-//	for y in range(0, h) {
-//		unsigned char *row = &image[y*stride];
-//		for x in range(0, w) {
-//			int r = row[0], g = row[1], b = row[2], a = row[3];
-//			if a != 0 {
-//				row[0] = (int)mini(r*255/a, 255);
-//				row[1] = (int)mini(g*255/a, 255);
-//				row[2] = (int)mini(b*255/a, 255);
-//			}
-//			row += 4;
-//		}
-//	}
-//
-//	// Defringe
-//	for y in range(0, h) {
-//		unsigned char *row = &image[y*stride];
-//		for x in range(0, w) {
-//			let mut r = 0;
-//			let mut g = 0;
-//			let mut b = 0;
-//			let mut a = row[3];
-//			let mut n = 0;
-//			if a == 0 {
-//				if x-1 > 0 && row[-1] != 0 {
-//					r += row[-4];
-//					g += row[-3];
-//					b += row[-2];
-//					n++;
-//				}
-//				if x+1 < w && row[7] != 0 {
-//					r += row[4];
-//					g += row[5];
-//					b += row[6];
-//					n++;
-//				}
-//				if y-1 > 0 && row[-stride+3] != 0 {
-//					r += row[-stride];
-//					g += row[-stride+1];
-//					b += row[-stride+2];
-//					n++;
-//				}
-//				if y+1 < h && row[stride+3] != 0 {
-//					r += row[stride];
-//					g += row[stride+1];
-//					b += row[stride+2];
-//					n++;
-//				}
-//				if n > 0 {
-//					row[0] = r/n;
-//					row[1] = g/n;
-//					row[2] = b/n;
-//				}
-//			}
-//			row += 4;
-//		}
-//	}
+	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+
+	// Unpremultiply
+	for y in range(0, h) {
+		//unsigned char *row = &image[y*stride];
+		let row = image.mut_slice(y*stride, y*stride + w*4);
+		for x in range(0, w) {
+			let pix = row.mut_slice(x*4, x*4 + 4);
+			let r = pix[0] as f32;
+			let g = pix[1] as f32;
+			let b = pix[2] as f32;
+			let a = pix[3] as f32;
+			if a != 0.0 {
+				pix[0] = min(r*255.0/a, 255.0) as u8;
+				pix[1] = min(g*255.0/a, 255.0) as u8;
+				pix[2] = min(b*255.0/a, 255.0) as u8;
+			}
+		}
+	}
+
+	// Defringe
+	for y in range(0, h) {
+		for x in range(0, w) {
+			let ix = y*stride + x*4;
+			let mut r = 0;
+			let mut g = 0;
+			let mut b = 0;
+			let mut a = image[ix+3];
+			let mut n = 0;
+			if a == 0 {
+				if x-1 > 0 && image[ix+-1] != 0 {
+					r += image[ix+-4];
+					g += image[ix+-3];
+					b += image[ix+-2];
+					n += 1;
+				}
+				if x+1 < w && image[ix+7] != 0 {
+					r += image[ix+4];
+					g += image[ix+5];
+					b += image[ix+6];
+					n += 1;
+				}
+				if y-1 > 0 && image[ix+-stride+3] != 0 {
+					r += image[ix+-stride];
+					g += image[ix+-stride+1];
+					b += image[ix+-stride+2];
+					n += 1;
+				}
+				if y+1 < h && image[ix+stride+3] != 0 {
+					r += image[ix+stride];
+					g += image[ix+stride+1];
+					b += image[ix+stride+2];
+					n += 1;
+				}
+				if n > 0 {
+					image[ix+0] = r/n;
+					image[ix+1] = g/n;
+					image[ix+2] = b/n;
+				}
+			}
+		}
+	}
 }
 
 fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
 	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
-	//println!("w:{}, h:{}, len:{}", w,h, image.len());
 	for y in range(0, h) {
-		//let row = image.mut_slice(y*stride, w*4); //&image[y*stride];
-		let ix: uint = y*stride;
+		let row = image.mut_slice(y*stride, y*stride + w*4); //&image[y*stride];
 		for x in range(0, w) {
-			image[ix+(x*4)+3] = a;
+			row[x*4+3] = a;
 		}
 	}
 }
@@ -1175,14 +1171,15 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 	let mut i: uint = 0;
 	let mut j: uint = h-1;
 	while (i < j) {
-		//let ri = image.mut_slice(i*stride, w*4); //&image[i * stride]; //unsigned char*
-		//let rj = image.mut_slice(j*stride, (w*4) as uint); //&image[j * stride]; //unsigned char*
+		//let row_i = image.mut_slice(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
+		//let row_j = image.mut_slice(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
+		// error; can't borrow twice from the same source
 		let ix: uint = i*stride;
 		let jx: uint = j*stride;
 		for k in range(0, w*4) {
-			let t       = image[ix+k];
-			image[ix+k] = image[jx+k];
-			image[jx+k] = t;
+			let t       = image[ix+k];  // let t = row_i[k];
+			image[ix+k] = image[jx+k];  // row_i[k] = row_j[k];
+			image[jx+k] = t;			// row_j[k] = t;
 		}
 		i += 1;
 		j -= 1;
