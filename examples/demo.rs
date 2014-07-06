@@ -1159,10 +1159,12 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
 	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+	//println!("w:{}, h:{}, len:{}", w,h, image.len());
 	for y in range(0, h) {
-		let row = image.mut_slice(y*stride, w*4); //&image[y*stride];
+		//let row = image.mut_slice(y*stride, w*4); //&image[y*stride];
+		let ix: uint = y*stride;
 		for x in range(0, w) {
-			row[x*4+3] = a;
+			image[ix+(x*4)+3] = a;
 		}
 	}
 }
@@ -1172,13 +1174,11 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
 	let mut i: uint = 0;
 	let mut j: uint = h-1;
-	println!("w:{}, h:{}, i:{}, j:{}, len:{}", w,h,i,j, image.len());
 	while (i < j) {
 		//let ri = image.mut_slice(i*stride, w*4); //&image[i * stride]; //unsigned char*
 		//let rj = image.mut_slice(j*stride, (w*4) as uint); //&image[j * stride]; //unsigned char*
 		let ix: uint = i*stride;
 		let jx: uint = j*stride;
-		println!("ix:{}, jx:{}, len:{}", ix, jx, image.len());
 		for k in range(0, w*4) {
 			let t       = image[ix+k];
 			image[ix+k] = image[jx+k];
