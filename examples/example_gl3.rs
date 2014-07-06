@@ -1,16 +1,6 @@
-//#include <stdio.h>
-//#define GLFW_INCLUDE_ES3
-//#include <GLFW/glfw3.h>
-//#include "nanovg.h"
-//#define NANOVG_GLES3_IMPLEMENTATION
-//#include "nanovg_gl.h"
-//#include "nanovg_gl_utils.h"
-//#include "demo.h"
-//#include "perf.h"
 
 #![feature(globs)]
 #![feature(macro_rules)]
-//#![macro_escape]
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variable)]
@@ -101,17 +91,9 @@ fn main()
 
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
-    //println!("created nanovg Ctx: {}", vg);
 
     let mut data = demo::DemoData::load(&vg);
 
-	//if (vg == NULL) {
-	//  printf("Could not init nanovg.\n");
-	//  return -1;
-	//}
-
-//  if (loadDemoData(vg, &data) == -1)
-//    return -1;
 
 	glfw.set_swap_interval(0);
 
@@ -134,7 +116,7 @@ fn main()
         let (winWidth, winHeight) = window.get_size();  // (i32,i32)
         let (fbWidth, fbHeight) = window.get_framebuffer_size();
         // Calculate pixel ration for hi-dpi devices.
-        let pxRatio = fbWidth as f64 / winWidth as f64;
+        let pxRatio = fbWidth as f32 / winWidth as f32;
 
         // Update and render
         glcheck!(gl::Viewport(0, 0, fbWidth, fbHeight));

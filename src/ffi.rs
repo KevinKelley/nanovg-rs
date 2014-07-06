@@ -165,6 +165,7 @@ pub struct NVGparams {
     pub renderDelete: Option<extern "C" fn (arg1: *mut c_void)>,
 }
 
+
 #[link(name = "nanovg")]
 extern "C"
 {
@@ -294,4 +295,9 @@ extern "C"
     //pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
     //pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
 
+
+
+    pub fn stbi_write_png(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void, stride_in_bytes: c_int) -> c_int;
+    pub fn stbi_write_bmp(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
+    pub fn stbi_write_tga(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
 }

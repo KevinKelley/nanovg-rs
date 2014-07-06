@@ -30,7 +30,7 @@ fn cos(x: f32) -> f32 { x.cos() }
 fn sin(x: f32) -> f32 { x.sin() }
 
 
-fn cpToUTF8(cp:char) -> String { format!("{}", cp) }
+fn cp_to_utf8(cp:char) -> String { format!("{}", cp) }
 
 pub struct DemoData {
 	//vg: &Ctx,
@@ -224,7 +224,7 @@ fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 	vg.font_face("icons");
 	vg.fill_color(rgba(255,255,255,64));
 	vg.text_align(CENTER|MIDDLE);
-	vg.text(x+h*0.55, y+h*0.55, cpToUTF8(ICON_SEARCH).as_slice());
+	vg.text(x+h*0.55, y+h*0.55, cp_to_utf8(ICON_SEARCH).as_slice());
 
 	vg.font_size(20.0);
 	vg.font_face("sans");
@@ -237,7 +237,7 @@ fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 	vg.font_face("icons");
 	vg.fill_color(rgba(255,255,255,32));
 	vg.text_align(CENTER|MIDDLE);
-	vg.text(x+w-h*0.55, y+h*0.55, cpToUTF8(ICON_CIRCLED_CROSS).as_slice());
+	vg.text(x+w-h*0.55, y+h*0.55, cp_to_utf8(ICON_CIRCLED_CROSS).as_slice());
 }
 
 fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -265,7 +265,7 @@ fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 	vg.font_face("icons");
 	vg.fill_color(rgba(255,255,255,64));
 	vg.text_align(CENTER|MIDDLE);
-	vg.text(x+w-h*0.5, y+h*0.5, cpToUTF8(ICON_CHEVRON_RIGHT).as_slice());
+	vg.text(x+w-h*0.5, y+h*0.5, cp_to_utf8(ICON_CHEVRON_RIGHT).as_slice());
 }
 
 fn draw_label(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -343,14 +343,12 @@ fn draw_checkbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 	vg.font_face("icons");
 	vg.fill_color(rgba(255,255,255,128));
 	vg.text_align(CENTER|MIDDLE);
-//	vg.text(x+9+2, y+h*0.5, cpToUTF8(ICON_CHECK,icon), NULL);
+//	vg.text(x+9+2, y+h*0.5, cp_to_utf8(ICON_CHECK,icon), NULL);
 }
 
 fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: Color)
 {
 	let cornerRadius = 4.0;
-	let mut tw = 0.0;
-	let mut iw = 0.0;
 
 	let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
 	vg.begin_path();
@@ -370,11 +368,12 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 	vg.font_size(20.0);
 	vg.font_face("sans-bold");
 	let mut bounds: f32 = 0.0;
-	tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
+	let tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
+	let mut iw = 0.0;
 	if preicon != NO_ICON {
 		vg.font_size(h*1.3);
 		vg.font_face("icons");
-		iw = vg.text_bounds(0.0,0.0, cpToUTF8(preicon).as_slice(), &mut bounds);
+		iw = vg.text_bounds(0.0,0.0, cp_to_utf8(preicon).as_slice(), &mut bounds);
 		iw += h*0.15;
 	}
 
@@ -383,7 +382,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 		vg.font_face("icons");
 		vg.fill_color(rgba(255,255,255,96));
 		vg.text_align(LEFT|MIDDLE);
-		vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cpToUTF8(preicon).as_slice());
+		vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cp_to_utf8(preicon).as_slice());
 	}
 
 	vg.font_size(20.0);
@@ -1117,13 +1116,13 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 			let mut r = 0;
 			let mut g = 0;
 			let mut b = 0;
-			let mut a = image[ix+3];
+			let a = image[ix+3];
 			let mut n = 0;
 			if a == 0 {
-				if x-1 > 0 && image[ix+-1] != 0 {
-					r += image[ix+-4];
-					g += image[ix+-3];
-					b += image[ix+-2];
+				if x-1 > 0 && image[ix-1] != 0 {
+					r += image[ix-4];
+					g += image[ix-3];
+					b += image[ix-2];
 					n += 1;
 				}
 				if x+1 < w && image[ix+7] != 0 {
@@ -1132,10 +1131,10 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 					b += image[ix+6];
 					n += 1;
 				}
-				if y-1 > 0 && image[ix+-stride+3] != 0 {
-					r += image[ix+-stride];
-					g += image[ix+-stride+1];
-					b += image[ix+-stride+2];
+				if y-1 > 0 && image[ix-stride+3] != 0 {
+					r += image[ix-stride];
+					g += image[ix-stride+1];
+					b += image[ix-stride+2];
 					n += 1;
 				}
 				if y+1 < h && image[ix+stride+3] != 0 {
@@ -1170,7 +1169,7 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 	let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
 	let mut i: uint = 0;
 	let mut j: uint = h-1;
-	while (i < j) {
+	while i < j {
 		//let row_i = image.mut_slice(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
 		//let row_j = image.mut_slice(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
 		// error; can't borrow twice from the same source
@@ -1194,7 +1193,7 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
 	unsafe {image.set_len(sz);}
 	assert!(image.len() == sz);
 	let addr: *mut u8 = &mut image.as_mut_slice()[0];
-	let vptr: *mut c_void = unsafe { addr as *mut c_void };
+	let vptr: *mut c_void = addr as *mut c_void;
 	unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
 	if premult {
 		unpremultiply_alpha(image.as_mut_slice(), w, h, w*4);

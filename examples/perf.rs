@@ -1,8 +1,6 @@
-use std::str;
-use std::vec;
-use nanovg::*;
-use nanovg::rgba;
-use nanovg::hsla;
+//use std::str;
+//use std::vec;
+use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, rgba};
 
 #[repr(i32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
@@ -25,7 +23,6 @@ pub struct PerfGraph {
 
 impl PerfGraph
 {
-	//void initGraph(struct PerfGraph* fps, int style, const char* name);
 	pub fn init(style: Style, name: &str) -> PerfGraph
 	{
 		PerfGraph {
@@ -37,7 +34,6 @@ impl PerfGraph
 		}
 	}
 
-	//void updateGraph(struct PerfGraph* fps, float frameTime);
 	pub fn update(&mut self, frameTime: f64)
 	{
 		//fps->head = (fps->head+1) % GRAPH_HISTORY_COUNT;
@@ -47,14 +43,9 @@ impl PerfGraph
 		self.values[((self.head+self.count) % CAP) as uint] = frameTime as f32;
 	}
 
-	//void renderGraph(struct NVGcontext* vg, float x, float y, struct PerfGraph* fps);
 	pub fn render(&self, vg: &Ctx, x: f32, y: f32)
 	{
-		//int i;
-		//float avg, w, h;
-		//char str[64];
-
-		let avg = self.getGraphAverage();
+		let avg = self.get_graph_average();
 
 		let w = 200.0;
 		let h = 35.0;
@@ -100,7 +91,7 @@ impl PerfGraph
 			vg.font_size(18.0);
 			vg.text_align(RIGHT|TOP);
 			vg.fill_color(rgba(240,240,240,255));
-			let txt = format!("{:3.2f} FPS", 1.0 / avg);
+			let txt = format!("{:3.1f} FPS", 1.0 / avg);
 			vg.text(x+w-3.0,y+1.0, txt.as_slice());
 
 			vg.font_size(15.0);
@@ -118,8 +109,7 @@ impl PerfGraph
 
 	}
 
-	//float getGraphAverage(struct PerfGraph* fps);
-	pub fn getGraphAverage(&self) -> f32
+	pub fn get_graph_average(&self) -> f32
 	{
 		let mut sum: f32 = 0.0;
 		let mut i = self.head;
