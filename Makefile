@@ -12,6 +12,7 @@ glfw_path 		= lib/glfw-rs
 glfw_lib_path 	= lib/glfw-rs/lib
 gl_path 		= lib/gl-rs
 gl_lib_path 	= lib/gl-rs/lib
+libnanovg.a		= $(nanovg_lib_path)/libnanovg.a
 
 NANOVG_FLAGS = -DNANOVG_GL3_IMPLEMENTATION
 
@@ -33,7 +34,7 @@ all: lib examples
 run: lib examples
 	cd bin; ./example_gl3
 
-lib: libnanovg.a
+lib: $(libnanovg.a)
 	mkdir -p $(lib_path)
 	rustc src/nanovg.rs --opt-level 3 --out-dir $(lib_path) $(libs)
 
@@ -51,7 +52,7 @@ get-deps:
 	git clone $(glfw_url)   $(glfw_path)
 	git clone $(gl_url)     $(gl_path)
 
-libnanovg.a: $(NANOVG_FILES)
+$(libnanovg.a): $(NANOVG_FILES)
 	rm -rf $(nanovg_lib_path)
 	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
 
@@ -60,10 +61,17 @@ deps:
 	make lib -C $(glfw_path)
 
 clean:
-	rm $(nanovg_lib_path)/libnanovg.a
+	rm $(libnanovg.a)
 	rm $(lib_path)/*.rlib
 
 cleaner:
 	rm -rf $(lib_path)
 
-.PHONY: clean doc
+.PHONY:      \
+	run      \
+	doc      \
+	get-deps \
+	deps     \
+	clean    \
+	cleaner  \
+	doc
