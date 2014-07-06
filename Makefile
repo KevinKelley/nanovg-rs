@@ -2,7 +2,7 @@ lib_path=lib
 bin_path=bin
 doc_path=doc
 
-nanovg_url	= https://github.com/memononen/nanovg.git
+nanovg_url	= https://github.com/KevinKelley/nanovg
 glfw_url	= https://github.com/bjz/glfw-rs.git
 gl_url  	= https://github.com/bjz/gl-rs.git
 
@@ -46,18 +46,12 @@ doc:
 
 get-deps:
 	mkdir -p $(lib_path)
-	#git clone $(nanovg_url) $(nanovg_path)
-	git clone $(glfw_url) $(glfw_path)
-	git clone $(gl_url) $(gl_path)
+	git clone $(nanovg_url) $(nanovg_path)
+	git clone $(glfw_url)   $(glfw_path)
+	git clone $(gl_url)     $(gl_path)
 
-nanovg: lib/nanovg/build/libnanovg.a
+nanovg: $(nanovg_lib_path)/libnanovg.a
 	rm -rf $(nanovg_lib_path)
-	# add next 5 lines to /lib/nanovg/src/nanovg.c:
-	#include <GLFW/glfw3.h>
-	#define  NANOVG_GL3_IMPLEMENTATION
-	#include "nanovg_gl.h"
-	#define STB_IMAGE_WRITE_IMPLEMENTATION
-	#include "stb_image_write.h"
 	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
 	echo "MUST ReWrap!"
 
@@ -68,6 +62,9 @@ deps: nanovg
 clean:
 	rm $(nanovg_lib_path)/libnanovg.a
 	rm $(lib_path)/*.rlib
+
+cleaner:
+	rm -rf $(lib_path)
 
 .PHONY: \
 	clean\
