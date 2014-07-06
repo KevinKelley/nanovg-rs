@@ -15,7 +15,7 @@ it'll even come with graphics card support.
 
 ## Screenshot
 
-![yay! screenshot works in rust demo!](/demo.png?raw=true)
+![yay! screenshot works in rust demo!](/dump.png?raw=true)
 
 Dependencies
 ============
