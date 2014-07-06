@@ -13,6 +13,9 @@ It is however small and hardware-accelerated, which is what I want.  If you need
 all the things, look at Cairo-graphics: it's everywhere, and it's good; eventually
 it'll even come with graphics card support.
 
+## Screenshot
+
+![yay! screenshot works in rust demo!](/demo.png?raw=true)
 
 Dependencies
 ============
