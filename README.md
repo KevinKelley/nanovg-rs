@@ -39,8 +39,13 @@ make get-deps
 make deps
 make nanovg
 make examples
-./bin/demo
+cd bin; ./example_gl3
 ```
+
+In the demo,
+- 'p' switches between pre- and un-premultiplied alpha;
+- 's' saves a screenshot;
+- and 'space' toggles scale/rotate of the pseudo-window stuff.
 
 License
 =======
