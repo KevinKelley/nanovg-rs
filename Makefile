@@ -22,17 +22,18 @@ build_cmd = rustc -Llib  $(libs) --opt-level 3 --out-dir $(bin_path)
 
 EXAMPLE_FILES = examples/*.rs
 SOURCE_FILES = $(shell test -e src/ && find src -type f)
+NANOVG_FILES = $(shell test -e lib/nanovg/src && find lib/nanovg/src -type f)
+NANOVG_FILES+= $(shell test -e lib/nanovg/example && find lib/nanovg/example -type f)
 
 # bindgen -builtins -o ../examples/demo.rs demo.c
 # bindgen -builtins -o ../examples/perf.rs perf.c
-
 
 all: lib examples
 
 run: lib examples
 	cd bin; ./example_gl3
 
-lib:
+lib: libnanovg.a
 	mkdir -p $(lib_path)
 	rustc src/nanovg.rs --opt-level 3 --out-dir $(lib_path) $(libs)
 
@@ -50,12 +51,11 @@ get-deps:
 	git clone $(glfw_url)   $(glfw_path)
 	git clone $(gl_url)     $(gl_path)
 
-nanovg: $(nanovg_lib_path)/libnanovg.a
+libnanovg.a: $(NANOVG_FILES)
 	rm -rf $(nanovg_lib_path)
 	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
-	echo "MUST ReWrap!"
 
-deps: nanovg
+deps:
 	make lib -C lib/gl-rs
 	make lib -C $(glfw_path)
 
@@ -66,10 +66,4 @@ clean:
 cleaner:
 	rm -rf $(lib_path)
 
-.PHONY: \
-	clean\
-	nanovg\
-	deps\
-	doc\
-	lib\
-	examples
+.PHONY: clean doc
