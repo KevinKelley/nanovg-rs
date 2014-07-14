@@ -451,15 +451,15 @@ impl Ctx
     //////////////////////////////////////////////////////////////////////////////////////////////////
     pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str, positions: *mut NVGglyphPosition, maxPositions: i32) -> i32 {
         if text.len() == 0 { return 0; }
-        let st: *const u8 = &text[0];
+        let st: *const u8 = text.as_ptr();
         let en: *const u8 = unsafe { st.offset(text.len() as int) };
-        unsafe { ffi::nvgTextGlyphPositions(self.ptr, x, y, st as *i8, en as *i8, positions, maxPositions) }
+        unsafe { ffi::nvgTextGlyphPositions(self.ptr, x, y, st as *const i8, en as *const i8, positions, maxPositions) }
 	}
     pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, rows: *mut NVGtextRow, maxRows: i32) -> i32 {
         if text.len() == 0 { return 0; }
-        let st: *const u8 = &text[0];
+        let st: *const u8 = text.as_ptr();
         let en: *const u8 = unsafe { st.offset(text.len() as int) };
-        unsafe { ffi::nvgTextBreakLines(self.ptr, st as *i8, en as *i8, breakRowWidth, rows, maxRows) }
+        unsafe { ffi::nvgTextBreakLines(self.ptr, st as *const i8, en as *const i8, breakRowWidth, rows, maxRows) }
 	}
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -476,7 +476,7 @@ impl Ctx
 }
 
 pub fn relative_index(text: &str, p: *const i8) -> uint {
-    let st: *const u8 = &text[0];
+    let st: *const u8 = text.as_ptr();
     let stix: uint = st.to_uint();
     let pix: uint = p.to_uint();
     assert!(pix >= stix);
