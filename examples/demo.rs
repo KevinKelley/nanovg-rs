@@ -1,6 +1,4 @@
-
 extern crate gl;
-extern crate libc;
 
 use std::ptr;
 use std::num::*;

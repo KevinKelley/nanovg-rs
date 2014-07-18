@@ -1,14 +1,17 @@
 [package]
-
 name = "nanovg"
 version = "0.1.0"
-authors = [ "kevin@kelleysoft.com" ]
+authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 
-build = "make lib"
+[[lib]]
+name = "nanovg"
 
+[[bin]]
+name = "example_gl3"
+path = "examples/example_gl3.rs"
 
 [dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs.git"
+git = "https://github.com/bjz/glfw-rs"
 
 [dependencies.gl]
-git = "https://github.com/bjz/gl-rs.git"
+git = "https://github.com/bjz/gl-rs"
