@@ -1,0 +1,14 @@
+[package]
+
+name = "nanovg"
+version = "0.1.0"
+authors = [ "kevin@kelleysoft.com" ]
+
+build = "make lib"
+
+
+[dependencies.glfw]
+git = "https://github.com/bjz/glfw-rs.git"
+
+[dependencies.gl]
+git = "https://github.com/bjz/gl-rs.git"

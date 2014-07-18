@@ -36,28 +36,29 @@ run: lib examples
 
 lib: $(libnanovg.a)
 	mkdir -p $(lib_path)
-	rustc src/nanovg.rs --opt-level 3 --out-dir $(lib_path) $(libs)
+	rustc src/lib.rs --opt-level 3 --out-dir $(lib_path) $(libs)
 
 examples: lib  $(EXAMPLE_FILES)
 	mkdir -p $(bin_path)
-	$(build_cmd) ./examples/example_gl3.rs
+	$(build_cmd) ./examples/main.rs
 
 doc:
 	mkdir -p $(doc_path)
 	rustdoc $(libs) src/lib.rs
 
 get-deps:
-	mkdir -p $(lib_path)
-	git clone $(nanovg_url) $(nanovg_path)
+	if [ ! -d lib/nanovg ]; then git clone $(nanovg_url) $(nanovg_path); fi
+
+get-example-deps:
 	git clone $(glfw_url)   $(glfw_path)
 	git clone $(gl_url)     $(gl_path)
 
-$(libnanovg.a): $(NANOVG_FILES)
+$(libnanovg.a): get-deps $(NANOVG_FILES)
 	rm -rf $(nanovg_lib_path)
 	cd $(nanovg_path); premake4 gmake; cd build; make CFLAGS=$(NANOVG_FLAGS) config=release verbose=1 nanovg
 
 deps:
-	make lib -C lib/gl-rs
+	make lib -C $(gl_path)
 	make lib -C $(glfw_path)
 
 clean:
@@ -71,6 +72,7 @@ cleaner:
 	run      \
 	doc      \
 	get-deps \
+	get-example-deps \
 	deps     \
 	clean    \
 	cleaner  \

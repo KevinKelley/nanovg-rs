@@ -17,14 +17,18 @@ It is however small and hardware-accelerated, which is what I want.
 
 Dependencies
 ============
-Hopefully none, for runtime.  This build process will produce a Rust library,
-which includes the Rust wrapper for nanovg functions, and which statically links in
-those functions.  NanoVG only does the graphics drawing, though; you'll need to be
+This build process will produce a Rust library, which includes the Rust wrapper
+for nanovg functions, and which statically links in those functions.
+NanoVG only does the graphics drawing, though; you'll need to be
 getting a GL context from somewhere.  The examples use GLFW.
 
 Premake4 is required for building NanoVG itself.
 
-rust-bindgen wass used to create the initial ffi binding.
+rust-bindgen was used to create the initial ffi binding.
+
+gl-rs, by bjz, is used to grab the GL framebuffer for snapshots.
+
+glfw-rs, also bjz's, is used to create the window and exposed events.
 
 
 Building
@@ -54,3 +58,5 @@ Links
 =====
 - https://github.com/memononen/nanovg
 - https://github.com/crabtw/rust-bindgen
+- https://github.com/bjz/gl-rs
+- https://github.com/bjz/glfw-rs

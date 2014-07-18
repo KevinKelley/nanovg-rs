@@ -1,5 +1,6 @@
 bin/
 lib/
 tmp/
+target/
 rust-empty.mk
 watch.sh
