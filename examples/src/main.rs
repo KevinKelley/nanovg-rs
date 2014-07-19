@@ -80,7 +80,7 @@ fn main()
  	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
  	glfw.window_hint(glfw::OpenglDebugContext(true));
 
-    let (window, events) = glfw.create_window(1100, 800, "NanoVG GL3 exmaple", glfw::Windowed)
+    let (window, events) = glfw.create_window(1100, 800, "NanoVG GL3 Rust demo", glfw::Windowed)
         .expect("Failed to create GLFW window.");
 
 	// window.set_key_callback(key);
@@ -95,7 +95,7 @@ fn main()
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	assert!(!vg.ptr.is_null());
 
-    let mut data = demo::DemoData::load(&vg);
+    let data = demo::DemoData::load(&vg);
 
 
 	glfw.set_swap_interval(0);
