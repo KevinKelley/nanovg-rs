@@ -2,7 +2,8 @@
 NanoVG Rust wrapper
 ===================
 
-(Work In Progress!  possibly useable)
+Now with Cargo!
+
 
 This is a Rust-language wrapper for the NanoVG vector-graphis library.
 
@@ -28,21 +29,30 @@ rust-bindgen was used to create the initial ffi binding.
 
 gl-rs, by bjz, is used to grab the GL framebuffer for snapshots.
 
-glfw-rs, also bjz's, is used to create the window and exposed events.
+glfw-rs, also bjz's, is used to create the window and expose events.
 
 
 Building
 ========
 
-Controlled by the Makefile in this project root directory.
+The Makefile is probably out of date now.  Build using cargo:
 
 ```
-make get-deps  #
-make deps
-make nanovg
-make examples
-cd bin; ./example_gl3
+  git clone https://github.com/KevinKelley/nanovg-rs
+  cd nanovg-rs
+  cargo build
 ```
+
+To build the demo, then:
+
+```
+  cd example
+  cargo build
+  target/example
+```
+
+(note that font and image resources won't be found if you run from
+inside the target directory)
 
 In the demo,
 - 'p' switches between pre- and un-premultiplied alpha;
