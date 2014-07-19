@@ -166,7 +166,7 @@ pub struct NVGparams {
 }
 
 
-#[link(name = "nanovg")]
+#[link(name = "nanovg", kind = "static")]
 extern "C"
 {
     pub fn nvgBeginFrame(ctx: *mut NVGcontext, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float);
