@@ -1,11 +1,14 @@
 [package]
-name = "nanovg"
+name = "nanovg_examples"
 version = "0.1.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
-build = "make -f nanovg.mk"
 
-[[lib]]
-name = "nanovg"
+[[bin]]
+name = "example"
+path = "src/main.rs"
+
+[dependencies.nanovg]
+git = "https://github.com/KevinKelley/nanovg-rs"
 
 [dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs"
