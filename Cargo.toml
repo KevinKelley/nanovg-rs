@@ -6,9 +6,3 @@ build = "make -f nanovg.mk"
 
 [[lib]]
 name = "nanovg"
-
-[dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs"
-
-[dependencies.gl]
-git = "https://github.com/bjz/gl-rs"
