@@ -38,11 +38,7 @@ pub static NVG_ANTIALIAS: c_uint = 1;
 pub static NVG_STENCIL_STROKES: c_uint = 2;
 
 
-pub struct NVGcontext {
-    x: *const c_void,
-    no_send: marker::NoSend,
-    no_share: marker::NoShare,
-}
+pub enum NVGcontext {}
 
 #[repr(C)]
 pub struct NVGcolor {

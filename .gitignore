@@ -5,3 +5,4 @@ target/
 rust-empty.mk
 watch.sh
 target/
+*.swp
