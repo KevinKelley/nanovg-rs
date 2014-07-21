@@ -6,6 +6,7 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
+#![feature(globs)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case_functions)]
 #![deny(unnecessary_parens)]
@@ -22,6 +23,7 @@
 
 extern crate libc;
 
+
 use std::fmt;
 use std::kinds::marker;
 use std::ptr;
@@ -29,7 +31,9 @@ use std::str;
 use std::bitflags;
 use libc::{c_char, c_int, c_void};
 
-pub use Color            = ffi::NVGcolor;
+
+use ffi::NVGcolor;
+
 pub use NVGpaint         = ffi::NVGpaint;
 pub use NVGglyphPosition = ffi::NVGglyphPosition;
 pub use NVGtextRow       = ffi::NVGtextRow;
@@ -90,44 +94,55 @@ pub bitflags!(
 
 //#[repr(C)]
 //#[deriving(Clone, PartialEq, Show)]
-//pub struct Color {
-//    pub r: f32,
-//    pub g: f32,
-//    pub b: f32,
-//    pub a: f32,
-//}
-//}
+pub struct Color {
+    nvg: NVGcolor
+}
 
-//impl ffi::NVGcolor {
+impl Color {
+    #[inline]
+    fn wrap(nvg: NVGcolor) -> Color { Color { nvg: nvg } }
+
+    #[inline]
+    pub fn r(&self) -> f32 { self.nvg.r }
+
+    #[inline]
+    pub fn g(&self) -> f32 { self.nvg.g }
+
+    #[inline]
+    pub fn b(&self) -> f32 { self.nvg.b }
+
+    #[inline]
+    pub fn a(&self) -> f32 { self.nvg.a }
+
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {
-        unsafe { ffi::nvgRGB(r, g, b) }
+        Color::wrap(unsafe { ffi::nvgRGB(r, g, b) })
     }
     pub fn rgb_f(r: f32, g: f32, b: f32) -> Color {
-        unsafe { ffi::nvgRGBf(r, g, b) }
+        Color::wrap(unsafe { ffi::nvgRGBf(r, g, b) })
     }
     pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> Color {
-        unsafe { ffi::nvgRGBA(r, g, b, a) }
+        Color::wrap(unsafe { ffi::nvgRGBA(r, g, b, a) })
     }
     pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
-        unsafe { ffi::nvgRGBAf(r, g, b, a) }
+        Color::wrap(unsafe { ffi::nvgRGBAf(r, g, b, a) })
     }
     pub fn lerp_rgba(c0: Color, c1: Color, u: f32) -> Color {
-        unsafe { ffi::nvgLerpRGBA(c0, c1, u) }
+        Color::wrap(unsafe { ffi::nvgLerpRGBA(c0.nvg, c1.nvg, u) })
     }
     pub fn trans_rgba(c0: Color, a: u8) -> Color {
-        unsafe { ffi::nvgTransRGBA(c0, a) }
+        Color::wrap(unsafe { ffi::nvgTransRGBA(c0.nvg, a) })
     }
     pub fn trans_rgba_f(c0: Color, a: f32) -> Color {
-        unsafe { ffi::nvgTransRGBAf(c0, a) }
+        Color::wrap(unsafe { ffi::nvgTransRGBAf(c0.nvg, a) })
     }
     pub fn hsl(h: f32, s: f32, l: f32) -> Color {
-        unsafe { ffi::nvgHSL(h, s, l) }
+        Color::wrap(unsafe { ffi::nvgHSL(h, s, l) })
     }
     pub fn hsla(h: f32, s: f32, l: f32, a: u8) -> Color {
-        unsafe { ffi:: nvgHSLA(h,s,l, a) }
+        Color::wrap(unsafe { ffi:: nvgHSLA(h, s, l, a) })
     }
-//
-//}
+}
+
 
 //#[repr(C)]
 //pub struct NVGpaint {
@@ -188,7 +203,7 @@ pub bitflags!(
 
 //#[deriving(Show)]
 pub struct Ctx {
-    pub ptr: *mut ffi::NVGcontext,
+    ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
     no_share: marker::NoShare,
 }
@@ -221,6 +236,9 @@ impl Ctx
         unsafe { ffi::nvgDeleteGL3(self.ptr) }
     }
 
+    // shouldn't return internal ffi type
+    fn as_mut_ptr(&self) -> *mut ffi::NVGcontext { self.ptr }
+
 
     pub fn begin_frame(&self, windowWidth: i32, windowHeight: i32, devicePixelRatio: f32) {
 		unsafe { ffi::nvgBeginFrame(self.ptr, windowWidth, windowHeight, devicePixelRatio) }
@@ -240,13 +258,13 @@ impl Ctx
 	}
 
     pub fn stroke_color(&self, color: Color) {
-		unsafe { ffi::nvgStrokeColor(self.ptr, color) }
+		unsafe { ffi::nvgStrokeColor(self.ptr, color.nvg) }
 	}
     pub fn stroke_paint(&self, paint: NVGpaint) {
 		unsafe { ffi::nvgStrokePaint(self.ptr, paint) }
 	}
     pub fn fill_color(&self, color: Color) {
-		unsafe { ffi::nvgFillColor(self.ptr, color) }
+		unsafe { ffi::nvgFillColor(self.ptr, color.nvg) }
 	}
     pub fn fill_paint(&self, paint: NVGpaint) {
 		unsafe { ffi::nvgFillPaint(self.ptr, paint) }
@@ -314,13 +332,13 @@ impl Ctx
 	}
 
     pub fn linear_gradient(&self, sx: f32, sy: f32, ex: f32, ey: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgLinearGradient(self.ptr, sx, sy, ex, ey, icol, ocol) }
+		unsafe { ffi::nvgLinearGradient(self.ptr, sx, sy, ex, ey, icol.nvg, ocol.nvg) }
 	}
     pub fn box_gradient(&self, x: f32, y: f32, w: f32, h: f32, r: f32, f: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgBoxGradient(self.ptr, x, y, w, h, r, f, icol, ocol) }
+		unsafe { ffi::nvgBoxGradient(self.ptr, x, y, w, h, r, f, icol.nvg, ocol.nvg) }
 	}
     pub fn radial_gradient(&self, cx: f32, cy: f32, inr: f32, outr: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol, ocol) }
+		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) }
 	}
     pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: i32, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
 		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat as i32, alpha) }
@@ -484,37 +502,51 @@ pub fn relative_index(text: &str, p: *const i8) -> uint {
 }
 
 
-// use [f32, ..6], or wrap that in a Transform impl
+///
+struct Transform {
+    raw: [f32, ..6]
+}
+impl Transform
+{
+    pub fn new() -> Transform {
+        let mut t = Transform { raw: [0.0, ..6] };
+        t.identity();
+        t
+    }
+    pub fn identity(&mut self) {
+        unsafe { ffi::nvgTransformIdentity(self.as_mut_ptr()) }
+    }
+    pub fn translate(&mut self, tx: f32, ty: f32) {
+        unsafe { ffi::nvgTransformTranslate(self.as_mut_ptr(), tx, ty) }
+    }
+    pub fn scale(&mut self, sx: f32, sy: f32) {
+        unsafe { ffi::nvgTransformScale(self.as_mut_ptr(), sx, sy) }
+    }
+    pub fn rotate(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformRotate(self.as_mut_ptr(), a) }
+    }
+    pub fn skew_x(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformSkewX(self.as_mut_ptr(), a) }
+    }
+    pub fn skew_y(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformSkewY(self.as_mut_ptr(), a) }
+    }
+    pub fn multiply(&mut self, src: *const f32) {
+        unsafe { ffi::nvgTransformMultiply(self.as_mut_ptr(), src) }
+    }
+    pub fn premultiply(&mut self, src: *const f32) {
+        unsafe { ffi::nvgTransformPremultiply(self.as_mut_ptr(), src) }
+    }
+    pub fn inverse(&mut self, src: *const f32) -> i32 {
+        unsafe { ffi::nvgTransformInverse(self.as_mut_ptr(), src) }
+    }
+    pub fn transform_point(dstx: *mut f32, dsty: *mut f32, xform: *const f32, srcx: f32, srcy: f32) {
+        unsafe { ffi::nvgTransformPoint(dstx, dsty, xform, srcx, srcy) }
+    }
 
-pub fn transform_identity(dst: *mut f32) {
-	unsafe { ffi::nvgTransformIdentity(dst) }
-}
-pub fn transform_translate(dst: *mut f32, tx: f32, ty: f32) {
-	unsafe { ffi::nvgTransformTranslate(dst, tx, ty) }
-}
-pub fn transform_scale(dst: *mut f32, sx: f32, sy: f32) {
-	unsafe { ffi::nvgTransformScale(dst, sx, sy) }
-}
-pub fn transform_rotate(dst: *mut f32, a: f32) {
-	unsafe { ffi::nvgTransformRotate(dst, a) }
-}
-pub fn transform_skew_x(dst: *mut f32, a: f32) {
-	unsafe { ffi::nvgTransformSkewX(dst, a) }
-}
-pub fn transform_skew_y(dst: *mut f32, a: f32) {
-	unsafe { ffi::nvgTransformSkewY(dst, a) }
-}
-pub fn transform_multiply(dst: *mut f32, src: *const f32) {
-	unsafe { ffi::nvgTransformMultiply(dst, src) }
-}
-pub fn transform_premultiply(dst: *mut f32, src: *const f32) {
-	unsafe { ffi::nvgTransformPremultiply(dst, src) }
-}
-pub fn transform_inverse(dst: *mut f32, src: *const f32) -> i32 {
-	unsafe { ffi::nvgTransformInverse(dst, src) }
-}
-pub fn transform_point(dstx: *mut f32, dsty: *mut f32, xform: *const f32, srcx: f32, srcy: f32) {
-	unsafe { ffi::nvgTransformPoint(dstx, dsty, xform, srcx, srcy) }
+    pub fn as_mut_ptr(&mut self) -> *mut f32 {
+        self.raw.as_mut_ptr()
+    }
 }
 
 pub fn deg_to_rad(deg: f32) -> f32 {
