@@ -27,6 +27,10 @@ fn sqrt(x: f32) -> f32 { x.sqrt() }
 fn cos(x: f32) -> f32 { x.cos() }
 fn sin(x: f32) -> f32 { x.sin() }
 
+fn rgba(r:u8, g:u8, b:u8, a:u8) -> Color { Color::rgba(r,g,b,a) }
+fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
+
+
 
 fn cp_to_utf8(cp:char) -> String { format!("{}", cp) }
 
@@ -149,7 +153,7 @@ pub fn render_demo(vg: &Ctx, mx: f32, my: f32, width: f32, height: f32, t: f32, 
 
 
 fn is_black(col: Color) -> bool {
-	col.r == 0.0 && col.g == 0.0 && col.b == 0.0 && col.a == 0.0
+	col.r() == 0.0 && col.g() == 0.0 && col.b() == 0.0 && col.a() == 0.0
 }
 
 fn draw_window(vg: &Ctx, title: &str, x: f32, y: f32, w: f32, h: f32)
@@ -306,7 +310,7 @@ fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h
 {
 	draw_editbox_base(vg, x,y, w,h);
 
-	let mut bounds: f32 = 0.0;
+	let mut bounds = [0.0, ..4];
 	let uw = vg.text_bounds(0.0,0.0, units, &mut bounds);
 
 	vg.font_size(18.0);
@@ -365,7 +369,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 
 	vg.font_size(20.0);
 	vg.font_face("sans-bold");
-	let mut bounds: f32 = 0.0;
+	let mut bounds = [0.0, ..4];
 	let tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
 	let mut iw = 0.0;
 	if preicon != NO_ICON {
@@ -798,7 +802,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
 	vg.line_to(ax,ay);
 	vg.line_to(bx,by);
 	vg.close_path();
-	paint = vg.linear_gradient(r,0.0, ax,ay, hsla(hue,1.0,0.5,255), rgba(255,255,255,255));
+	paint = vg.linear_gradient(r,0.0, ax,ay, hsla(hue,1.0,0.5, 255), rgba(255,255,255,255));
 	vg.fill_paint(paint);
 	vg.fill();
 	paint = vg.linear_gradient((r+ax)*0.5,(0.0+ay)*0.5, bx,by, rgba(0,0,0,0), rgba(0,0,0,255));
@@ -982,7 +986,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
 		vg.font_size(13.0);
 		vg.text_align(RIGHT|MIDDLE);
 
-		vg.text_bounds(gx,gy, txt.as_slice(), &mut bounds[0]);
+		vg.text_bounds(gx,gy, txt.as_slice(), &mut bounds);
 
 		vg.begin_path();
 		vg.fill_color(rgba(255,192,0,255));
@@ -1004,7 +1008,9 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
 	vg.text_align(LEFT|TOP);
 	vg.text_line_height(1.2);
 
-	vg.text_box_bounds(x,y, 150.0, "Hover your mouse over the text to see calculated caret position.", &mut bounds[0]);
+	vg.text_box_bounds(x,y,
+		150.0, "Hover your mouse over the text to see calculated caret position.",
+		&mut bounds);
 
 	// Fade the tooltip out when close to it.
 	gx = abs((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2]));

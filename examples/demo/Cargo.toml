@@ -8,7 +8,8 @@ name = "example"
 path = "src/main.rs"
 
 [dependencies.nanovg]
-git = "https://github.com/KevinKelley/nanovg-rs"
+#git = "https://github.com/KevinKelley/nanovg-rs"
+path = "../.."
 
 [dependencies.glfw]
 git = "https://github.com/bjz/glfw-rs"

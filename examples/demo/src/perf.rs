@@ -1,6 +1,11 @@
 //use std::str;
 //use std::vec;
-use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, rgba};
+use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, Color};
+
+// convenience forwarders
+fn rgba(r:u8, g:u8, b:u8, a:u8) -> Color { Color::rgba(r,g,b,a) }
+fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
+
 
 #[repr(i32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]

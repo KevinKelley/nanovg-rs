@@ -93,7 +93,7 @@ fn main()
     init_gl();
 
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
-   	assert!(!vg.ptr.is_null());
+   	//assert!(!vg.ptr.is_null());
 
     let data = demo::DemoData::load(&vg);
 
@@ -107,9 +107,6 @@ fn main()
 
     while !window.should_close()
     {
-    	let premult = unsafe { premult };
-    	let blowup  = unsafe { blowup  };
-
     	let t: f64 = glfw.get_time();
     	let dt: f64 = t - prevt;
     	prevt = t;
@@ -123,10 +120,12 @@ fn main()
 
         // Update and render
         glcheck!(gl::Viewport(0, 0, fbWidth, fbHeight));
-        if premult {
-        	glcheck!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
-        } else {
-        	glcheck!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
+        unsafe {
+            if premult {
+                glcheck!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
+            } else {
+                glcheck!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
+            }
         }
         glcheck!(gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT));
 
@@ -138,7 +137,7 @@ fn main()
 
         vg.begin_frame(winWidth, winHeight, pxRatio as f32);
 
-        demo::render_demo(&vg, mx as f32,my as f32, winWidth as f32,winHeight as f32, t as f32, blowup, &data);
+        unsafe { demo::render_demo(&vg, mx as f32,my as f32, winWidth as f32,winHeight as f32, t as f32, blowup, &data); }
         fps.render(&vg, 5.0, 5.0);
 
         vg.end_frame();
