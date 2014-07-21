@@ -30,7 +30,7 @@ use std::ptr::null;
 
 //use nanovg::{Color};
 
-use NVGcolor = nanovg::Color;
+use Color = nanovg::Color;
 use NVGcontext = nanovg::Ctx;
 use nanovg::{NVGglyphPosition};
 use ffi::{BNDwidgetTheme};
@@ -72,8 +72,8 @@ fn bndToolButton(ctx: &NVGcontext,
     iconid: c_int, label: *const c_char
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_TOOL_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -97,8 +97,8 @@ fn bndRadioButton(ctx: &NVGcontext,
     iconid: c_int, label: *const c_char
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_OPTION_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -125,8 +125,8 @@ fn bndTextField(ctx: &NVGcontext,
     iconid: c_int, text: *const c_char, cbegin: c_int, cend: c_int
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_TEXT_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -151,8 +151,8 @@ fn bndOptionButton(ctx: &NVGcontext,
     x: c_float, y: c_float, w: c_float, h: c_float, state: BNDwidgetState,
     label: *const c_char
 ) {
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     let ox = x;
     let oy = y+h-BND_OPTION_HEIGHT-3.0;
@@ -188,8 +188,8 @@ fn bndChoiceButton(ctx: &NVGcontext,
     iconid: c_int, label: *const c_char
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_OPTION_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -216,8 +216,8 @@ fn bndNumberField(ctx: &NVGcontext,
     label: *const c_char, value: *const c_char
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_NUMBER_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -247,8 +247,8 @@ fn bndSlider(ctx: &NVGcontext,
     progress: c_float, label: *const c_char, value: *const c_char
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_NUMBER_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -326,8 +326,8 @@ fn bndMenuBackground(ctx: &NVGcontext,
     x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int
 ) {
     let cr: [c_float, ..4]; //float cr[4];
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndSelectCorners(cr, BND_MENU_RADIUS, flags);
     bndInnerColors(&shade_top, &shade_down, &bnd_theme.menuTheme,
@@ -376,8 +376,8 @@ fn bndMenuItem(ctx: &NVGcontext,
 // Draw a tooltip background with its lower left origin at (x,y) and size of (w,h)
 fn bndTooltipBackground(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float
 ) {
-    let shade_top: NVGcolor;
-    let shade_down: NVGcolor;
+    let shade_top: Color;
+    let shade_down: Color;
 
     bndInnerColors(&shade_top, &shade_down, &bnd_theme.tooltipTheme,
         BND_DEFAULT, 0);
@@ -423,7 +423,7 @@ fn bndLabelWidth(ctx: &NVGcontext, iconid: c_int, label: *const c_char
 // new kinds of controls in a similar fashion.
 
 // make color transparent using the default alpha value
-fn bndTransparent(color: NVGcolor) -> NVGcolor
+fn bndTransparent(color: Color) -> Color
 {
     color.a *= BND_TRANSPARENT_ALPHA;
     return color;
@@ -431,7 +431,7 @@ fn bndTransparent(color: NVGcolor) -> NVGcolor
 
 
 // offset a color by a given integer delta in the range -100 to 100
-fn bndOffsetColor(color: NVGcolor, delta: c_int) -> NVGcolor
+fn bndOffsetColor(color: Color, delta: c_int) -> Color
 {
     if delta != 0 {
 	    let offset = (delta as c_float) / 255.0;
@@ -448,19 +448,19 @@ fn bndOffsetColor(color: NVGcolor, delta: c_int) -> NVGcolor
 // assigns radius r to the four entries of array radiuses depending on whether
 // the corner is marked as sharp or not; see BNDcornerFlags for possible
 // flag values.
-fn bndSelectCorners(radiuses: *const c_float, r: c_float, flags: c_int
+fn bndSelectCorners(radiuses: [f32,..4], r: f32, flags: CornerFlags
 ) {
-    radiuses[0] = if flags & BND_CORNER_TOP_LEFT {0} else {r};
-    radiuses[1] = if flags & BND_CORNER_TOP_RIGHT {0} else {r};
-    radiuses[2] = if flags & BND_CORNER_DOWN_RIGHT {0} else {r};
-    radiuses[3] = if flags & BND_CORNER_DOWN_LEFT {0} else {r};
+    radiuses[0] = if flags.contains(CORNER_TOP_LEFT  ) {0.0} else {r};
+    radiuses[1] = if flags.contains(CORNER_TOP_RIGHT ) {0.0} else {r};
+    radiuses[2] = if flags.contains(CORNER_DOWN_RIGHT) {0.0} else {r};
+    radiuses[3] = if flags.contains(CORNER_DOWN_LEFT ) {0.0} else {r};
 }
 
 // computes the upper and lower gradient colors for the inner box from a widget
 // theme and the widgets state. If flipActive is set and the state is
 // BND_ACTIVE, the upper and lower colors will be swapped.
-fn bndInnerColors(shade_top: *const NVGcolor, shade_down: *const NVGcolor,
-    theme: *const BNDwidgetTheme, state: BNDwidgetState, flipActive: c_int
+fn bndInnerColors(shade_top: &Color, shade_down: &Color,
+    theme: &BNDwidgetTheme, state: BNDwidgetState, flipActive: bool
 ) {
     match state {
 	    //default:
@@ -484,7 +484,7 @@ fn bndInnerColors(shade_top: *const NVGcolor, shade_down: *const NVGcolor,
 
 // computes the text color for a widget label from a widget theme and the
 // widgets state.
-fn bndTextColor(theme: *const BNDwidgetTheme, state: BNDwidgetState) -> NVGcolor
+fn bndTextColor(theme: &BNDwidgetTheme, state: BNDwidgetState) -> Color
 {
     return if (state == BND_ACTIVE) {theme.textSelectedColor} else {theme.textColor};
 }
@@ -606,21 +606,21 @@ fn bndBevelInset(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_floa
 // the icon from the sheet; use the BND_ICONID macro to build icon IDs.
 fn bndIcon(ctx: &NVGcontext, x: c_float, y: c_float, iconid: c_int
 ) {
-    if (bnd_icon_image < 0) {return}; // no icons loaded
-
-    let ix = iconid & 0xff;
-    let iy = (iconid>>8) & 0xff;
-    let u = (BND_ICON_SHEET_OFFSET_X + ix*BND_ICON_SHEET_GRID) as f32;
-    let v = (BND_ICON_SHEET_OFFSET_Y + iy*BND_ICON_SHEET_GRID) as f32;
-
-    ctx.begin_path();
-    ctx.rect(x,y,BND_ICON_SHEET_RES,BND_ICON_SHEET_RES);
-    ctx.fill_paint(
-        ctx.image_pattern(x-u,y-v,
-        BND_ICON_SHEET_WIDTH as f32,
-        BND_ICON_SHEET_HEIGHT as f32,
-        0.0,bnd_icon_image,0.0,1.0));
-    ctx.fill();
+//    if (bnd_icon_image < 0) {return}; // no icons loaded
+//
+//    let ix = iconid & 0xff;
+//    let iy = (iconid>>8) & 0xff;
+//    let u = (BND_ICON_SHEET_OFFSET_X + ix*BND_ICON_SHEET_GRID) as f32;
+//    let v = (BND_ICON_SHEET_OFFSET_Y + iy*BND_ICON_SHEET_GRID) as f32;
+//
+//    ctx.begin_path();
+//    ctx.rect(x,y,BND_ICON_SHEET_RES,BND_ICON_SHEET_RES);
+//    ctx.fill_paint(
+//        ctx.image_pattern(x-u,y-v,
+//        BND_ICON_SHEET_WIDTH as f32,
+//        BND_ICON_SHEET_HEIGHT as f32,
+//        0.0,bnd_icon_image,0.0,1.0));
+//    ctx.fill();
 }
 
 // Draw a drop shadow around the rounded box at (x,y) with size (w,h) and
@@ -659,7 +659,7 @@ fn bndDropShadow(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_floa
 // vertical.
 fn bndInnerBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
     cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float,
-    shade_top: NVGcolor, shade_down: NVGcolor
+    shade_top: Color, shade_down: Color
 ) {
     ctx.begin_path();
     bndRoundedBox(ctx,x+1.0,y+1.0,w-2.0,h-3.0,
@@ -672,7 +672,7 @@ fn bndInnerBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
 
 // Draw the outline part of a widget box with the given color
 fn bndOutlineBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-    cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float, color: NVGcolor
+    cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float, color: Color
 ) {
     ctx.begin_path();
     bndRoundedBox(ctx,x+0.5,y+0.5,w-1.0,h-2.0,cr0,cr1,cr2,cr3);
@@ -690,49 +690,49 @@ fn bndOutlineBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_floa
 // if value is not NULL, label and value will be drawn with a ":" separator
 // inbetween.
 fn bndIconLabelValue(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-    iconid: c_int, color: NVGcolor, align: c_int, fontsize: c_float, label: *const c_char,
+    iconid: c_int, color: Color, align: c_int, fontsize: c_float, label: *const c_char,
     value: *const c_char
 ) {
-    let pleft = BND_PAD_LEFT;
-    if (label) {
-        if (iconid >= 0) {
-            bndIcon(ctx,x+4.0,y+2.0,iconid);
-            pleft += BND_ICON_SHEET_RES;
-        }
-
-        if (bnd_font < 0) {return};
-        ctx.font_face_id(bnd_font);
-        ctx.font_size(fontsize);
-        ctx.begin_path();
-        ctx.fill_color(color);
-        if (value) {
-            let label_width = ctx.text_bounds(1.0, 1.0, label);
-            let sep_width = ctx.text_bounds(1.0, 1.0,
-                theme::BND_LABEL_SEPARATOR);
-
-            ctx.text_align(nanovg::LEFT|nanovg::BASELINE);
-            x += pleft as f32;
-            if (align == BND_CENTER) {
-                let width = label_width + sep_width
-                    + ctx.text_bounds(1.0, 1.0, value);
-                x += ((w-(BND_PAD_RIGHT-pleft) as f32)-width)*0.5;
-            }
-            y += h-BND_TEXT_PAD_DOWN as f32;
-            ctx.text(x, y, label);
-            x += label_width;
-            ctx.text(x, y, theme::BND_LABEL_SEPARATOR);
-            x += sep_width;
-            ctx.text(x, y, value);
-        } else {
-            ctx.text_align(
-                if align==BND_LEFT  {nanovg::LEFT  |nanovg::BASELINE}
-                else 				{nanovg::CENTER|nanovg::BASELINE});
-            ctx.text_box(x+pleft as f32,y+h-BND_TEXT_PAD_DOWN as f32,
-                w-BND_PAD_RIGHT as f32-pleft as f32,label);
-        }
-    } else if (iconid >= 0) {
-        bndIcon(ctx,x+2.0,y+2.0,iconid);
-    }
+//    let pleft = BND_PAD_LEFT;
+//    if (label) {
+//        if (iconid >= 0) {
+//            bndIcon(ctx,x+4.0,y+2.0,iconid);
+//            pleft += BND_ICON_SHEET_RES;
+//        }
+//
+//        if (bnd_font < 0) {return};
+//        ctx.font_face_id(bnd_font);
+//        ctx.font_size(fontsize);
+//        ctx.begin_path();
+//        ctx.fill_color(color);
+//        if (value) {
+//            let label_width = ctx.text_bounds(1.0, 1.0, label);
+//            let sep_width = ctx.text_bounds(1.0, 1.0,
+//                theme::BND_LABEL_SEPARATOR);
+//
+//            ctx.text_align(nanovg::LEFT|nanovg::BASELINE);
+//            x += pleft as f32;
+//            if (align == BND_CENTER) {
+//                let width = label_width + sep_width
+//                    + ctx.text_bounds(1.0, 1.0, value);
+//                x += ((w-(BND_PAD_RIGHT-pleft) as f32)-width)*0.5;
+//            }
+//            y += h-BND_TEXT_PAD_DOWN as f32;
+//            ctx.text(x, y, label);
+//            x += label_width;
+//            ctx.text(x, y, theme::BND_LABEL_SEPARATOR);
+//            x += sep_width;
+//            ctx.text(x, y, value);
+//        } else {
+//            ctx.text_align(
+//                if align==BND_LEFT  {nanovg::LEFT  |nanovg::BASELINE}
+//                else 				{nanovg::CENTER|nanovg::BASELINE});
+//            ctx.text_box(x+pleft as f32,y+h-BND_TEXT_PAD_DOWN as f32,
+//                w-BND_PAD_RIGHT as f32-pleft as f32,label);
+//        }
+//    } else if (iconid >= 0) {
+//        bndIcon(ctx,x+2.0,y+2.0,iconid);
+//    }
 }
 
 // Draw an optional icon specified by <iconid>, an optional label and
@@ -745,65 +745,65 @@ fn bndIconLabelValue(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_
 // cend must be >= cbegin and <= strlen(text) and denotes the end of the caret
 // if cend < cbegin, then no caret will be drawn
 fn bndIconLabelCaret(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-    iconid: c_int, color: NVGcolor, fontsize: c_float, label: *const c_char,
-    caretcolor: NVGcolor, cbegin: c_int, cend: c_int
+    iconid: c_int, color: Color, fontsize: c_float, label: *const c_char,
+    caretcolor: Color, cbegin: c_int, cend: c_int
 ) {
-    let bounds: [c_float, ..4];
-    let pleft = theme::BND_TEXT_RADIUS;
-    if (!label) {return};
-    if (iconid >= 0) {
-        bndIcon(ctx,x+4.0,y+2.0,iconid);
-        pleft += BND_ICON_SHEET_RES as f32;
-    }
-
-    if (bnd_font < 0) {return};
-
-    x+=pleft;
-    y+=h-BND_TEXT_PAD_DOWN as f32;
-
-    ctx.font_face_id(bnd_font);
-    ctx.font_size(fontsize);
-    ctx.text_align(nanovg::LEFT|nanovg::BASELINE);
-
-    if (cend >= cbegin) {
-        //const char *cb;const char *ce;
-        let /*static*/ glyphs: [NVGglyphPosition, ..theme::BND_MAX_GLYPHS];
-        let nglyphs = ctx.text_glyph_positions(
-            x, y, label, label+cend+1, glyphs, theme::BND_MAX_GLYPHS);
-        let c0=glyphs[0].x;
-        let c1=glyphs[nglyphs-1].x;
-        let cb = label+cbegin;
-        let ce = label+cend;
-        // TODO: this is slow
-        for i in range(0, nglyphs) {
-            if (glyphs[i].str == cb) {
-                c0 = glyphs[i].x;
-            }
-            if (glyphs[i].str == ce) {
-                c1 = glyphs[i].x;
-            }
-        }
-
-        ctx.text_bounds(x,y,label, bounds);
-        ctx.begin_path();
-        if (cbegin == cend) {
-            ctx.fill_color(nanovg::rgb_f(0.337,0.502,0.761));
-            ctx.rect(c0-1.0, bounds[1], 2.0, bounds[3]-bounds[1]);
-        } else {
-            ctx.fill_color(caretcolor);
-            ctx.rect(c0-1.0, bounds[1], c1-c0+1.0, bounds[3]-bounds[1]);
-        }
-        ctx.fill();
-    }
-
-    ctx.begin_path();
-    ctx.fill_color(color);
-    ctx.text_box(x,y,w-theme::BND_TEXT_RADIUS-pleft,label);
+//    let bounds: [c_float, ..4];
+//    let pleft = theme::BND_TEXT_RADIUS;
+//    if (!label) {return};
+//    if (iconid >= 0) {
+//        bndIcon(ctx,x+4.0,y+2.0,iconid);
+//        pleft += BND_ICON_SHEET_RES as f32;
+//    }
+//
+//    if (bnd_font < 0) {return};
+//
+//    x+=pleft;
+//    y+=h-BND_TEXT_PAD_DOWN as f32;
+//
+//    ctx.font_face_id(bnd_font);
+//    ctx.font_size(fontsize);
+//    ctx.text_align(nanovg::LEFT|nanovg::BASELINE);
+//
+//    if (cend >= cbegin) {
+//        //const char *cb;const char *ce;
+//        let /*static*/ glyphs: [NVGglyphPosition, ..theme::BND_MAX_GLYPHS];
+//        let nglyphs = ctx.text_glyph_positions(
+//            x, y, label, label+cend+1, glyphs, theme::BND_MAX_GLYPHS);
+//        let c0=glyphs[0].x;
+//        let c1=glyphs[nglyphs-1].x;
+//        let cb = label+cbegin;
+//        let ce = label+cend;
+//        // TODO: this is slow
+//        for i in range(0, nglyphs) {
+//            if (glyphs[i].str == cb) {
+//                c0 = glyphs[i].x;
+//            }
+//            if (glyphs[i].str == ce) {
+//                c1 = glyphs[i].x;
+//            }
+//        }
+//
+//        ctx.text_bounds(x,y,label, bounds);
+//        ctx.begin_path();
+//        if (cbegin == cend) {
+//            ctx.fill_color(nanovg::rgb_f(0.337,0.502,0.761));
+//            ctx.rect(c0-1.0, bounds[1], 2.0, bounds[3]-bounds[1]);
+//        } else {
+//            ctx.fill_color(caretcolor);
+//            ctx.rect(c0-1.0, bounds[1], c1-c0+1.0, bounds[3]-bounds[1]);
+//        }
+//        ctx.fill();
+//    }
+//
+//    ctx.begin_path();
+//    ctx.fill_color(color);
+//    ctx.text_box(x,y,w-theme::BND_TEXT_RADIUS-pleft,label);
 }
 
 // Draw a checkmark for an option box with the given upper left coordinates
 // (ox,oy) with the specified color.
-fn bndCheck(ctx: &NVGcontext, ox: c_float, oy: c_float, color: NVGcolor
+fn bndCheck(ctx: &NVGcontext, ox: c_float, oy: c_float, color: Color
 ) {
     ctx.begin_path();
     ctx.stroke_width(2.0);
@@ -819,7 +819,7 @@ fn bndCheck(ctx: &NVGcontext, ox: c_float, oy: c_float, color: NVGcolor
 
 // Draw a horizontal arrow for a number field with its center at (x,y) and
 // size s; if s is negative, the arrow points to the left.
-fn bndArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: NVGcolor
+fn bndArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: Color
 ) {
     ctx.begin_path();
     ctx.move_to(x,y);
@@ -831,7 +831,7 @@ fn bndArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: NVGcolo
 }
 
 // Draw an up/down arrow for a choice box with its center at (x,y) and size s
-fn bndUpDownArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: NVGcolor
+fn bndUpDownArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: Color
 ) {
     ctx.begin_path();
     let w = 1.1*s;

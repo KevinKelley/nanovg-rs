@@ -89,28 +89,32 @@ pub type BNDwidgetState = c_uint;
     pub static BND_ACTIVE: c_uint = 2;
 
 /// flags indicating which corners are sharp (for grouping widgets)
-pub type BNDcornerFlags = c_int;
-    /// all corners are round
-    pub static BND_CORNER_NONE: c_int = 0;
-    /// sharp top left corner
-    pub static BND_CORNER_TOP_LEFT: c_int = 1;
-    /// sharp top right corner
-    pub static BND_CORNER_TOP_RIGHT: c_int = 2;
-    /// sharp bottom right corner
-    pub static BND_CORNER_DOWN_RIGHT: c_int = 4;
-    /// sharp bottom left corner
-    pub static BND_CORNER_DOWN_LEFT: c_int = 8;
-    /// all corners are sharp;
-    /// you can invert a set of flags using ^= BND_CORNER_ALL
-    pub static BND_CORNER_ALL: c_int = 0xF;
-    /// top border is sharp
-    pub static BND_CORNER_TOP: c_int = 3;
-    /// bottom border is sharp
-    pub static BND_CORNER_DOWN: c_int = 0xC;
-    /// left border is sharp
-    pub static BND_CORNER_LEFT: c_int = 9;
-    /// right border is sharp
-    pub static BND_CORNER_RIGHT: c_int = 6;
+//pub type BNDcornerFlags = c_int;
+bitflags!(
+    flags CornerFlags: u32 {
+        // all corners are round
+        static CORNER_NONE = 0,
+        // sharp top left corner
+        static CORNER_TOP_LEFT = 1,
+        // sharp top right corner
+        static CORNER_TOP_RIGHT = 2,
+        // sharp bottom right corner
+        static CORNER_DOWN_RIGHT = 4,
+        // sharp bottom left corner
+        static CORNER_DOWN_LEFT = 8,
+        // all corners are sharp;
+        // you can invert a set of flags using ^= BND_CORNER_ALL
+        static CORNER_ALL = 0xF,
+        // top border is sharp
+        static CORNER_TOP = 3,
+        // bottom border is sharp
+        static CORNER_DOWN = 0xC,
+        // left border is sharp
+        static CORNER_LEFT = 9,
+        // right border is sharp
+        static CORNER_RIGHT = 6
+    }
+)
 
 // build an icon ID from two coordinates into the icon sheet, where
 // (0,0) designates the upper-leftmost icon, (1,0) the one right next to it,

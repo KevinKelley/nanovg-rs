@@ -22,12 +22,12 @@ pub static BND_LABEL_SEPARATOR: &'static str = ": ";
 // alpha intensity of transparent items (0xa4)
 pub static BND_TRANSPARENT_ALPHA: c_float = 0.643;
 
-// shade intensity of beveled panels
-pub static BND_BEVEL_SHADE: c_uint = 30;
+// shade intensity of beveled panels (expressed in percentage, -100..100)
+pub static BND_BEVEL_SHADE: c_int = 30;
 // shade intensity of beveled insets
-pub static BND_INSET_BEVEL_SHADE: c_uint = 30;
+pub static BND_INSET_BEVEL_SHADE: c_int = 30;
 // shade intensity of hovered inner boxes
-pub static BND_HOVER_SHADE: c_uint = 15;
+pub static BND_HOVER_SHADE: c_int = 15;
 
 // width of icon sheet
 pub static BND_ICON_SHEET_WIDTH: c_uint = 602;
