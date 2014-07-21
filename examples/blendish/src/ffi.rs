@@ -7,13 +7,6 @@ use libc::{c_uint, c_ushort, c_uchar, c_void};
 use NVGcolor = nanovg::Color;
 use NVGcontext = nanovg::Ctx;
 
-// if that typedef is provided elsewhere, you may define
-// BLENDISH_NO_NVG_TYPEDEFS before including the header.
-//#ifndef BLENDISH_NO_NVG_TYPEDEFS
-//struct NVGcontext NVGcontext;
-//struct NVGcolor NVGcolor;
-//struct NVGglyphPosition NVGglyphPosition;
-//#endif
 
 /// describes the theme used to draw a single widget or widget box;
 /// these values correspond to the same values that can be retrieved from
