@@ -1,0 +1,25 @@
+[package]
+name = "blendish"
+version = "0.1.0"
+authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
+
+
+[[lib]]
+name = "blendish"
+path = "src/lib.rs"
+
+#[[bin]]
+#name = "example"
+#path = "src/main.rs"
+
+
+[dependencies.nanovg]
+path = "../.."
+#git = "https://github.com/KevinKelley/nanovg-rs"
+
+[dependencies.glfw]
+git = "https://github.com/bjz/glfw-rs"
+
+[dependencies.gl]
+git = "https://github.com/bjz/gl-rs"
+
