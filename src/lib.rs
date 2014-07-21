@@ -464,6 +464,12 @@ impl Ctx
     	   unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
         })
 	}
+    // Measures the needed advance for text, without computing complete bounds
+    pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
+        text.with_c_str(|text| {
+           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), ptr::mut_null()) }
+        })
+    }
     // Measures the specified multi-text string. Parameter bounds should be float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Measured values are returned in local coordinate space.
