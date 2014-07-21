@@ -455,14 +455,25 @@ impl Ctx
              unsafe { ffi::nvgTextBox(self.ptr, x, y, breakRowWidth, text, ptr::null()) }
         })
 	}
-    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: *mut f32) -> f32 {
+    // Measures the specified text string. Parameter bounds should be a pointer to float[4],
+    // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
+    // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
+    // Measured values are returned in local coordinate space.
+    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32, ..4]) -> f32 {
         text.with_c_str(|text| {
-    	   unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds) }
+    	   unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
         })
 	}
-    pub fn text_box_bounds(&self, x: f32, y: f32, breakRowWidth: f32, text: &str, bounds: *mut f32) {
+    // Measures the specified multi-text string. Parameter bounds should be float[4],
+    // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
+    // Measured values are returned in local coordinate space.
+    pub fn text_box_bounds(&self, x: f32, y: f32, breakRowWidth: f32, text: &str, bounds: &mut [f32, ..4]) {
+        //let bptr: *mut f32 = match bounds {
+        //    Some(vec) => { bptr = vec.as_mut_ptr() }
+        //    None => ptr::null()
+        //}
         text.with_c_str(|text| {
-            unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, breakRowWidth, text, ptr::null(), bounds) }
+            unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, breakRowWidth, text, ptr::null(), bounds.as_mut_ptr()) }
         })
 	}
 
@@ -556,17 +567,6 @@ pub fn rad_to_deg(rad: f32) -> f32 {
 	unsafe { ffi::nvgRadToDeg(rad) }
 }
 
-//pub fn create_internal(params: *mut NVGparams) -> *mut Ctx {
-//	unsafe { ffi::nvgCreateInternal(params) }
-//}
-//pub fn delete_internal(ctx: *mut Ctx) {
-//	unsafe { ffi::nvgDeleteInternal(ctx) }
-//}
-//pub fn internal_params(ctx: *mut Ctx) -> *mut NVGparams {
-//	unsafe { ffi::nvgInternalParams(ctx) }
-//}
-
-
 
 // image-write functions from nanovg/examples/stb_image_write.h
 //
@@ -585,5 +585,3 @@ pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> 
         unsafe { ffi::stbi_write_tga(filename, w as c_int, h as c_int, comp, data as *const c_void) }
     })
 }
-
-
