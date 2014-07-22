@@ -1,0 +1,27 @@
+[package]
+
+name = "blendish-demo"
+version = "0.0.0"
+authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
+tags = []
+
+[[bin]]
+
+name = "blendish-demo"
+path = "src/main.rs"
+
+[dependencies.nanovg]
+path = "../../../.."
+
+[dependencies.blendish]
+path = "../.."
+
+[dependencies.graphics]
+git = "https://github.com/pistondevelopers/rust-graphics"
+
+[dependencies.piston]
+git = "https://github.com/pistondevelopers/piston/"
+
+[dependencies.glfw_game_window]
+git = "https://github.com/PistonDevelopers/glfw_game_window"
+

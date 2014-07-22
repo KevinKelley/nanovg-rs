@@ -1,11 +1,10 @@
 
-use libc::{c_double, c_float, c_int, c_char};
+use libc::{c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
 
-//use nanovg::{Color};
 
-use NVGcolor = nanovg::Color;
-use NVGcontext = nanovg::Ctx;
+use nanovg::Color;
+use nanovg::Ctx;
 
 
 /// describes the theme used to draw a single widget or widget box;
@@ -14,17 +13,17 @@ use NVGcontext = nanovg::Ctx;
 #[repr(C)]
 pub struct BNDwidgetTheme {
     /// color of widget box outline
-    pub outlineColor: NVGcolor,
+    pub outlineColor: Color,
     /// color of widget item (meaning changes depending on class)
-    pub itemColor: NVGcolor,
+    pub itemColor: Color,
     /// fill color of widget box
-    pub innerColor: NVGcolor,
+    pub innerColor: Color,
     /// fill color of widget box when active
-    pub innerSelectedColor: NVGcolor,
+    pub innerSelectedColor: Color,
     /// color of text label
-    pub textColor: NVGcolor,
+    pub textColor: Color,
     /// color of text label when active
-    pub textSelectedColor: NVGcolor,
+    pub textSelectedColor: Color,
     /// delta modifier for upper part of gradient (-100 to 100)
     pub shadeTop: i32,
     /// delta modifier for lower part of gradient (-100 to 100)
@@ -35,7 +34,7 @@ pub struct BNDwidgetTheme {
 #[repr(C)]
 pub struct BNDtheme {
     /// the background color of panels and windows
-    pub backgroundColor: NVGcolor,
+    pub backgroundColor: Color,
     /// theme for labels
     pub regularTheme: BNDwidgetTheme,
     /// theme for tool buttons
@@ -68,9 +67,9 @@ pub type NVGwinding = c_uint;
 pub static NVG_CCW: c_uint = 1;
 
 /// how text on a control is aligned
-pub type BNDtextAlignment = c_int;
-    pub static BND_LEFT: c_int = 0;
-    pub static BND_CENTER: c_int = 1;
+pub type BNDtextAlignment = c_uint;
+    pub static BND_LEFT: c_uint = 0;
+    pub static BND_CENTER: c_uint = 1;
 
 /// states altering the styling of a widget
 pub type BNDwidgetState = c_uint;
@@ -83,36 +82,35 @@ pub type BNDwidgetState = c_uint;
 
 /// flags indicating which corners are sharp (for grouping widgets)
 //pub type BNDcornerFlags = c_int;
-bitflags!(
-    flags CornerFlags: u32 {
-        // all corners are round
-        static CORNER_NONE = 0,
-        // sharp top left corner
-        static CORNER_TOP_LEFT = 1,
-        // sharp top right corner
-        static CORNER_TOP_RIGHT = 2,
-        // sharp bottom right corner
-        static CORNER_DOWN_RIGHT = 4,
-        // sharp bottom left corner
-        static CORNER_DOWN_LEFT = 8,
-        // all corners are sharp;
-        // you can invert a set of flags using ^= BND_CORNER_ALL
-        static CORNER_ALL = 0xF,
-        // top border is sharp
-        static CORNER_TOP = 3,
-        // bottom border is sharp
-        static CORNER_DOWN = 0xC,
-        // left border is sharp
-        static CORNER_LEFT = 9,
-        // right border is sharp
-        static CORNER_RIGHT = 6
-    }
-)
+pub type BNDcornerFlags = c_uint;
+    // all corners are round
+    pub static BND_CORNER_NONE: c_uint = 0;
+    // sharp top left corner
+    pub static BND_CORNER_TOP_LEFT: c_uint = 1;
+    // sharp top right corner
+    pub static BND_CORNER_TOP_RIGHT: c_uint = 2;
+    // sharp bottom right corner
+    pub static BND_CORNER_DOWN_RIGHT: c_uint = 4;
+    // sharp bottom left corner
+    pub static BND_CORNER_DOWN_LEFT: c_uint = 8;
+    // all corners are sharp;
+    // you can invert a set of flags using ^= BND_CORNER_ALL
+    pub static BND_CORNER_ALL: c_uint = 0xF;
+    // top border is sharp
+    pub static BND_CORNER_TOP: c_uint = 3;
+    // bottom border is sharp
+    pub static BND_CORNER_DOWN: c_uint = 0xC;
+    // left border is sharp
+    pub static BND_CORNER_LEFT: c_uint = 9;
+    // right border is sharp
+    pub static BND_CORNER_RIGHT: c_uint = 6;
+
 
 // build an icon ID from two coordinates into the icon sheet, where
 // (0,0) designates the upper-leftmost icon, (1,0) the one right next to it,
 // and so on.
 //#define BND_ICONID(x,y) ((x)|((y)<<8))
+pub fn BND_ICONID(x: u8, y: u8) -> u16 { x as u16 | (y as u16 << 8) }
 
 /// default widget height
 pub static BND_WIDGET_HEIGHT: c_uint = 21;
@@ -133,7 +131,85 @@ pub static BND_HSPACING: c_uint = 8;
 
 /// alpha of disabled widget groups
 /// can be used in conjunction with nvgGlobalAlpha()
-pub static BND_DISABLED_ALPHA: c_double = 0.5;
+pub static BND_DISABLED_ALPHA: c_float = 0.5;
+
+
+// default text size
+pub static BND_LABEL_FONT_SIZE: c_float = 13.0;
+
+// default text padding in inner box
+pub static BND_PAD_LEFT: c_uint = 8;
+pub static BND_PAD_RIGHT: c_uint = 8;
+
+// label: value separator string
+pub static BND_LABEL_SEPARATOR: &'static str = ": ";
+
+// alpha intensity of transparent items (0xa4)
+pub static BND_TRANSPARENT_ALPHA: c_float = 0.643;
+
+// shade intensity of beveled panels (expressed in percentage, -100..100)
+pub static BND_BEVEL_SHADE: c_int = 30;
+// shade intensity of beveled insets
+pub static BND_INSET_BEVEL_SHADE: c_int = 30;
+// shade intensity of hovered inner boxes
+pub static BND_HOVER_SHADE: c_int = 15;
+
+// width of icon sheet
+pub static BND_ICON_SHEET_WIDTH: c_uint = 602;
+// height of icon sheet
+pub static BND_ICON_SHEET_HEIGHT: c_uint = 640;
+// gridsize of icon sheet in both dimensions
+pub static BND_ICON_SHEET_GRID: c_uint = 21;
+// offset of first icon tile relative to left border
+pub static BND_ICON_SHEET_OFFSET_X: c_uint = 5;
+// offset of first icon tile relative to top border
+pub static BND_ICON_SHEET_OFFSET_Y: c_uint = 10;
+// resolution of single icon
+pub static BND_ICON_SHEET_RES: c_uint = 16;
+
+// size of number field arrow
+pub static BND_NUMBER_ARROW_SIZE: c_float = 4.0;
+
+//// default text color
+// TODO fix Color so that it can be struct-initialized
+//pub static BND_COLOR_TEXT: Color = rgba_f( 0.0, 0.0, 0.0, 1.0);
+//// default highlighted text color
+//pub static BND_COLOR_TEXT_SELECTED: Color = rgba_f( 1.0, 1.0, 1.0, 1.0);
+
+// radius of tool button
+pub static BND_TOOL_RADIUS: c_float = 4.0;
+
+// radius of option button
+pub static BND_OPTION_RADIUS: c_float = 4.0;
+// width of option button checkbox
+pub static BND_OPTION_WIDTH: c_float = 14.0;
+// height of option button checkbox
+pub static BND_OPTION_HEIGHT: c_float = 15.0;
+
+// radius of text field
+pub static BND_TEXT_RADIUS: c_float = 4.0;
+
+// radius of number button
+pub static BND_NUMBER_RADIUS: c_float = 10.0;
+
+// radius of menu popup
+pub static BND_MENU_RADIUS: c_float = 3.0;
+// feather of menu popup shadow
+pub static BND_SHADOW_FEATHER: c_float = 12.0;
+// alpha of menu popup shadow
+pub static BND_SHADOW_ALPHA: c_float = 0.5;
+
+// radius of scrollbar
+pub static BND_SCROLLBAR_RADIUS: c_float = 7.0;
+// shade intensity of active scrollbar (percentage delta, -100..100)
+pub static BND_SCROLLBAR_ACTIVE_SHADE: c_int = 15;
+
+// max glyphs for position testing
+pub static BND_MAX_GLYPHS: c_uint = 1024;
+
+// text distance from bottom
+pub static BND_TEXT_PAD_DOWN: c_uint = 7;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -169,7 +245,7 @@ extern {
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndLabel(ctx: &NVGcontext,
+    fn bndLabel(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, iconid: c_int, label: *const c_char);
 
     // Draw a tool button  with its lower left origin at (x,y) and size of (w,h),
@@ -178,7 +254,7 @@ extern {
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndToolButton(ctx: &NVGcontext,
+    fn bndToolButton(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         iconid: c_int, label: *const c_char);
 
@@ -188,7 +264,7 @@ extern {
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndRadioButton(ctx: &NVGcontext,
+    fn bndRadioButton(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         iconid: c_int, label: *const c_char);
 
@@ -201,7 +277,7 @@ extern {
     // cend must be >= cbegin and <= strlen(text) and denotes the end of the caret
     // if cend < cbegin, then no caret will be drawn
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndTextField(ctx: &NVGcontext,
+    fn bndTextField(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         iconid: c_int, text: *const c_char, cbegin: c_int, cend: c_int);
 
@@ -210,7 +286,7 @@ extern {
     // the widgets current UI state.
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndOptionButton(ctx: &NVGcontext,
+    fn bndOptionButton(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, state: BNDwidgetState,
         label: *const c_char);
 
@@ -220,7 +296,7 @@ extern {
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndChoiceButton(ctx: &NVGcontext,
+    fn bndChoiceButton(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         iconid: c_int, label: *const c_char);
 
@@ -231,7 +307,7 @@ extern {
     // if value is not NULL, a value will be added to the widget, along with
     // a ":" separator
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndNumberField(ctx: &NVGcontext,
+    fn bndNumberField(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         label: *const c_char, value: *const c_char);
 
@@ -243,7 +319,7 @@ extern {
     // if value is not NULL, a value will be added to the widget, along with
     // a ":" separator
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndSlider(ctx: &NVGcontext,
+    fn bndSlider(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int, state: BNDwidgetState,
         progress: c_float, label: *const c_char, value: *const c_char);
 
@@ -253,20 +329,20 @@ extern {
     // size is in the range 0..1 and controls the size of the scroll handle
     // horizontal widget looks best when height is BND_SCROLLBAR_HEIGHT,
     // vertical looks best when width is BND_SCROLLBAR_WIDTH
-    fn bndScrollBar(ctx: &NVGcontext,
+    fn bndScrollBar(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, state: BNDwidgetState,
         offset: c_float, size: c_float);
 
     // Draw a menu background with its lower left origin at (x,y) and size of (w,h),
     // where flags is one or multiple flags from BNDcornerFlags.
-    fn bndMenuBackground(ctx: &NVGcontext,
+    fn bndMenuBackground(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, flags: c_int);
 
     // Draw a menu label with its lower left origin at (x,y) and size of (w,h).
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndMenuLabel(ctx: &NVGcontext,
+    fn bndMenuLabel(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, iconid: c_int, label: *const c_char);
 
     // Draw a menu item with its lower left origin at (x,y) and size of (w,h),
@@ -274,12 +350,12 @@ extern {
     // if iconid >= 0, an icon will be added to the widget
     // if label is not NULL, a label will be added to the widget
     // widget looks best when height is BND_WIDGET_HEIGHT
-    fn bndMenuItem(ctx: &NVGcontext,
+    fn bndMenuItem(ctx: &Ctx,
         x: c_float, y: c_float, w: c_float, h: c_float, state: BNDwidgetState,
         iconid: c_int, label: *const c_char);
 
     // Draw a tooltip background with its lower left origin at (x,y) and size of (w,h)
-    fn bndTooltipBackground(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float);
+    fn bndTooltipBackground(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float);
 
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -288,7 +364,7 @@ extern {
     // Use these functions to estimate sizes for widgets with your NVGcontext.
 
     // returns the ideal width for a label with given icon and text
-    fn bndLabelWidth(ctx: &NVGcontext, iconid: c_int, label: *const c_char) -> c_float;
+    fn bndLabelWidth(ctx: &Ctx, iconid: c_int, label: *const c_char) -> c_float;
 
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -299,10 +375,10 @@ extern {
     // new kinds of controls in a similar fashion.
 
     // make color transparent using the default alpha value
-    fn bndTransparent(color: NVGcolor) -> NVGcolor;
+    fn bndTransparent(color: Color) -> Color;
 
     // offset a color by a given integer delta in the range -100 to 100
-    fn bndOffsetColor(color: NVGcolor, delta: c_int) -> NVGcolor;
+    fn bndOffsetColor(color: Color, delta: c_int) -> Color;
 
     // assigns radius r to the four entries of array radiuses depending on whether
     // the corner is marked as sharp or not; see BNDcornerFlags for possible
@@ -312,12 +388,12 @@ extern {
     // computes the upper and lower gradient colors for the inner box from a widget
     // theme and the widgets state. If flipActive is set and the state is
     // BND_ACTIVE, the upper and lower colors will be swapped.
-    fn bndInnerColors(shade_top: *const NVGcolor, shade_down: *const NVGcolor,
+    fn bndInnerColors(shade_top: *const Color, shade_down: *const Color,
         theme: *const BNDwidgetTheme, state: BNDwidgetState, flipActive: c_int);
 
     // computes the text color for a widget label from a widget theme and the
     // widgets state.
-    fn bndTextColor(theme: *const BNDwidgetTheme, state: BNDwidgetState) -> NVGcolor;
+    fn bndTextColor(theme: *const BNDwidgetTheme, state: BNDwidgetState) -> Color;
 
     // computes the bounds of the scrollbar handle from the scrollbar size
     // and the handles offset and size.
@@ -331,44 +407,44 @@ extern {
     // cr1 = top right, cr2 = bottom right, cr3 = bottom left;
     // this is a low level drawing function: the path must be stroked or filled
     // to become visible.
-    fn bndRoundedBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
+    fn bndRoundedBox(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
         cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float);
 
     // Draw a flat panel without any decorations at position (x,y) with size (w,h)
     // and fills it with backgroundColor
-    fn bndBackground(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float);
+    fn bndBackground(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float);
 
     // Draw a beveled border at position (x,y) with size (w,h) shaded with
     // lighter and darker versions of backgroundColor
-    fn bndBevel(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float);
+    fn bndBevel(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float);
 
     // Draw a lower inset for a rounded box at position (x,y) with size (w,h)
     // that gives the impression the surface has been pushed in.
     // cr2 and cr3 contain the radiuses of the bottom right and bottom left
     // corners of the rounded box.
-    fn bndBevelInset(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
+    fn bndBevelInset(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
         cr2: c_float, cr3: c_float);
 
     // Draw an icon with (x,y) as its upper left coordinate; the iconid selects
     // the icon from the sheet; use the BND_ICONID macro to build icon IDs.
-    fn bndIcon(ctx: &NVGcontext, x: c_float, y: c_float, iconid: c_int);
+    fn bndIcon(ctx: &Ctx, x: c_float, y: c_float, iconid: c_int);
 
     // Draw a drop shadow around the rounded box at (x,y) with size (w,h) and
     // radius r, with feather as its maximum range in pixels.
     // No shadow will be painted inside the rounded box.
-    fn bndDropShadow(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
+    fn bndDropShadow(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
         r: c_float, feather: c_float, alpha: c_float);
 
     // Draw the inner part of a widget box, with a gradient from shade_top to
     // shade_down. If h>w, the gradient will be horizontal instead of
     // vertical.
-    fn bndInnerBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
+    fn bndInnerBox(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
         cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float,
-        shade_top: NVGcolor, shade_down: NVGcolor);
+        shade_top: Color, shade_down: Color);
 
     // Draw the outline part of a widget box with the given color
-    fn bndOutlineBox(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-        cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float, color: NVGcolor);
+    fn bndOutlineBox(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
+        cr0: c_float, cr1: c_float, cr2: c_float, cr3: c_float, color: Color);
 
     // Draw an optional icon specified by <iconid> and an optional label with
     // given alignment (BNDtextAlignment), fontsize and color within a widget box.
@@ -378,8 +454,8 @@ extern {
     // and color.
     // if value is not NULL, label and value will be drawn with a ":" separator
     // inbetween.
-    fn bndIconLabelValue(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-        iconid: c_int, color: NVGcolor, align: c_int, fontsize: c_float, label: *const c_char,
+    fn bndIconLabelValue(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
+        iconid: c_int, color: Color, align: c_int, fontsize: c_float, label: *const c_char,
         value: *const c_char);
 
     // Draw an optional icon specified by <iconid>, an optional label and
@@ -391,20 +467,20 @@ extern {
     // cbegin must be >= 0 and <= strlen(text) and denotes the beginning of the caret
     // cend must be >= cbegin and <= strlen(text) and denotes the end of the caret
     // if cend < cbegin, then no caret will be drawn
-    fn bndIconLabelCaret(ctx: &NVGcontext, x: c_float, y: c_float, w: c_float, h: c_float,
-        iconid: c_int, color: NVGcolor, fontsize: c_float, label: *const c_char,
-        caretcolor: NVGcolor, cbegin: c_int, cend: c_int);
+    fn bndIconLabelCaret(ctx: &Ctx, x: c_float, y: c_float, w: c_float, h: c_float,
+        iconid: c_int, color: Color, fontsize: c_float, label: *const c_char,
+        caretcolor: Color, cbegin: c_int, cend: c_int);
 
     // Draw a checkmark for an option box with the given upper left coordinates
     // (ox,oy) with the specified color.
-    fn bndCheck(ctx: &NVGcontext, ox: c_float, oy: c_float, color: NVGcolor);
+    fn bndCheck(ctx: &Ctx, ox: c_float, oy: c_float, color: Color);
 
     // Draw a horizontal arrow for a number field with its center at (x,y) and
     // size s; if s is negative, the arrow points to the left.
-    fn bndArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: NVGcolor);
+    fn bndArrow(ctx: &Ctx, x: c_float, y: c_float, s: c_float, color: Color);
 
     // Draw an up/down arrow for a choice box with its center at (x,y) and size s
-    fn bndUpDownArrow(ctx: &NVGcontext, x: c_float, y: c_float, s: c_float, color: NVGcolor);
+    fn bndUpDownArrow(ctx: &Ctx, x: c_float, y: c_float, s: c_float, color: Color);
 }
 
 
@@ -417,18 +493,18 @@ extern {
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-void bndLabel(NVGcontext *ctx,
+void bndLabel(Ctx *ctx,
     float x, float y, float w, float h, int iconid, const char *label) {
     bndIconLabelValue(ctx,x,y,w,h,iconid,
         bnd_theme.regularTheme.textColor, BND_LEFT,
         BND_LABEL_FONT_SIZE, label, NULL);
 }
 
-void bndToolButton(NVGcontext *ctx,
+void bndToolButton(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     int iconid, const char *label) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_TOOL_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -441,11 +517,11 @@ void bndToolButton(NVGcontext *ctx,
         BND_LABEL_FONT_SIZE, label, NULL);
 }
 
-void bndRadioButton(NVGcontext *ctx,
+void bndRadioButton(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     int iconid, const char *label) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_OPTION_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -458,11 +534,11 @@ void bndRadioButton(NVGcontext *ctx,
         BND_LABEL_FONT_SIZE, label, NULL);
 }
 
-void bndTextField(NVGcontext *ctx,
+void bndTextField(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     int iconid, const char *text, int cbegin, int cend) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_TEXT_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -478,11 +554,11 @@ void bndTextField(NVGcontext *ctx,
         text, bnd_theme.textFieldTheme.itemColor, cbegin, cend);
 }
 
-void bndOptionButton(NVGcontext *ctx,
+void bndOptionButton(Ctx *ctx,
     float x, float y, float w, float h, BNDwidgetState state,
     const char *label) {
     float ox, oy;
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     ox = x;
     oy = y+h-BND_OPTION_HEIGHT-3;
@@ -507,11 +583,11 @@ void bndOptionButton(NVGcontext *ctx,
         BND_LABEL_FONT_SIZE, label, NULL);
 }
 
-void bndChoiceButton(NVGcontext *ctx,
+void bndChoiceButton(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     int iconid, const char *label) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_OPTION_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -526,11 +602,11 @@ void bndChoiceButton(NVGcontext *ctx,
         bndTransparent(bnd_theme.choiceTheme.itemColor));
 }
 
-void bndNumberField(NVGcontext *ctx,
+void bndNumberField(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     const char *label, const char *value) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_NUMBER_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -547,11 +623,11 @@ void bndNumberField(NVGcontext *ctx,
         bndTransparent(bnd_theme.numberFieldTheme.itemColor));
 }
 
-void bndSlider(NVGcontext *ctx,
+void bndSlider(Ctx *ctx,
     float x, float y, float w, float h, int flags, BNDwidgetState state,
     float progress, const char *label, const char *value) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_NUMBER_RADIUS, flags);
     bndBevelInset(ctx,x,y,w,h,cr[2],cr[3]);
@@ -580,7 +656,7 @@ void bndSlider(NVGcontext *ctx,
         BND_LABEL_FONT_SIZE, label, value);
 }
 
-void bndScrollBar(NVGcontext *ctx,
+void bndScrollBar(Ctx *ctx,
     float x, float y, float w, float h, BNDwidgetState state,
     float offset, float size) {
 
@@ -598,7 +674,7 @@ void bndScrollBar(NVGcontext *ctx,
         BND_SCROLLBAR_RADIUS,BND_SCROLLBAR_RADIUS,
         bndTransparent(bnd_theme.scrollBarTheme.outlineColor));
 
-    NVGcolor itemColor = bndOffsetColor(
+    Color itemColor = bndOffsetColor(
         bnd_theme.scrollBarTheme.itemColor,
         (state == BND_ACTIVE)?BND_SCROLLBAR_ACTIVE_SHADE:0);
 
@@ -617,10 +693,10 @@ void bndScrollBar(NVGcontext *ctx,
         bndTransparent(bnd_theme.scrollBarTheme.outlineColor));
 }
 
-void bndMenuBackground(NVGcontext *ctx,
+void bndMenuBackground(Ctx *ctx,
     float x, float y, float w, float h, int flags) {
     float cr[4];
-    NVGcolor shade_top, shade_down;
+    Color shade_top, shade_down;
 
     bndSelectCorners(cr, BND_MENU_RADIUS, flags);
     bndInnerColors(&shade_top, &shade_down, &bnd_theme.menuTheme,
@@ -632,8 +708,8 @@ void bndMenuBackground(NVGcontext *ctx,
         BND_SHADOW_FEATHER,BND_SHADOW_ALPHA);
 }
 
-void bndTooltipBackground(NVGcontext *ctx, float x, float y, float w, float h) {
-    NVGcolor shade_top, shade_down;
+void bndTooltipBackground(Ctx *ctx, float x, float y, float w, float h) {
+    Color shade_top, shade_down;
 
     bndInnerColors(&shade_top, &shade_down, &bnd_theme.tooltipTheme,
         BND_DEFAULT, 0);
@@ -647,14 +723,14 @@ void bndTooltipBackground(NVGcontext *ctx, float x, float y, float w, float h) {
         BND_SHADOW_FEATHER,BND_SHADOW_ALPHA);
 }
 
-void bndMenuLabel(NVGcontext *ctx,
+void bndMenuLabel(Ctx *ctx,
     float x, float y, float w, float h, int iconid, const char *label) {
     bndIconLabelValue(ctx,x,y,w,h,iconid,
         bnd_theme.menuTheme.textColor, BND_LEFT,
         BND_LABEL_FONT_SIZE, label, NULL);
 }
 
-void bndMenuItem(NVGcontext *ctx,
+void bndMenuItem(Ctx *ctx,
     float x, float y, float w, float h, BNDwidgetState state,
     int iconid, const char *label) {
     if (state != BND_DEFAULT) {
@@ -672,7 +748,7 @@ void bndMenuItem(NVGcontext *ctx,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float bndLabelWidth(NVGcontext *ctx, int iconid, const char *label) {
+float bndLabelWidth(Ctx *ctx, int iconid, const char *label) {
     int w = BND_PAD_LEFT + BND_PAD_RIGHT;
     if (iconid >= 0) {
         w += BND_ICON_SHEET_RES;
@@ -687,7 +763,7 @@ float bndLabelWidth(NVGcontext *ctx, int iconid, const char *label) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void bndRoundedBox(NVGcontext *ctx, float x, float y, float w, float h,
+void bndRoundedBox(Ctx *ctx, float x, float y, float w, float h,
     float cr0, float cr1, float cr2, float cr3) {
     float d;
 
@@ -703,12 +779,12 @@ void bndRoundedBox(NVGcontext *ctx, float x, float y, float w, float h,
     nvgClosePath(ctx);
 }
 
-NVGcolor bndTransparent(NVGcolor color) {
+Color bndTransparent(Color color) {
     color.a *= BND_TRANSPARENT_ALPHA;
     return color;
 }
 
-NVGcolor bndOffsetColor(NVGcolor color, int delta) {
+Color bndOffsetColor(Color color, int delta) {
     float offset = (float)delta / 255.0f;
     return delta?(
         nvgRGBAf(
@@ -719,7 +795,7 @@ NVGcolor bndOffsetColor(NVGcolor color, int delta) {
     ):color;
 }
 
-void bndBevel(NVGcontext *ctx, float x, float y, float w, float h) {
+void bndBevel(Ctx *ctx, float x, float y, float w, float h) {
     nvgStrokeWidth(ctx, 1);
 
     x += 0.5f;
@@ -744,7 +820,7 @@ void bndBevel(NVGcontext *ctx, float x, float y, float w, float h) {
     nvgStroke(ctx);
 }
 
-void bndBevelInset(NVGcontext *ctx, float x, float y, float w, float h,
+void bndBevelInset(Ctx *ctx, float x, float y, float w, float h,
     float cr2, float cr3) {
     float d;
 
@@ -758,7 +834,7 @@ void bndBevelInset(NVGcontext *ctx, float x, float y, float w, float h,
     nvgArcTo(ctx, x+w,y+h, x,y+h, cr2);
     nvgArcTo(ctx, x,y+h, x,y, cr3);
 
-    NVGcolor bevelColor = bndOffsetColor(bnd_theme.backgroundColor,
+    Color bevelColor = bndOffsetColor(bnd_theme.backgroundColor,
         BND_INSET_BEVEL_SHADE);
 
     nvgStrokeWidth(ctx, 1);
@@ -771,14 +847,14 @@ void bndBevelInset(NVGcontext *ctx, float x, float y, float w, float h,
     nvgStroke(ctx);
 }
 
-void bndBackground(NVGcontext *ctx, float x, float y, float w, float h) {
+void bndBackground(Ctx *ctx, float x, float y, float w, float h) {
     nvgBeginPath(ctx);
     nvgRect(ctx, x, y, w, h);
     nvgFillColor(ctx, bnd_theme.backgroundColor);
     nvgFill(ctx);
 }
 
-void bndIcon(NVGcontext *ctx, float x, float y, int iconid) {
+void bndIcon(Ctx *ctx, float x, float y, int iconid) {
     int ix, iy, u, v;
     if (bnd_icon_image < 0) return; // no icons loaded
 
@@ -797,7 +873,7 @@ void bndIcon(NVGcontext *ctx, float x, float y, int iconid) {
     nvgFill(ctx);
 }
 
-void bndDropShadow(NVGcontext *ctx, float x, float y, float w, float h,
+void bndDropShadow(Ctx *ctx, float x, float y, float w, float h,
     float r, float feather, float alpha) {
 
     nvgBeginPath(ctx);
@@ -825,9 +901,9 @@ void bndDropShadow(NVGcontext *ctx, float x, float y, float w, float h,
     nvgFill(ctx);
 }
 
-void bndInnerBox(NVGcontext *ctx, float x, float y, float w, float h,
+void bndInnerBox(Ctx *ctx, float x, float y, float w, float h,
     float cr0, float cr1, float cr2, float cr3,
-    NVGcolor shade_top, NVGcolor shade_down) {
+    Color shade_top, Color shade_down) {
     nvgBeginPath(ctx);
     bndRoundedBox(ctx,x+1,y+1,w-2,h-3,
         fmaxf(0,cr0-1),fmaxf(0,cr1-1),fmaxf(0,cr2-1),fmaxf(0,cr3-1));
@@ -837,8 +913,8 @@ void bndInnerBox(NVGcontext *ctx, float x, float y, float w, float h,
     nvgFill(ctx);
 }
 
-void bndOutlineBox(NVGcontext *ctx, float x, float y, float w, float h,
-    float cr0, float cr1, float cr2, float cr3, NVGcolor color) {
+void bndOutlineBox(Ctx *ctx, float x, float y, float w, float h,
+    float cr0, float cr1, float cr2, float cr3, Color color) {
     nvgBeginPath(ctx);
     bndRoundedBox(ctx,x+0.5f,y+0.5f,w-1,h-2,cr0,cr1,cr2,cr3);
     nvgStrokeColor(ctx,color);
@@ -854,7 +930,7 @@ void bndSelectCorners(float *radiuses, float r, int flags) {
 }
 
 void bndInnerColors(
-    NVGcolor *shade_top, NVGcolor *shade_down,
+    Color *shade_top, Color *shade_down,
     const BNDwidgetTheme *theme, BNDwidgetState state, int flipActive) {
 
     switch(state) {
@@ -864,7 +940,7 @@ void bndInnerColors(
         *shade_down = bndOffsetColor(theme->innerColor, theme->shadeDown);
     } break;
     case BND_HOVER: {
-        NVGcolor color = bndOffsetColor(theme->innerColor, BND_HOVER_SHADE);
+        Color color = bndOffsetColor(theme->innerColor, BND_HOVER_SHADE);
         *shade_top = bndOffsetColor(color, theme->shadeTop);
         *shade_down = bndOffsetColor(color, theme->shadeDown);
     } break;
@@ -877,12 +953,12 @@ void bndInnerColors(
     }
 }
 
-NVGcolor bndTextColor(const BNDwidgetTheme *theme, BNDwidgetState state) {
+Color bndTextColor(const BNDwidgetTheme *theme, BNDwidgetState state) {
     return (state == BND_ACTIVE)?theme->textSelectedColor:theme->textColor;
 }
 
-void bndIconLabelValue(NVGcontext *ctx, float x, float y, float w, float h,
-    int iconid, NVGcolor color, int align, float fontsize, const char *label,
+void bndIconLabelValue(Ctx *ctx, float x, float y, float w, float h,
+    int iconid, Color color, int align, float fontsize, const char *label,
     const char *value) {
     float pleft = BND_PAD_LEFT;
     if (label) {
@@ -926,9 +1002,9 @@ void bndIconLabelValue(NVGcontext *ctx, float x, float y, float w, float h,
     }
 }
 
-void bndIconLabelCaret(NVGcontext *ctx, float x, float y, float w, float h,
-    int iconid, NVGcolor color, float fontsize, const char *label,
-    NVGcolor caretcolor, int cbegin, int cend) {
+void bndIconLabelCaret(Ctx *ctx, float x, float y, float w, float h,
+    int iconid, Color color, float fontsize, const char *label,
+    Color caretcolor, int cbegin, int cend) {
     float bounds[4];
     float pleft = BND_TEXT_RADIUS;
     if (!label) return;
@@ -980,7 +1056,7 @@ void bndIconLabelCaret(NVGcontext *ctx, float x, float y, float w, float h,
     nvgTextBox(ctx,x,y,w-BND_TEXT_RADIUS-pleft,label, NULL);
 }
 
-void bndCheck(NVGcontext *ctx, float ox, float oy, NVGcolor color) {
+void bndCheck(Ctx *ctx, float ox, float oy, Color color) {
     nvgBeginPath(ctx);
     nvgStrokeWidth(ctx,2);
     nvgStrokeColor(ctx,color);
@@ -992,7 +1068,7 @@ void bndCheck(NVGcontext *ctx, float ox, float oy, NVGcolor color) {
     nvgStroke(ctx);
 }
 
-void bndArrow(NVGcontext *ctx, float x, float y, float s, NVGcolor color) {
+void bndArrow(Ctx *ctx, float x, float y, float s, Color color) {
     nvgBeginPath(ctx);
     nvgMoveTo(ctx,x,y);
     nvgLineTo(ctx,x-s,y+s);
@@ -1002,7 +1078,7 @@ void bndArrow(NVGcontext *ctx, float x, float y, float s, NVGcolor color) {
     nvgFill(ctx);
 }
 
-void bndUpDownArrow(NVGcontext *ctx, float x, float y, float s, NVGcolor color) {
+void bndUpDownArrow(Ctx *ctx, float x, float y, float s, Color color) {
     float w;
 
     nvgBeginPath(ctx);
