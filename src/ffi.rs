@@ -3,24 +3,22 @@ use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
 use std::kinds::marker;
 
-
-pub type Enum_NVGwinding = c_uint;
 pub static NVG_CCW: c_uint = 1;
 pub static NVG_CW: c_uint = 2;
-pub type Enum_NVGsolidity = c_uint;
+
 pub static NVG_SOLID: c_uint = 1;
 pub static NVG_HOLE: c_uint = 2;
-pub type Enum_NVGlineCap = c_uint;
+
 pub static NVG_BUTT: c_uint = 0;
 pub static NVG_ROUND: c_uint = 1;
 pub static NVG_SQUARE: c_uint = 2;
 pub static NVG_BEVEL: c_uint = 3;
 pub static NVG_MITER: c_uint = 4;
-pub type Enum_NVGpatternRepeat = c_uint;
+
 pub static NVG_NOREPEAT: c_uint = 0;
 pub static NVG_REPEATX: c_uint = 1;
 pub static NVG_REPEATY: c_uint = 2;
-pub type Enum_NVGalign = c_uint;
+
 pub static NVG_ALIGN_LEFT: c_uint = 1;
 pub static NVG_ALIGN_CENTER: c_uint = 2;
 pub static NVG_ALIGN_RIGHT: c_uint = 4;
@@ -29,14 +27,10 @@ pub static NVG_ALIGN_MIDDLE: c_uint = 16;
 pub static NVG_ALIGN_BOTTOM: c_uint = 32;
 pub static NVG_ALIGN_BASELINE: c_uint = 64;
 
-
-//type Enum_NVGcreateflags = c_uint;
-// Flag indicating if geoemtry based anti-aliasing is used (may not be needed when using MSAA).
 pub static NVG_ANTIALIAS: c_uint = 1;
-// Flag indicating if strokes should be drawn using stencil buffer. The rendering will be a little
-// slower, but path overlaps (i.e. self-intersecting or sharp turns) will be drawn just once.
 pub static NVG_STENCIL_STROKES: c_uint = 2;
 
+pub static NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
@@ -47,45 +41,6 @@ pub struct NVGcolor {
     pub b: c_float,
     pub a: c_float
 }
-//impl NVGcolor {
-//    pub fn rgb(r: u8, g: u8, b: u8) -> NVGcolor {
-//        unsafe { nvgRGB(r, g, b) }
-//    }
-//    pub fn rgb_f(r: f32, g: f32, b: f32) -> NVGcolor {
-//        unsafe { nvgRGBf(r, g, b) }
-//    }
-//    pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> NVGcolor {
-//        unsafe { nvgRGBA(r, g, b, a) }
-//    }
-//    pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> NVGcolor {
-//        unsafe { nvgRGBAf(r, g, b, a) }
-//    }
-//    pub fn lerp_rgba(c0: NVGcolor, c1: NVGcolor, u: f32) -> NVGcolor {
-//        unsafe { nvgLerpRGBA(c0, c1, u) }
-//    }
-//    pub fn trans_rgba(c0: NVGcolor, a: u8) -> NVGcolor {
-//        unsafe { nvgTransRGBA(c0, a) }
-//    }
-//    pub fn trans_rgba_f(c0: NVGcolor, a: f32) -> NVGcolor {
-//        unsafe { nvgTransRGBAf(c0, a) }
-//    }
-//    pub fn hsl(h: f32, s: f32, l: f32) -> NVGcolor {
-//        unsafe { nvgHSL(h, s, l) }
-//    }
-//    pub fn hsla(h: f32, s: f32, l: f32, a: u8) -> NVGcolor {
-//        unsafe {  nvgHSLA(h,s,l, a) }
-//    }
-//}
-//#[repr(C)]
-//pub struct Union_Unnamed1 {
-//    pub data: [u32, ..4u],
-//}
-//impl Union_Unnamed1 {
-//    pub fn rgba(&mut self) -> *mut [c_float, ..4u] {
-//        unsafe { ::std::mem::transmute(self) }
-//    }
-//}
-
 
 #[repr(C)]
 pub struct NVGpaint {
@@ -119,11 +74,13 @@ pub struct NVGtextRow {
 pub type Enum_NVGtexture = c_uint;
 pub static NVG_TEXTURE_ALPHA: c_uint = 1;
 pub static NVG_TEXTURE_RGBA: c_uint = 2;
+
 #[repr(C)]
 pub struct NVGscissor {
     pub xform: [c_float, ..6u],
     pub extent: [c_float, ..2u],
 }
+
 #[repr(C)]
 pub struct NVGvertex {
     pub x: c_float,
@@ -131,6 +88,7 @@ pub struct NVGvertex {
     pub u: c_float,
     pub v: c_float,
 }
+
 #[repr(C)]
 pub struct NVGpath {
     pub first: c_int,
@@ -144,6 +102,7 @@ pub struct NVGpath {
     pub winding: c_int,
     pub convex: c_int,
 }
+
 #[repr(C)]
 pub struct NVGparams {
     pub userPtr: *mut c_void,
@@ -163,8 +122,7 @@ pub struct NVGparams {
 
 
 #[link(name = "nanovg")]
-extern "C"
-{
+extern "C" {
     pub fn nvgBeginFrame(ctx: *mut NVGcontext, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float);
     pub fn nvgEndFrame(ctx: *mut NVGcontext);
 
@@ -214,9 +172,9 @@ extern "C"
     pub fn nvgDegToRad(deg: c_float) -> c_float;
     pub fn nvgRadToDeg(rad: c_float) -> c_float;
 
-    pub fn nvgCreateImage(ctx: *mut NVGcontext, filename: *const c_char) -> c_int;
-    pub fn nvgCreateImageMem(ctx: *mut NVGcontext, data: *mut c_uchar, ndata: c_int) -> c_int;
-    pub fn nvgCreateImageRGBA(ctx: *mut NVGcontext, w: c_int, h: c_int, data: *const c_uchar) -> c_int;
+    pub fn nvgCreateImage(ctx: *mut NVGcontext, filename: *const c_char, image_flags: c_int) -> c_int;
+    pub fn nvgCreateImageMem(ctx: *mut NVGcontext, image_flags: c_int, data: *const c_uchar, ndata: c_int) -> c_int;
+    pub fn nvgCreateImageRGBA(ctx: *mut NVGcontext, w: c_int, h: c_int, image_flags: c_int, data: *const c_uchar) -> c_int;
     pub fn nvgUpdateImage(ctx: *mut NVGcontext, image: c_int, data: *const c_uchar);
     pub fn nvgImageSize(ctx: *mut NVGcontext, image: c_int, w: *mut c_int, h: *mut c_int);
     pub fn nvgDeleteImage(ctx: *mut NVGcontext, image: c_int);

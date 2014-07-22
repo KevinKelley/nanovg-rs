@@ -22,6 +22,7 @@ use std::kinds::marker;
 use std::ptr;
 use std::str;
 use std::bitflags;
+
 use libc::{c_char, c_int, c_void};
 
 use ffi::NVGcolor;
@@ -32,22 +33,22 @@ pub use NVGtextRow       = ffi::NVGtextRow;
 
 mod ffi;
 
-#[repr(u32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[repr(u32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[repr(u32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
     ROUND                   = ffi::NVG_ROUND,
@@ -56,8 +57,8 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[repr(u32)]
 #[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
     REPEATX                 = ffi::NVG_REPEATX,
@@ -80,6 +81,12 @@ pub bitflags!(
     flags CreationFlags: u32 {
         static ANTIALIAS        = ffi::NVG_ANTIALIAS,
         static STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
+    }
+)
+
+pub bitflags!(
+    flags ImageFlags: u32 {
+        static GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
     }
 )
 
@@ -132,64 +139,15 @@ impl Color {
     }
 }
 
-//#[repr(C)]
-//pub struct NVGpaint {
-//    pub xform: [f32, ..6u],
-//    pub extent: [f32, ..2u],
-//    pub radius: f32,
-//    pub feather: f32,
-//    pub innerColor: NVGcolor,
-//    pub outerColor: NVGcolor,
-//    pub image: i32,
-//    pub repeat: i32,
-//}
-//#[repr(C)]
-//pub struct NVGglyphPosition {
-//    pub _str: *const c_char,
-//    pub x: f32,
-//    pub minx: f32,
-//    pub maxx: f32,
-//}
-//#[repr(C)]
-//pub struct NVGtextRow {
-//    pub start: *const c_char,
-//    pub end: *const c_char,
-//    pub next: *const c_char,
-//    pub width: f32,
-//    pub minx: f32,
-//    pub maxx: f32,
-//}
-//
-//pub type Enum_NVGtexture = u32;
-//pub static NVG_TEXTURE_ALPHA: u32 = 1;
-//pub static NVG_TEXTURE_RGBA: u32 = 2;
-//#[repr(C)]
-//pub struct NVGscissor {
-//    pub xform: [f32, ..6u],
-//    pub extent: [f32, ..2u],
-//}
-//#[repr(C)]
-//pub struct NVGvertex {
-//    pub x: f32,
-//    pub y: f32,
-//    pub u: f32,
-//    pub v: f32,
-//}
-//#[repr(C)]
-//pub struct NVGpath {
-//    pub first: i32,
-//    pub count: i32,
-//    pub closed: u8,
-//    pub nbevel: i32,
-//    pub fill: *mut NVGvertex,
-//    pub nfill: i32,
-//    pub stroke: *mut NVGvertex,
-//    pub nstroke: i32,
-//    pub winding: i32,
-//    pub convex: i32,
-//}
+pub struct Image {
+    handle: c_int
+}
 
-//#[deriving(Show)]
+impl Image {
+    #[inline]
+    fn new(handle: c_int) -> Image { Image { handle: handle } }
+}
+
 pub struct Ctx {
     ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
@@ -259,10 +217,10 @@ impl Ctx {
 		unsafe { ffi::nvgStrokeWidth(self.ptr, size) }
 	}
     pub fn line_cap(&self, cap: LineCap) {
-		unsafe { ffi::nvgLineCap(self.ptr, cap as i32) }
+		unsafe { ffi::nvgLineCap(self.ptr, cap as c_int) }
 	}
     pub fn line_join(&self, join: LineCap) {
-		unsafe { ffi::nvgLineJoin(self.ptr, join as i32) }
+		unsafe { ffi::nvgLineJoin(self.ptr, join as c_int) }
 	}
     pub fn global_alpha(&self, alpha: f32) {
 		unsafe { ffi::nvgGlobalAlpha(self.ptr, alpha) }
@@ -293,25 +251,47 @@ impl Ctx {
 		unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
 	}
 
-    pub fn create_image(&self, filename: &str) -> i32 {
+    #[inline]
+    pub fn create_image(&self, filename: &str) -> Image {
+        self.create_image_flags(filename, ImageFlags::empty())
+    }
+
+    pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Image {
         filename.with_c_str(|filename| {
-            unsafe { ffi::nvgCreateImage(self.ptr, filename) }
+            Image::new(unsafe { ffi::nvgCreateImage(self.ptr, filename, flags.bits() as c_int) })
         })
 	}
-    pub fn create_image_mem(&self, data: *mut u8, ndata: i32) -> i32 {
-		unsafe { ffi::nvgCreateImageMem(self.ptr, data, ndata) }
+
+    #[inline]
+    pub fn create_image_mem(&self, data: &[u8]) -> Image {
+        self.create_image_mem_flags(data, ImageFlags::empty())
+    }
+
+    pub fn create_image_mem_flags(&self, data: &[u8], flags: ImageFlags) -> Image {
+		Image::new(unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) })
 	}
-    pub fn create_image_rgba(&self, w: i32, h: i32, data: *const u8) -> i32 {
-		unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, data) }
+
+    #[inline]
+    pub fn create_image_rgba(&self, w: i32, h: i32, data: &[u8]) -> Image {
+        self.create_image_rgba_flags(w, h, data, ImageFlags::empty())
+    }
+
+    pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Image {
+		Image::new(unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) })
 	}
-    pub fn update_image(&self, image: i32, data: *const u8) {
-		unsafe { ffi::nvgUpdateImage(self.ptr, image, data) }
+
+    pub fn update_image(&self, image: Image, data: &[u8]) {
+		unsafe { ffi::nvgUpdateImage(self.ptr, image.handle, data.as_ptr()) }
 	}
-    pub fn image_size(&self, image: i32, w: *mut i32, h: *mut i32) {
-		unsafe { ffi::nvgImageSize(self.ptr, image, w, h) }
+
+    pub fn image_size(&self, image: Image) -> (i32, i32) {
+        let (mut w, mut h) = (0i32, 0i32);
+		unsafe { ffi::nvgImageSize(self.ptr, image.handle, &mut w, &mut h) };
+        (w, h)
 	}
-    pub fn delete_image(&self, image: i32) {
-		unsafe { ffi::nvgDeleteImage(self.ptr, image) }
+
+    pub fn delete_image(&self, image: Image) {
+		unsafe { ffi::nvgDeleteImage(self.ptr, image.handle) }
 	}
 
     pub fn linear_gradient(&self, sx: f32, sy: f32, ex: f32, ey: f32, icol: Color, ocol: Color) -> NVGpaint {
@@ -324,7 +304,7 @@ impl Ctx {
 		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) }
 	}
     pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: i32, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
-		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat as i32, alpha) }
+		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat as c_int, alpha) }
 	}
 
     pub fn scissor(&self, x: f32, y: f32, w: f32, h: f32) {
@@ -356,11 +336,11 @@ impl Ctx {
 		unsafe { ffi::nvgClosePath(self.ptr) }
 	}
     pub fn path_winding(&self, dir: Solidity) {
-		unsafe { ffi::nvgPathWinding(self.ptr, dir as i32) }
+		unsafe { ffi::nvgPathWinding(self.ptr, dir as c_int) }
 	}
 
     pub fn arc(&self, cx: f32, cy: f32, r: f32, a0: f32, a1: f32, dir: Winding) {
-		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir as i32) }
+		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir as c_int) }
 	}
     pub fn rect(&self, x: f32, y: f32, w: f32, h: f32) {
 		unsafe { ffi::nvgRect(self.ptr, x, y, w, h) }
@@ -524,18 +504,6 @@ pub fn deg_to_rad(deg: f32) -> f32 {
 pub fn rad_to_deg(rad: f32) -> f32 {
 	unsafe { ffi::nvgRadToDeg(rad) }
 }
-
-//pub fn create_internal(params: *mut NVGparams) -> *mut Ctx {
-//	unsafe { ffi::nvgCreateInternal(params) }
-//}
-//pub fn delete_internal(ctx: *mut Ctx) {
-//	unsafe { ffi::nvgDeleteInternal(ctx) }
-//}
-//pub fn internal_params(ctx: *mut Ctx) -> *mut NVGparams {
-//	unsafe { ffi::nvgInternalParams(ctx) }
-//}
-
-
 
 // image-write functions from nanovg/examples/stb_image_write.h
 //
