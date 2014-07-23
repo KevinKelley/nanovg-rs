@@ -150,6 +150,15 @@ impl Image {
     fn new(handle: c_int) -> Image { Image { handle: handle } }
 }
 
+pub struct Font {
+    handle: c_int
+}
+
+impl Font {
+    #[inline]
+    fn new(handle: c_int) -> Font { Font { handle: handle } }
+}
+
 pub struct Ctx {
     ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
@@ -254,32 +263,45 @@ impl Ctx {
 	}
 
     #[inline]
-    pub fn create_image(&self, filename: &str) -> Image {
+    pub fn create_image(&self, filename: &str) -> Option<Image> {
         self.create_image_flags(filename, ImageFlags::empty())
     }
 
-    pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Image {
+    pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
         filename.with_c_str(|filename| {
-            Image::new(unsafe { ffi::nvgCreateImage(self.ptr, filename, flags.bits() as c_int) })
+            let handle = unsafe { ffi::nvgCreateImage(self.ptr, filename, flags.bits() as c_int) };
+            // stb_image returns 0 for failure; unlike fontstash which returns -1
+            match handle {
+                0 => { None },
+                _ => { Some(Image::new(handle)) }
+            }
         })
 	}
 
     #[inline]
-    pub fn create_image_mem(&self, data: &[u8]) -> Image {
+    pub fn create_image_mem(&self, data: &[u8]) -> Option<Image> {
         self.create_image_mem_flags(data, ImageFlags::empty())
     }
 
-    pub fn create_image_mem_flags(&self, data: &[u8], flags: ImageFlags) -> Image {
-		Image::new(unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) })
+    pub fn create_image_mem_flags(&self, data: &[u8], flags: ImageFlags) -> Option<Image> {
+		let handle = unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) };
+        match handle {
+            0 => { None },
+            _ => { Some(Image::new(handle)) }
+        }
 	}
 
     #[inline]
-    pub fn create_image_rgba(&self, w: i32, h: i32, data: &[u8]) -> Image {
+    pub fn create_image_rgba(&self, w: i32, h: i32, data: &[u8]) -> Option<Image> {
         self.create_image_rgba_flags(w, h, data, ImageFlags::empty())
     }
 
-    pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Image {
-		Image::new(unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) })
+    pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Option<Image> {
+		let handle = unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) };
+        match handle {
+            0 => { None },
+            _ => { Some(Image::new(handle)) }
+        }
 	}
 
     pub fn update_image(&self, image: Image, data: &[u8]) {
