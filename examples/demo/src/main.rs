@@ -8,6 +8,8 @@
 extern crate num;
 extern crate native;
 extern crate libc;
+extern crate collections;
+
 extern crate glfw;
 extern crate gl;
 extern crate nanovg;
@@ -92,10 +94,10 @@ fn main()
     glcheck!(gl::load_with(|name| glfw.get_proc_address(name)));
     init_gl();
 
-   	let vg: nanovg::Ctx = nanovg::Ctx::create_gL3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
+   	let vg: nanovg::Ctx = nanovg::Ctx::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	//assert!(!vg.ptr.is_null());
 
-    let data = demo::DemoData::load(&vg);
+    let data = demo::DemoData::load(&vg, "../../res");
 
 
 	glfw.set_swap_interval(0);

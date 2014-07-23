@@ -2,6 +2,8 @@ extern crate gl;
 
 use std::ptr;
 use std::num::*;
+use collections::Vec;
+
 use nanovg::*;
 use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
 use libc::{c_void};
@@ -23,7 +25,6 @@ fn abs(a: f32) -> f32 { if a >= 0.0 { a } else { -a } }
 fn clamp(a: f32, mn: f32, mx: f32) -> f32 { if a < mn { mn } else { if a > mx { mx } else { a } } }
 fn floor(x: f32) -> f32 { x.floor() }
 fn sqrt(x: f32) -> f32 { x.sqrt() }
-//fn pow(x: f32, e: uint) -> f32 { x.pow(e) }
 fn cos(x: f32) -> f32 { x.cos() }
 fn sin(x: f32) -> f32 { x.sin() }
 
@@ -36,57 +37,39 @@ fn cp_to_utf8(cp:char) -> String { format!("{}", cp) }
 
 pub struct DemoData {
 	//vg: &Ctx,
-	fontNormal: i32,
-	fontBold: i32,
-	fontIcons: i32,
-	images: [i32, ..12],
+	fontNormal: Font,
+	fontBold: Font,
+	fontIcons: Font,
+	images: Vec<Image>
 }
 
 /// load and hold resources used in demo
-impl DemoData
-{
-	pub fn load(vg: &Ctx) -> DemoData
+impl DemoData {
+	pub fn load(vg: &Ctx, res_path: &str) -> DemoData
 	{
-		let mut data = DemoData {
-			//vg: vg,
-			fontNormal: -1,
-			fontBold:   -1,
-			fontIcons:  -1,
-			images: [-1, ..12]
-		};
-
+		let mut images: Vec<Image> = Vec::new();
 		for i in range(0, 12u) {
-			let filename = format!("../res/images/image{}.jpg", i+1);
-			data.images[i] = vg.create_image(filename.as_slice());
-			if data.images[i] == 0 {
-				println!("Could not load {}.", filename);
-			}
+			let filename = format!("{}/images/image{}.jpg", res_path, i+1);
+			let img = vg.create_image(filename.as_slice())
+				.expect(format!("Could not load {}.", filename).as_slice());
+			images.push(img);
 		}
 
-		data.fontIcons = vg.create_font("icons", "../res/entypo.ttf");
-		if data.fontIcons == -1 {
-			println!("Could not add font 'icons'.");
-		}
-		data.fontNormal = vg.create_font("sans", "../res/Roboto-Regular.ttf");
-		if data.fontNormal == -1 {
-			println!("Could not add font 'sans'.");
-		}
-		data.fontBold = vg.create_font("sans-bold", "../res/Roboto-Bold.ttf");
-		if data.fontBold == -1 {
-			println!("Could not add font 'sans-bold'.");
-		}
+		let fontIcons = vg.create_font("icons", format!("{}/entypo.ttf", res_path).as_slice())
+			.expect("Could not add font 'icons'.");
 
-		return data;
-	}
-}
+		let fontNormal = vg.create_font("sans", format!("{}/Roboto-Regular.ttf", res_path).as_slice())
+			.expect("Could not add font 'sans'.");
 
-impl Drop for DemoData {
-	fn drop(&mut self) {
-		for i in range(0, 12u) {
-			// need to borrow & hold nanovg context, or
-			// need to be able to pass it to 'drop'
-//			self.vg.delete_image(self.images[i]);
-			self.images[i] = -1;
+		let fontBold = vg.create_font("sans-bold", format!("{}/Roboto-Bold.ttf", res_path).as_slice())
+			.expect("Could not add font 'sans-bold'.");
+
+
+		DemoData {
+			fontNormal: fontNormal,
+			fontBold:   fontBold,
+			fontIcons:  fontIcons,
+			images:     images
 		}
 	}
 }
@@ -146,7 +129,7 @@ pub fn render_demo(vg: &Ctx, mx: f32, my: f32, width: f32, height: f32, t: f32, 
 	draw_button(vg, NO_ICON, "Cancel", x+170.0, y, 110.0, 28.0, rgba(0,0,0,0));
 
 	// Thumbnails box
-	draw_thumbnails(vg, 365.0, popy-30.0, 160.0, 300.0, data.images, 12, t);
+	draw_thumbnails(vg, 365.0, popy-30.0, 160.0, 300.0, &data.images, t);
 
 	vg.restore();
 }
@@ -606,8 +589,9 @@ fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
 }
 
 fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
-                  images: [i32, ..12], nimages: uint, t: f32)
+                  images: &Vec<Image>, t: f32)
 {
+	let nimages = images.len();
 	let cornerRadius = 3.0;
 
 	let thumb: f32 = 60.0;
@@ -648,13 +632,13 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 		let mut ty = y+10.0;
 		tx += (i%2) as f32 * (thumb+10.0);
 		ty += (i/2) as f32 * (thumb+10.0);
-		let mut imgw: i32 = 0;
-		let mut imgh: i32 = 0;
+		let imgw: i32 = 0;
+		let imgh: i32 = 0;
 		let ix: f32;
 		let iy: f32;
 		let iw: f32;
 		let ih: f32;
-		vg.image_size(images[i], &mut imgw, &mut imgh);
+		let (imgw, imgh) = vg.image_size(images[i]);
 		if imgw < imgh {
 			iw = thumb;
 			ih = iw * (imgh as f32) / (imgw as f32);
