@@ -327,8 +327,8 @@ impl Ctx {
     pub fn radial_gradient(&self, cx: f32, cy: f32, inr: f32, outr: f32, icol: Color, ocol: Color) -> NVGpaint {
 		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) }
 	}
-    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: i32, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
-		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image, repeat as c_int, alpha) }
+    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: Image, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
+		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image.handle, repeat as c_int, alpha) }
 	}
 
     pub fn scissor(&self, x: f32, y: f32, w: f32, h: f32) {
@@ -385,21 +385,33 @@ impl Ctx {
 		unsafe { ffi::nvgStroke(self.ptr) }
 	}
 
-    pub fn create_font(&self, name: &str, filename: &str) -> i32 {
+    pub fn create_font(&self, name: &str, filename: &str) -> Option<Font> {
         name.with_c_str(|name| {
             filename.with_c_str(|filename| {
-		      unsafe { ffi::nvgCreateFont(self.ptr, name, filename) }
+		      let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
+              match handle {
+                -1 => None,
+                _  => Some(Font::new(handle))
+              }
             })
         })
 	}
-    pub fn create_font_mem(&self, name: &str, data: *mut u8, ndata: i32, freeData: bool) -> i32 {
+    pub fn create_font_mem(&self, name: &str, data: *mut u8, ndata: i32, freeData: bool) -> Option<Font> {
         name.with_c_str(|name| {
-            unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, if freeData {1} else {0}) }
+            let handle = unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, if freeData {1} else {0}) };
+            match handle {
+                -1 => None,
+                _  => Some(Font::new(handle))
+            }
         })
 	}
-    pub fn find_font(&self, name: &str) -> i32 {
+    pub fn find_font(&self, name: &str) -> Option<Font> {
         name.with_c_str(|name| {
-            unsafe { ffi::nvgFindFont(self.ptr, name) }
+            let handle = unsafe { ffi::nvgFindFont(self.ptr, name) };
+            match handle {
+                -1 => None,
+                _ => Some(Font::new(handle))
+            }
         })
 	}
     pub fn font_size(&self, size: f32) {
@@ -417,8 +429,8 @@ impl Ctx {
     pub fn text_align(&self, align: Align) {
 		unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
 	}
-    pub fn font_face_id(&self, font: i32) {
-		unsafe { ffi::nvgFontFaceId(self.ptr, font) }
+    pub fn font_face_id(&self, font: Font) {
+		unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
 	}
     pub fn font_face(&self, font: &str) {
         font.with_c_str(|font| {
