@@ -3,6 +3,10 @@ use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
 use std::kinds::marker;
 
+pub static FONS_INVALID: c_int = -1;
+pub static STB_IMAGE_INVALID: c_int = 0;
+
+
 pub static NVG_CCW: c_uint = 1;
 pub static NVG_CW: c_uint = 2;
 

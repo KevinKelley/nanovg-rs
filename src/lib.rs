@@ -272,7 +272,7 @@ impl Ctx {
             let handle = unsafe { ffi::nvgCreateImage(self.ptr, filename, flags.bits() as c_int) };
             // stb_image returns 0 for failure; unlike fontstash which returns -1
             match handle {
-                0 => { None },
+                ffi::STB_IMAGE_INVALID => { None },
                 _ => { Some(Image::new(handle)) }
             }
         })
@@ -286,7 +286,7 @@ impl Ctx {
     pub fn create_image_mem_flags(&self, data: &[u8], flags: ImageFlags) -> Option<Image> {
 		let handle = unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) };
         match handle {
-            0 => { None },
+            ffi::STB_IMAGE_INVALID => { None },
             _ => { Some(Image::new(handle)) }
         }
 	}
@@ -299,7 +299,7 @@ impl Ctx {
     pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Option<Image> {
 		let handle = unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) };
         match handle {
-            0 => { None },
+            ffi::STB_IMAGE_INVALID => { None },
             _ => { Some(Image::new(handle)) }
         }
 	}
@@ -390,8 +390,8 @@ impl Ctx {
             filename.with_c_str(|filename| {
 		      let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
               match handle {
-                -1 => None,
-                _  => Some(Font::new(handle))
+                ffi::FONS_INVALID => None,
+                _ => Some(Font::new(handle))
               }
             })
         })
@@ -400,8 +400,8 @@ impl Ctx {
         name.with_c_str(|name| {
             let handle = unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, if freeData {1} else {0}) };
             match handle {
-                -1 => None,
-                _  => Some(Font::new(handle))
+                ffi::FONS_INVALID => None,
+                _ => Some(Font::new(handle))
             }
         })
 	}
@@ -409,7 +409,7 @@ impl Ctx {
         name.with_c_str(|name| {
             let handle = unsafe { ffi::nvgFindFont(self.ptr, name) };
             match handle {
-                -1 => None,
+                ffi::FONS_INVALID => None,
                 _ => Some(Font::new(handle))
             }
         })
