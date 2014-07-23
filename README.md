@@ -63,6 +63,7 @@ In the demo,
 Used By
 =======
 - [Blendish-rs](https://github.com/KevinKelley/blendish-rs) (Blender-themed widgets)
+
 License
 =======
 MIT, for this binding. NanoVG is released under the zlib license.
@@ -71,6 +72,6 @@ Links
 =====
 - [Blendish](https://bitbucket.org/duangle/blendish)
 - [NanoVG](https://github.com/memononen/nanovg)
-- [](https://github.com/crabtw/rust-bindgen)
-- [](https://github.com/bjz/gl-rs)
-- [](https://github.com/bjz/glfw-rs)
+- [rust-bindgen](https://github.com/crabtw/rust-bindgen) (thanks!)
+- [gl-rs](https://github.com/bjz/gl-rs)
+- [glfw-rs](https://github.com/bjz/glfw-rs)
