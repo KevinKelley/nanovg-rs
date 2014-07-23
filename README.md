@@ -48,7 +48,7 @@ To build the demo, then:
 ```
   cd example
   cargo build
-  target/example
+  ./target/example
 ```
 
 (note that font and image resources won't be found if you run from
@@ -60,13 +60,17 @@ In the demo,
 - and 'space' toggles scale/rotate of the pseudo-window stuff.
 
 
+Used By
+=======
+- [Blendish-rs](https://github.com/KevinKelley/blendish-rs) (Blender-themed widgets)
 License
 =======
 MIT, for this binding. NanoVG is released under the zlib license.
 
 Links
 =====
-- https://github.com/memononen/nanovg
-- https://github.com/crabtw/rust-bindgen
-- https://github.com/bjz/gl-rs
-- https://github.com/bjz/glfw-rs
+- [Blendish](https://bitbucket.org/duangle/blendish)
+- [NanoVG](https://github.com/memononen/nanovg)
+- [](https://github.com/crabtw/rust-bindgen)
+- [](https://github.com/bjz/gl-rs)
+- [](https://github.com/bjz/glfw-rs)

@@ -1,6 +1,6 @@
 [package]
 name = "nanovg"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "make -f nanovg.mk"
 
