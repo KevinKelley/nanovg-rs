@@ -5,6 +5,7 @@ before_install:
   - sudo apt-get update -qq
 install:
   - sudo apt-get install -qq rust-nightly cargo
-  - sudo apt-get install premake4 glfw3
+  - sudo apt-get install -qq premake4
+  - sudo apt-get install -qq glfw3
 script:
   - cargo build
