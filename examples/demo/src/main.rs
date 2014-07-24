@@ -8,7 +8,6 @@
 extern crate num;
 extern crate native;
 extern crate libc;
-extern crate collections;
 
 extern crate glfw;
 extern crate gl;
@@ -161,11 +160,6 @@ fn main()
             handle_window_event(&window, event);
         }
     }
-
-// cleanup should be handled by Drop trait
-//  freeDemoData(vg, &data);
-//  nvgDeleteGLES3(vg);
-//  glfwTerminate();
 }
 
 fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {

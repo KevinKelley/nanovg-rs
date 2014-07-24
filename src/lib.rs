@@ -304,11 +304,11 @@ impl Ctx {
         }
 	}
 
-    pub fn update_image(&self, image: Image, data: &[u8]) {
+    pub fn update_image(&self, image: &Image, data: &[u8]) {
 		unsafe { ffi::nvgUpdateImage(self.ptr, image.handle, data.as_ptr()) }
 	}
 
-    pub fn image_size(&self, image: Image) -> (i32, i32) {
+    pub fn image_size(&self, image: &Image) -> (i32, i32) {
         let (mut w, mut h) = (0i32, 0i32);
 		unsafe { ffi::nvgImageSize(self.ptr, image.handle, &mut w, &mut h) };
         (w, h)
@@ -327,7 +327,7 @@ impl Ctx {
     pub fn radial_gradient(&self, cx: f32, cy: f32, inr: f32, outr: f32, icol: Color, ocol: Color) -> NVGpaint {
 		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) }
 	}
-    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: Image, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
+    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: &Image, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
 		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image.handle, repeat as c_int, alpha) }
 	}
 
@@ -429,7 +429,7 @@ impl Ctx {
     pub fn text_align(&self, align: Align) {
 		unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
 	}
-    pub fn font_face_id(&self, font: Font) {
+    pub fn font_face_id(&self, font: &Font) {
 		unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
 	}
     pub fn font_face(&self, font: &str) {

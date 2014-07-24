@@ -2,7 +2,7 @@ extern crate gl;
 
 use std::ptr;
 use std::num::*;
-use collections::Vec;
+use std::vec::Vec;
 
 use nanovg::*;
 use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
