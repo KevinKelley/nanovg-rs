@@ -6,6 +6,16 @@ before_install:
 install:
   - sudo apt-get install -qq rust-nightly cargo
   - sudo apt-get install -qq premake4
-  - sudo apt-get install -qq glfw3
+  - sudo apt-get install libXxf86vm-dev
 script:
+  - mkdir deps
+  - cd deps
+  # Install glfw lib
+  - git clone --depth=1 https://github.com/glfw/glfw.git
+  - cd glfw
+  - cmake -DBUILD_SHARED_LIBS=ON
+  - make glfw # build only .so files
+  - sudo make install
+  #- cp src/libglfw.so* .. # copy dynamic libraries
+  - cd ..
   - cargo build
