@@ -1,8 +1,10 @@
 before_install:
   - sudo add-apt-repository --yes ppa:hansjorg/rust
   - sudo add-apt-repository --yes ppa:cmrx64/cargo
+  - sudo add-apt-repository --yes ppa:codegear/release
   - sudo apt-get update -qq
 install:
-  - sudo apt-get install -qq rust-nightly cargo premake
+  - sudo apt-get install -qq rust-nightly cargo
+  - sudo apt-get install premake4
 script:
   - cargo build
