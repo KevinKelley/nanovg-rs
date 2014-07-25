@@ -98,6 +98,7 @@ fn main()
 
     let data = demo::DemoData::load(&vg, "../../res");
 
+//    return test_linebreaks(vg);
 
 	glfw.set_swap_interval(0);
 
@@ -134,7 +135,6 @@ fn main()
         glcheck!(gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA));
         glcheck!(gl::Enable(gl::CULL_FACE));
         glcheck!(gl::Disable(gl::DEPTH_TEST));
-
 
         vg.begin_frame(winWidth, winHeight, pxRatio as f32);
 
@@ -177,5 +177,39 @@ fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
             unsafe {premult = !premult};
         }
         _ => {}
+    }
+}
+
+// think linebreaks api needs some love
+fn test_linebreaks(vg:Ctx) {
+    let x=0.0; let y=0.0;
+    let width = 120.0;
+
+    let text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.";
+    //let text = "01234 6789 1234 6789 1234 6789 123456789012345678901234567890123456789012345678901234567890123456789";
+
+
+    // The text break API can be used to fill a large buffer of rows,
+    // or to iterate over the text just few lines (or just one) at a time.
+    // The "next" variable of the last returned item tells where to continue.
+    let mut start: uint = 0;    // byte pos in utf8 'text' str
+    let end: uint = text.len(); // exclusive
+    'chunks: loop {
+        let text = text.slice(start, end);
+
+println!("{}", text);
+
+        let rows = vg.text_break_lines(text, width, 3);
+        let nrows = rows.len();
+        if nrows == 0 { break 'chunks; }
+        for i in range(0, nrows) {
+            let row = &rows[i];
+            let line = text.slice(row.start_index(), row.end_index());
+
+println!("i: {}  st: {}, en: {}  \t {} \tnext: {}", i, row.start_index(), row.end_index(), line, row.next_index());
+
+        }
+        // Keep going...
+        start += rows[nrows-1].next_index();
     }
 }
