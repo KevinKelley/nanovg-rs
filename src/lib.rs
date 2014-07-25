@@ -141,6 +141,8 @@ impl Color {
     }
 }
 
+// Image
+
 pub struct Image {
     handle: c_int
 }
@@ -150,6 +152,21 @@ impl Image {
     fn new(handle: c_int) -> Image { Image { handle: handle } }
 }
 
+impl fmt::Show for Image {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Image #{}", self.handle)
+    }
+}
+
+//impl Drop for Font {
+//    fn drop(&mut self) {
+//        Ctx::delete_image(nvg, self.handle);
+//        self.handle = ffi::STB_IMAGE_INVALID;
+//    }
+//}
+
+// Font
+
 pub struct Font {
     handle: c_int
 }
@@ -158,6 +175,21 @@ impl Font {
     #[inline]
     fn new(handle: c_int) -> Font { Font { handle: handle } }
 }
+
+impl fmt::Show for Font {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Font #{}", self.handle)
+    }
+}
+
+//impl Drop for Font {
+//    fn drop(&mut self) {
+//        // seems there's no API in nanovg for unloading fonts!
+//        self.handle = ffi::FONS_INVALID;
+//    }
+//}
+
+//  Ctx
 
 pub struct Ctx {
     ptr: *mut ffi::NVGcontext,
