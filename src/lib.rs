@@ -1,7 +1,7 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
-#![feature(globs)]
+#![feature(globs, macro_rules)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case_functions)]
 #![deny(unnecessary_parens)]
@@ -15,9 +15,7 @@
 #![warn(visible_private_types)]
 #![allow(dead_code)]
 
-
 extern crate libc;
-
 
 use std::fmt;
 use std::kinds::marker;
@@ -159,6 +157,134 @@ impl Font {
     fn new(handle: c_int) -> Font { Font { handle: handle } }
 }
 
+pub struct Transform {
+    array: [f32, ..6]
+}
+
+macro_rules! accessors(
+    ($($name:ident -> $idx:expr),+) => (
+        $(#[inline] pub fn $name(&self) -> f32 { self.array[$idx] })+
+    )
+)
+
+macro_rules! mutators(
+    ($($name:ident ($($p:ident : $t:ty),+) via $d:ident),+) => (
+        $(
+        pub fn $name(mut self, $($p:$t),+) -> Transform {
+            let mut t = Transform::new_zero(); 
+            t.$d($($p),+);
+            self.set_premultiply(&t);
+            self
+        }
+        )+
+    )
+)
+
+impl Transform {
+    #[inline]
+    fn as_mut_ptr(&mut self) -> *mut f32 { self.array.as_mut_ptr() }
+
+    #[inline]
+    fn as_ptr(&self) -> *const f32 { self.array.as_ptr() }
+
+    #[inline]
+    pub fn as_mut_slice<'a>(&'a mut self) -> &'a mut [f32] { self.array.as_mut_slice() }
+
+    #[inline]
+    pub fn into_array(self) -> [f32, ..6] { self.array }
+
+    #[inline]
+    pub fn from_array(array: [f32, ..6]) -> Transform {
+        Transform { array: array }
+    }
+
+    #[inline]
+    pub fn new(a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) -> Transform {
+        Transform { array: [a, b, c, d, e, f] }
+    }
+
+    #[inline]
+    fn new_zero() -> Transform {
+        Transform { array: [0.0, ..6] }
+    }
+
+    pub fn new_identity() -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_identity();
+        t
+    }
+
+    pub fn new_from_slice(slice: &[f32]) -> Option<Transform> {
+        match slice {
+            [a, b, c, d, e, f, ..] => Some(Transform::new(a, b, c, d, e, f)),
+            _ => None
+        }
+    }
+
+    accessors!(a -> 0, b -> 1, c -> 1, d -> 1, e -> 1, f -> 1)
+
+    pub fn set_identity(&mut self) {
+        unsafe { ffi::nvgTransformIdentity(self.as_mut_ptr()) }
+    }
+
+    pub fn set_translate(&mut self, tx: f32, ty: f32) {
+        unsafe { ffi::nvgTransformTranslate(self.as_mut_ptr(), tx, ty) }
+    }
+
+    pub fn set_scale(&mut self, sx: f32, sy: f32) {
+        unsafe { ffi::nvgTransformScale(self.as_mut_ptr(), sx, sy) }
+    }
+
+    pub fn set_rotate(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformRotate(self.as_mut_ptr(), a) }
+    }
+
+    pub fn set_skew_x(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformSkewX(self.as_mut_ptr(), a) }
+    }
+
+    pub fn set_skew_y(&mut self, a: f32) {
+        unsafe { ffi::nvgTransformSkewY(self.as_mut_ptr(), a) }
+    }
+
+    pub fn set_multiply(&mut self, src: &Transform) {
+        unsafe { ffi::nvgTransformMultiply(self.as_mut_ptr(), src.as_ptr()) }
+    }
+
+    pub fn set_premultiply(&mut self, src: &Transform) {
+        unsafe { ffi::nvgTransformPremultiply(self.as_mut_ptr(), src.as_ptr()) }
+    }
+
+    pub fn set_inverse(&mut self, src: &Transform) -> bool {
+        unsafe { ffi::nvgTransformInverse(self.as_mut_ptr(), src.as_ptr()) == 1 }
+    }
+
+    mutators!(
+        translate(tx: f32, ty: f32) via set_translate,
+        scale(sx: f32, sy: f32) via set_scale,
+        rotate(a: f32) via set_rotate,
+        skew_x(a: f32) via set_skew_x,
+        skew_y(a: f32) via set_skew_y,
+        multiply(src: &Transform) via set_multiply,
+        premultiply(src: &Transform) via set_premultiply
+    )
+
+    pub fn inverted(mut self) -> Result<Transform, Transform> {
+        let copy = self;
+        if self.set_inverse(&copy) {
+            Ok(self)
+        } else {
+            Err(copy)
+        }
+    }
+
+    pub fn transform_point(&self, (srcx, srcy): (f32, f32)) -> (f32, f32) {
+        let (mut dstx, mut dsty) = (0.0f32, 0.0f32);
+        unsafe { ffi::nvgTransformPoint(&mut dstx, &mut dsty, self.as_ptr(), srcx, srcy); }
+        (dstx, dsty)
+    }
+}
+
 pub struct Ctx {
     ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
@@ -240,9 +366,9 @@ impl Ctx {
     pub fn reset_transform(&self) {
 		unsafe { ffi::nvgResetTransform(self.ptr) }
 	}
-    pub fn transform(&self, a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) {
-		unsafe { ffi::nvgTransform(self.ptr, a, b, c, d, e, f) }
-	}
+    pub fn transform(&self, t: Transform) {
+        unsafe { ffi::nvgTransform(self.ptr, t.a(), t.b(), t.c(), t.d(), t.e(), t.f()) }
+    }
     pub fn translate(&self, x: f32, y: f32) {
 		unsafe { ffi::nvgTranslate(self.ptr, x, y) }
 	}
@@ -258,8 +384,10 @@ impl Ctx {
     pub fn scale(&self, x: f32, y: f32) {
 		unsafe { ffi::nvgScale(self.ptr, x, y) }
 	}
-    pub fn current_transform(&self, xform: *mut f32) {
-		unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
+    pub fn current_transform(&self) -> Transform {
+        let mut arr = [0.0f32, ..6];
+		unsafe { ffi::nvgCurrentTransform(self.ptr, arr.as_mut_ptr()) }
+        Transform::from_array(arr)
 	}
 
     #[inline]
@@ -390,26 +518,32 @@ impl Ctx {
             filename.with_c_str(|filename| {
 		      let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
               match handle {
-                ffi::FONS_INVALID => None,
+                ffi::FONT_INVALID => None,
                 _ => Some(Font::new(handle))
               }
             })
         })
 	}
-    pub fn create_font_mem(&self, name: &str, data: *mut u8, ndata: i32, freeData: bool) -> Option<Font> {
+
+    pub fn create_font_mem(&self, name: &str, data: &[u8]) -> Option<Font> {
         name.with_c_str(|name| {
-            let handle = unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, if freeData {1} else {0}) };
+            let handle = unsafe { 
+                ffi::nvgCreateFontMem(self.ptr, name, 
+                                      data.as_ptr() as *mut u8, data.len() as c_int, 
+                                      0 /* do not free */)
+            };
             match handle {
-                ffi::FONS_INVALID => None,
+                ffi::FONT_INVALID => None,
                 _ => Some(Font::new(handle))
             }
         })
 	}
+
     pub fn find_font(&self, name: &str) -> Option<Font> {
         name.with_c_str(|name| {
             let handle = unsafe { ffi::nvgFindFont(self.ptr, name) };
             match handle {
-                ffi::FONS_INVALID => None,
+                ffi::FONT_INVALID => None,
                 _ => Some(Font::new(handle))
             }
         })
@@ -434,7 +568,7 @@ impl Ctx {
 	}
     pub fn font_face(&self, font: &str) {
         font.with_c_str(|font| {
-		unsafe { ffi::nvgFontFace(self.ptr, font) }
+            unsafe { ffi::nvgFontFace(self.ptr, font) }
         })
 	}
     pub fn text(&self, x: f32, y: f32, text: &str) -> f32 {
@@ -517,53 +651,6 @@ pub fn relative_index(text: &str, p: *const i8) -> uint {
     pix - stix
 }
 
-
-///
-struct Transform {
-    raw: [f32, ..6]
-}
-impl Transform
-{
-    pub fn new() -> Transform {
-        let mut t = Transform { raw: [0.0, ..6] };
-        t.identity();
-        t
-    }
-    pub fn identity(&mut self) {
-        unsafe { ffi::nvgTransformIdentity(self.as_mut_ptr()) }
-    }
-    pub fn translate(&mut self, tx: f32, ty: f32) {
-        unsafe { ffi::nvgTransformTranslate(self.as_mut_ptr(), tx, ty) }
-    }
-    pub fn scale(&mut self, sx: f32, sy: f32) {
-        unsafe { ffi::nvgTransformScale(self.as_mut_ptr(), sx, sy) }
-    }
-    pub fn rotate(&mut self, a: f32) {
-        unsafe { ffi::nvgTransformRotate(self.as_mut_ptr(), a) }
-    }
-    pub fn skew_x(&mut self, a: f32) {
-        unsafe { ffi::nvgTransformSkewX(self.as_mut_ptr(), a) }
-    }
-    pub fn skew_y(&mut self, a: f32) {
-        unsafe { ffi::nvgTransformSkewY(self.as_mut_ptr(), a) }
-    }
-    pub fn multiply(&mut self, src: *const f32) {
-        unsafe { ffi::nvgTransformMultiply(self.as_mut_ptr(), src) }
-    }
-    pub fn premultiply(&mut self, src: *const f32) {
-        unsafe { ffi::nvgTransformPremultiply(self.as_mut_ptr(), src) }
-    }
-    pub fn inverse(&mut self, src: *const f32) -> i32 {
-        unsafe { ffi::nvgTransformInverse(self.as_mut_ptr(), src) }
-    }
-    pub fn transform_point(dstx: *mut f32, dsty: *mut f32, xform: *const f32, srcx: f32, srcy: f32) {
-        unsafe { ffi::nvgTransformPoint(dstx, dsty, xform, srcx, srcy) }
-    }
-
-    pub fn as_mut_ptr(&mut self) -> *mut f32 {
-        self.raw.as_mut_ptr()
-    }
-}
 
 pub fn deg_to_rad(deg: f32) -> f32 {
 	unsafe { ffi::nvgDegToRad(deg) }

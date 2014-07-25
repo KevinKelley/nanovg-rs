@@ -638,7 +638,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 		let iy: f32;
 		let iw: f32;
 		let ih: f32;
-		let (imgw, imgh) = vg.image_size(images[i]);
+		let (imgw, imgh) = vg.image_size(&images[i]);
 		if imgw < imgh {
 			iw = thumb;
 			ih = iw * (imgh as f32) / (imgw as f32);
@@ -658,7 +658,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 			draw_spinner(vg, tx+thumb/2.0,ty+thumb/2.0, thumb*0.25, t);
 		}
 
-		let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, images[i], NOREPEAT, a);
+		let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, &images[i], NOREPEAT, a);
 		vg.begin_path();
 		vg.rounded_rect(tx,ty, thumb,thumb, 5.0);
 		vg.fill_paint(imgPaint);
