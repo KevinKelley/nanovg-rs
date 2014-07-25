@@ -161,6 +161,13 @@ pub struct Transform {
     array: [f32, ..6]
 }
 
+impl fmt::Show for Transform {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Transform(tx: {}, ty: {}, sx: {}, sy: {}, kx: {}, ky: {})",
+               self.e(), self.f(), self.a(), self.d(), self.c(), self.b())
+    }
+}
+
 macro_rules! accessors(
     ($($name:ident -> $idx:expr),+) => (
         $(#[inline] pub fn $name(&self) -> f32 { self.array[$idx] })+
