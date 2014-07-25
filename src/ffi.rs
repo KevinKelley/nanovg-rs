@@ -61,7 +61,7 @@ pub struct NVGpaint {
 
 #[repr(C)]
 pub struct NVGglyphPosition {
-    pub _str: *const c_char,
+    pub byte_ptr: *const c_char,
     pub x: c_float,
     pub minx: c_float,
     pub maxx: c_float,

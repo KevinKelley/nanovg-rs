@@ -25,13 +25,12 @@ use std::ptr;
 use std::str;
 use std::bitflags;
 
-use libc::{c_char, c_int, c_void};
+use libc::{c_char, c_int, c_void, c_float};
 
 use ffi::NVGcolor;
-
-pub use NVGpaint         = ffi::NVGpaint;
-pub use NVGglyphPosition = ffi::NVGglyphPosition;
-pub use NVGtextRow       = ffi::NVGtextRow;
+use ffi::NVGpaint;
+use ffi::NVGglyphPosition;
+use ffi::NVGtextRow;
 
 mod ffi;
 
@@ -92,6 +91,8 @@ pub bitflags!(
     }
 )
 
+// Color
+
 pub struct Color {
     nvg: NVGcolor
 }
@@ -141,6 +142,30 @@ impl Color {
     }
 }
 
+impl fmt::Show for Color {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "r:{}, g:{}, b:{}, a:{}", self.r(), self.g(), self.b(), self.a())
+    }
+}
+
+// Paint
+
+pub struct Paint {
+    nvg: NVGpaint
+}
+
+impl Paint {
+    #[inline]
+    fn wrap(nvg: NVGpaint) -> Paint { Paint { nvg: nvg } }
+}
+
+impl fmt::Show for Paint {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let p: *const NVGpaint = &self.nvg;
+        write!(f, "Paint @ {}", p)
+    }
+}
+
 // Image
 
 pub struct Image {
@@ -149,7 +174,7 @@ pub struct Image {
 
 impl Image {
     #[inline]
-    fn new(handle: c_int) -> Image { Image { handle: handle } }
+    fn wrap(handle: c_int) -> Image { Image { handle: handle } }
 }
 
 impl fmt::Show for Image {
@@ -173,7 +198,7 @@ pub struct Font {
 
 impl Font {
     #[inline]
-    fn new(handle: c_int) -> Font { Font { handle: handle } }
+    fn wrap(handle: c_int) -> Font { Font { handle: handle } }
 }
 
 impl fmt::Show for Font {
@@ -188,6 +213,45 @@ impl fmt::Show for Font {
 //        self.handle = ffi::FONS_INVALID;
 //    }
 //}
+
+// TextRow
+
+#[deriving(PartialEq,Show,Clone)]
+pub struct TextRow {
+    start_index: uint,
+    end_index: uint,
+    next_index: uint,
+    width: c_float,
+    minx: c_float,
+    maxx: c_float,
+}
+
+impl TextRow {
+    pub fn start_index(&self) -> uint { self.start_index }
+    pub fn end_index(&self) -> uint { self.end_index }
+    pub fn next_index(&self) -> uint { self.next_index }
+    pub fn width(&self) -> f32 { self.width }
+    pub fn minx(&self) -> f32 { self.minx }
+    pub fn maxx(&self) -> f32 { self.maxx }
+}
+
+// GlyphPosition
+
+#[deriving(PartialEq,Show,Clone)]
+pub struct GlyphPosition {
+    byte_index: uint,   // start index of this glyph in string
+    x: f32,             // glyph's x position
+    minx: f32,          // glyph spans from minx to max x
+    maxx: f32           // (span may or may not actually contain x, depending on the font)
+}
+
+impl GlyphPosition {
+    pub fn byte_index(&self) -> uint { self.byte_index }
+    pub fn x(&self) -> f32 { self.x }
+    pub fn minx(&self) -> f32 { self.minx }
+    pub fn maxx(&self) -> f32 { self.maxx }
+}
+
 
 //  Ctx
 
@@ -225,74 +289,74 @@ impl Ctx {
     }
 
     pub fn begin_frame(&self, windowWidth: i32, windowHeight: i32, devicePixelRatio: f32) {
-		unsafe { ffi::nvgBeginFrame(self.ptr, windowWidth, windowHeight, devicePixelRatio) }
-	}
+        unsafe { ffi::nvgBeginFrame(self.ptr, windowWidth, windowHeight, devicePixelRatio) }
+    }
     pub fn end_frame(&self) {
-		unsafe { ffi::nvgEndFrame(self.ptr) }
-	}
+        unsafe { ffi::nvgEndFrame(self.ptr) }
+    }
 
     pub fn save(&self) {
-		unsafe { ffi::nvgSave(self.ptr) }
-	}
+        unsafe { ffi::nvgSave(self.ptr) }
+    }
     pub fn restore(&self) {
-		unsafe { ffi::nvgRestore(self.ptr) }
-	}
+        unsafe { ffi::nvgRestore(self.ptr) }
+    }
     pub fn reset(&self) {
-		unsafe { ffi::nvgReset(self.ptr) }
-	}
+        unsafe { ffi::nvgReset(self.ptr) }
+    }
 
     pub fn stroke_color(&self, color: Color) {
-		unsafe { ffi::nvgStrokeColor(self.ptr, color.nvg) }
-	}
-    pub fn stroke_paint(&self, paint: NVGpaint) {
-		unsafe { ffi::nvgStrokePaint(self.ptr, paint) }
-	}
+        unsafe { ffi::nvgStrokeColor(self.ptr, color.nvg) }
+    }
+    pub fn stroke_paint(&self, paint: Paint) {
+        unsafe { ffi::nvgStrokePaint(self.ptr, paint.nvg) }
+    }
     pub fn fill_color(&self, color: Color) {
-		unsafe { ffi::nvgFillColor(self.ptr, color.nvg) }
-	}
-    pub fn fill_paint(&self, paint: NVGpaint) {
-		unsafe { ffi::nvgFillPaint(self.ptr, paint) }
-	}
+        unsafe { ffi::nvgFillColor(self.ptr, color.nvg) }
+    }
+    pub fn fill_paint(&self, paint: Paint) {
+        unsafe { ffi::nvgFillPaint(self.ptr, paint.nvg) }
+    }
     pub fn miter_limit(&self, limit: f32) {
-		unsafe { ffi::nvgMiterLimit(self.ptr, limit) }
-	}
+        unsafe { ffi::nvgMiterLimit(self.ptr, limit) }
+    }
     pub fn stroke_width(&self, size: f32) {
-		unsafe { ffi::nvgStrokeWidth(self.ptr, size) }
-	}
+        unsafe { ffi::nvgStrokeWidth(self.ptr, size) }
+    }
     pub fn line_cap(&self, cap: LineCap) {
-		unsafe { ffi::nvgLineCap(self.ptr, cap as c_int) }
-	}
+        unsafe { ffi::nvgLineCap(self.ptr, cap as c_int) }
+    }
     pub fn line_join(&self, join: LineCap) {
-		unsafe { ffi::nvgLineJoin(self.ptr, join as c_int) }
-	}
+        unsafe { ffi::nvgLineJoin(self.ptr, join as c_int) }
+    }
     pub fn global_alpha(&self, alpha: f32) {
-		unsafe { ffi::nvgGlobalAlpha(self.ptr, alpha) }
-	}
+        unsafe { ffi::nvgGlobalAlpha(self.ptr, alpha) }
+    }
 
     pub fn reset_transform(&self) {
-		unsafe { ffi::nvgResetTransform(self.ptr) }
-	}
+        unsafe { ffi::nvgResetTransform(self.ptr) }
+    }
     pub fn transform(&self, a: f32, b: f32, c: f32, d: f32, e: f32, f: f32) {
-		unsafe { ffi::nvgTransform(self.ptr, a, b, c, d, e, f) }
-	}
+        unsafe { ffi::nvgTransform(self.ptr, a, b, c, d, e, f) }
+    }
     pub fn translate(&self, x: f32, y: f32) {
-		unsafe { ffi::nvgTranslate(self.ptr, x, y) }
-	}
+        unsafe { ffi::nvgTranslate(self.ptr, x, y) }
+    }
     pub fn rotate(&self, angle: f32) {
-		unsafe { ffi::nvgRotate(self.ptr, angle) }
-	}
+        unsafe { ffi::nvgRotate(self.ptr, angle) }
+    }
     pub fn skew_x(&self, angle: f32) {
-		unsafe { ffi::nvgSkewX(self.ptr, angle) }
-	}
+        unsafe { ffi::nvgSkewX(self.ptr, angle) }
+    }
     pub fn skew_y(&self, angle: f32) {
-		unsafe { ffi::nvgSkewY(self.ptr, angle) }
-	}
+        unsafe { ffi::nvgSkewY(self.ptr, angle) }
+    }
     pub fn scale(&self, x: f32, y: f32) {
-		unsafe { ffi::nvgScale(self.ptr, x, y) }
-	}
+        unsafe { ffi::nvgScale(self.ptr, x, y) }
+    }
     pub fn current_transform(&self, xform: *mut f32) {
-		unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
-	}
+        unsafe { ffi::nvgCurrentTransform(self.ptr, xform) }
+    }
 
     #[inline]
     pub fn create_image(&self, filename: &str) -> Option<Image> {
@@ -305,10 +369,10 @@ impl Ctx {
             // stb_image returns 0 for failure; unlike fontstash which returns -1
             match handle {
                 ffi::STB_IMAGE_INVALID => { None },
-                _ => { Some(Image::new(handle)) }
+                _ => { Some(Image::wrap(handle)) }
             }
         })
-	}
+    }
 
     #[inline]
     pub fn create_image_mem(&self, data: &[u8]) -> Option<Image> {
@@ -316,12 +380,12 @@ impl Ctx {
     }
 
     pub fn create_image_mem_flags(&self, data: &[u8], flags: ImageFlags) -> Option<Image> {
-		let handle = unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) };
+        let handle = unsafe { ffi::nvgCreateImageMem(self.ptr, flags.bits() as c_int, data.as_ptr(), data.len() as c_int) };
         match handle {
             ffi::STB_IMAGE_INVALID => { None },
-            _ => { Some(Image::new(handle)) }
+            _ => { Some(Image::wrap(handle)) }
         }
-	}
+    }
 
     #[inline]
     pub fn create_image_rgba(&self, w: i32, h: i32, data: &[u8]) -> Option<Image> {
@@ -329,146 +393,146 @@ impl Ctx {
     }
 
     pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Option<Image> {
-		let handle = unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) };
+        let handle = unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) };
         match handle {
             ffi::STB_IMAGE_INVALID => { None },
-            _ => { Some(Image::new(handle)) }
+            _ => { Some(Image::wrap(handle)) }
         }
-	}
+    }
 
     pub fn update_image(&self, image: &Image, data: &[u8]) {
-		unsafe { ffi::nvgUpdateImage(self.ptr, image.handle, data.as_ptr()) }
-	}
+        unsafe { ffi::nvgUpdateImage(self.ptr, image.handle, data.as_ptr()) }
+    }
 
     pub fn image_size(&self, image: &Image) -> (i32, i32) {
         let (mut w, mut h) = (0i32, 0i32);
-		unsafe { ffi::nvgImageSize(self.ptr, image.handle, &mut w, &mut h) };
+        unsafe { ffi::nvgImageSize(self.ptr, image.handle, &mut w, &mut h) };
         (w, h)
-	}
+    }
 
     pub fn delete_image(&self, image: Image) {
-		unsafe { ffi::nvgDeleteImage(self.ptr, image.handle) }
-	}
+        unsafe { ffi::nvgDeleteImage(self.ptr, image.handle) }
+    }
 
-    pub fn linear_gradient(&self, sx: f32, sy: f32, ex: f32, ey: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgLinearGradient(self.ptr, sx, sy, ex, ey, icol.nvg, ocol.nvg) }
-	}
-    pub fn box_gradient(&self, x: f32, y: f32, w: f32, h: f32, r: f32, f: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgBoxGradient(self.ptr, x, y, w, h, r, f, icol.nvg, ocol.nvg) }
-	}
-    pub fn radial_gradient(&self, cx: f32, cy: f32, inr: f32, outr: f32, icol: Color, ocol: Color) -> NVGpaint {
-		unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) }
-	}
-    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: &Image, repeat: PatternRepeat, alpha: f32) -> NVGpaint {
-		unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image.handle, repeat as c_int, alpha) }
-	}
+    pub fn linear_gradient(&self, sx: f32, sy: f32, ex: f32, ey: f32, icol: Color, ocol: Color) -> Paint {
+        Paint::wrap(unsafe { ffi::nvgLinearGradient(self.ptr, sx, sy, ex, ey, icol.nvg, ocol.nvg) })
+    }
+    pub fn box_gradient(&self, x: f32, y: f32, w: f32, h: f32, r: f32, f: f32, icol: Color, ocol: Color) -> Paint {
+        Paint::wrap(unsafe { ffi::nvgBoxGradient(self.ptr, x, y, w, h, r, f, icol.nvg, ocol.nvg) })
+    }
+    pub fn radial_gradient(&self, cx: f32, cy: f32, inr: f32, outr: f32, icol: Color, ocol: Color) -> Paint {
+        Paint::wrap(unsafe { ffi::nvgRadialGradient(self.ptr, cx, cy, inr, outr, icol.nvg, ocol.nvg) })
+    }
+    pub fn image_pattern(&self, ox: f32, oy: f32, ex: f32, ey: f32, angle: f32, image: &Image, repeat: PatternRepeat, alpha: f32) -> Paint {
+        Paint::wrap(unsafe { ffi::nvgImagePattern(self.ptr, ox, oy, ex, ey, angle, image.handle, repeat as c_int, alpha) })
+    }
 
     pub fn scissor(&self, x: f32, y: f32, w: f32, h: f32) {
-		unsafe { ffi::nvgScissor(self.ptr, x, y, w, h) }
-	}
+        unsafe { ffi::nvgScissor(self.ptr, x, y, w, h) }
+    }
     pub fn reset_scissor(&self) {
-		unsafe { ffi::nvgResetScissor(self.ptr) }
-	}
+        unsafe { ffi::nvgResetScissor(self.ptr) }
+    }
 
     pub fn begin_path(&self) {
-		unsafe { ffi::nvgBeginPath(self.ptr) }
-	}
+        unsafe { ffi::nvgBeginPath(self.ptr) }
+    }
     pub fn move_to(&self, x: f32, y: f32) {
-		unsafe { ffi::nvgMoveTo(self.ptr, x, y) }
-	}
+        unsafe { ffi::nvgMoveTo(self.ptr, x, y) }
+    }
     pub fn line_to(&self, x: f32, y: f32) {
-		unsafe { ffi::nvgLineTo(self.ptr, x, y) }
-	}
+        unsafe { ffi::nvgLineTo(self.ptr, x, y) }
+    }
     pub fn bezier_to(&self, c1x: f32, c1y: f32, c2x: f32, c2y: f32, x: f32, y: f32) {
-		unsafe { ffi::nvgBezierTo(self.ptr, c1x, c1y, c2x, c2y, x, y) }
-	}
+        unsafe { ffi::nvgBezierTo(self.ptr, c1x, c1y, c2x, c2y, x, y) }
+    }
     pub fn quad_to(&self, cx: f32, cy: f32, x: f32, y: f32) {
-		unsafe { ffi::nvgQuadTo(self.ptr, cx, cy, x, y) }
-	}
+        unsafe { ffi::nvgQuadTo(self.ptr, cx, cy, x, y) }
+    }
     pub fn arc_to(&self, x1: f32, y1: f32, x2: f32, y2: f32, radius: f32) {
-		unsafe { ffi::nvgArcTo(self.ptr, x1, y1, x2, y2, radius) }
-	}
+        unsafe { ffi::nvgArcTo(self.ptr, x1, y1, x2, y2, radius) }
+    }
     pub fn close_path(&self) {
-		unsafe { ffi::nvgClosePath(self.ptr) }
-	}
+        unsafe { ffi::nvgClosePath(self.ptr) }
+    }
     pub fn path_winding(&self, dir: Solidity) {
-		unsafe { ffi::nvgPathWinding(self.ptr, dir as c_int) }
-	}
+        unsafe { ffi::nvgPathWinding(self.ptr, dir as c_int) }
+    }
 
     pub fn arc(&self, cx: f32, cy: f32, r: f32, a0: f32, a1: f32, dir: Winding) {
-		unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir as c_int) }
-	}
+        unsafe { ffi::nvgArc(self.ptr, cx, cy, r, a0, a1, dir as c_int) }
+    }
     pub fn rect(&self, x: f32, y: f32, w: f32, h: f32) {
-		unsafe { ffi::nvgRect(self.ptr, x, y, w, h) }
-	}
+        unsafe { ffi::nvgRect(self.ptr, x, y, w, h) }
+    }
     pub fn rounded_rect(&self, x: f32, y: f32, w: f32, h: f32, r: f32) {
-		unsafe { ffi::nvgRoundedRect(self.ptr, x, y, w, h, r) }
-	}
+        unsafe { ffi::nvgRoundedRect(self.ptr, x, y, w, h, r) }
+    }
     pub fn ellipse(&self, cx: f32, cy: f32, rx: f32, ry: f32) {
-		unsafe { ffi::nvgEllipse(self.ptr, cx, cy, rx, ry) }
-	}
+        unsafe { ffi::nvgEllipse(self.ptr, cx, cy, rx, ry) }
+    }
     pub fn circle(&self, cx: f32, cy: f32, r: f32) {
-		unsafe { ffi::nvgCircle(self.ptr, cx, cy, r) }
-	}
+        unsafe { ffi::nvgCircle(self.ptr, cx, cy, r) }
+    }
     pub fn fill(&self) {
-		unsafe { ffi::nvgFill(self.ptr) }
-	}
+        unsafe { ffi::nvgFill(self.ptr) }
+    }
     pub fn stroke(&self) {
-		unsafe { ffi::nvgStroke(self.ptr) }
-	}
+        unsafe { ffi::nvgStroke(self.ptr) }
+    }
 
     pub fn create_font(&self, name: &str, filename: &str) -> Option<Font> {
         name.with_c_str(|name| {
             filename.with_c_str(|filename| {
-		      let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
+              let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
               match handle {
                 ffi::FONS_INVALID => None,
-                _ => Some(Font::new(handle))
+                _ => Some(Font::wrap(handle))
               }
             })
         })
-	}
+    }
     pub fn create_font_mem(&self, name: &str, data: *mut u8, ndata: i32, freeData: bool) -> Option<Font> {
         name.with_c_str(|name| {
             let handle = unsafe { ffi::nvgCreateFontMem(self.ptr, name, data, ndata, if freeData {1} else {0}) };
             match handle {
                 ffi::FONS_INVALID => None,
-                _ => Some(Font::new(handle))
+                _ => Some(Font::wrap(handle))
             }
         })
-	}
+    }
     pub fn find_font(&self, name: &str) -> Option<Font> {
         name.with_c_str(|name| {
             let handle = unsafe { ffi::nvgFindFont(self.ptr, name) };
             match handle {
                 ffi::FONS_INVALID => None,
-                _ => Some(Font::new(handle))
+                _ => Some(Font::wrap(handle))
             }
         })
-	}
+    }
     pub fn font_size(&self, size: f32) {
-		unsafe { ffi::nvgFontSize(self.ptr, size) }
-	}
+        unsafe { ffi::nvgFontSize(self.ptr, size) }
+    }
     pub fn font_blur(&self, blur: f32) {
-		unsafe { ffi::nvgFontBlur(self.ptr, blur) }
-	}
+        unsafe { ffi::nvgFontBlur(self.ptr, blur) }
+    }
     pub fn text_letter_spacing(&self, spacing: f32) {
-		unsafe { ffi::nvgTextLetterSpacing(self.ptr, spacing) }
-	}
+        unsafe { ffi::nvgTextLetterSpacing(self.ptr, spacing) }
+    }
     pub fn text_line_height(&self, lineHeight: f32) {
-		unsafe { ffi::nvgTextLineHeight(self.ptr, lineHeight) }
-	}
+        unsafe { ffi::nvgTextLineHeight(self.ptr, lineHeight) }
+    }
     pub fn text_align(&self, align: Align) {
-		unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
-	}
+        unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
+    }
     pub fn font_face_id(&self, font: &Font) {
-		unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
-	}
+        unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
+    }
     pub fn font_face(&self, font: &str) {
         font.with_c_str(|font| {
-		unsafe { ffi::nvgFontFace(self.ptr, font) }
+        unsafe { ffi::nvgFontFace(self.ptr, font) }
         })
-	}
+    }
     pub fn text(&self, x: f32, y: f32, text: &str) -> f32 {
         text.with_c_str(|text| {
             unsafe { ffi::nvgText(self.ptr, x, y, text, ptr::null()) }
@@ -485,16 +549,16 @@ impl Ctx {
         text.with_c_str(|text| {
              unsafe { ffi::nvgTextBox(self.ptr, x, y, breakRowWidth, text, ptr::null()) }
         })
-	}
+    }
     // Measures the specified text string. Parameter bounds should be a pointer to float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
     // Measured values are returned in local coordinate space.
     pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32, ..4]) -> f32 {
         text.with_c_str(|text| {
-    	   unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
+           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
         })
-	}
+    }
     // Measures the needed advance for text, without computing complete bounds
     pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
         text.with_c_str(|text| {
@@ -512,22 +576,91 @@ impl Ctx {
         text.with_c_str(|text| {
             unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, breakRowWidth, text, ptr::null(), bounds.as_mut_ptr()) }
         })
-	}
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
-    pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str, positions: *mut NVGglyphPosition, maxPositions: i32) -> i32 {
-        if text.len() == 0 { return 0; }
-        let st: *const u8 = text.as_ptr();
-        let en: *const u8 = unsafe { st.offset(text.len() as int) };
-        unsafe { ffi::nvgTextGlyphPositions(self.ptr, x, y, st as *const i8, en as *const i8, positions, maxPositions) }
-	}
-    pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, rows: *mut NVGtextRow, maxRows: i32) -> i32 {
-        if text.len() == 0 { return 0; }
-        let st: *const u8 = text.as_ptr();
-        let en: *const u8 = unsafe { st.offset(text.len() as int) };
-        unsafe { ffi::nvgTextBreakLines(self.ptr, st as *const i8, en as *const i8, breakRowWidth, rows, maxRows) }
-	}
-    //////////////////////////////////////////////////////////////////////////////////////////////////
+    /// return a vector of position info for all glyphs in 'text'.
+    /// 'text' is utf8-encoded unicode, so the number of glyphs isn't necessarily the byte-length of the text.
+    pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str) -> Vec<GlyphPosition> {
+        let mut positions: Vec<NVGglyphPosition> = Vec::with_capacity(text.len());
+        for _ in range(0, text.len()) { // we may not need all of them, but if text is ascii, we will
+            positions.push(NVGglyphPosition {
+                byte_ptr: ptr::null(),
+                x: 0.0,
+                minx: 0.0,
+                maxx: 0.0
+            })
+        }
+        let st = text.as_ptr() as *const i8;
+        let en = unsafe { st.offset(text.len() as int) };
+
+        let actual_n = unsafe {
+            ffi::nvgTextGlyphPositions(self.ptr, x, y, st, en, positions.as_mut_ptr(), positions.len() as c_int)
+        };
+        assert!(actual_n >= 0);
+        let actual_n = actual_n as uint;
+
+        // convert pointers to indexes
+        let mut ret_vec:Vec<GlyphPosition> = Vec::with_capacity(actual_n);
+        for i in range(0, actual_n) {
+            let nvg = positions[i];
+            ret_vec.push(GlyphPosition {
+                byte_index: relative_index(text, nvg.byte_ptr),
+                x: nvg.x,
+                minx: nvg.minx,
+                maxx: nvg.maxx
+            });
+        }
+
+        return ret_vec;
+    }
+
+    pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, maxRows: uint) -> Vec<TextRow> {
+        let st = text.as_ptr() as *const i8;
+        let en = unsafe { st.offset(text.len() as int) };
+        let mut rows: Vec<NVGtextRow> = Vec::with_capacity(maxRows);
+        for _ in range(0, maxRows) {
+            rows.push(NVGtextRow {
+                start: ptr::null(),
+                end:   ptr::null(),
+                next:  ptr::null(),
+                width: 0.0,
+                minx:  0.0,
+                maxx:  0.0,
+            })
+        }
+
+        let actual_n = unsafe {
+            ffi::nvgTextBreakLines(self.ptr, st, en, breakRowWidth, rows.as_mut_ptr(), maxRows as c_int)
+        };
+        assert!(actual_n >= 0);
+        let actual_n = actual_n as uint;
+
+        // convert pointers to indexes
+        let mut ret_vec:Vec<TextRow> = Vec::with_capacity(actual_n);
+        for i in range(0, actual_n) {
+            let nvg = rows[i];
+            ret_vec.push(TextRow {
+                start_index: relative_index(text, nvg.start),
+                end_index:   relative_index(text, nvg.end),
+                next_index:  relative_index(text, nvg.next),
+                width: nvg.width,
+                minx: nvg.minx,
+                maxx: nvg.maxx
+            });
+        }
+
+        return ret_vec;
+    }
+
+
+    //pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, rows: *mut NVGtextRow, maxRows: i32) -> i32 {
+    //    if text.len() == 0 { return 0; }
+    //    let st: *const u8 = text.as_ptr();
+    //    let en: *const u8 = unsafe { st.offset(text.len() as int) };
+    //    unsafe { ffi::nvgTextBreakLines(self.ptr, st as *const i8, en as *const i8, breakRowWidth, rows, maxRows) }
+    //}
+
 
     pub fn text_metrics(&self, ascender: *mut f32, descender: *mut f32, lineh: *mut f32) {
         unsafe { ffi::nvgTextMetrics(self.ptr, ascender, descender, lineh) }
@@ -541,11 +674,14 @@ impl Ctx {
 
 }
 
+// given a utf8 string, and a ptr that walks through it,
+// return instead the corresponding byte-index into the string.
 pub fn relative_index(text: &str, p: *const i8) -> uint {
     let st: *const u8 = text.as_ptr();
     let stix: uint = st.to_uint();
     let pix: uint = p.to_uint();
-    assert!(pix >= stix);
+    assert!(pix >= stix);               // require that 'p' point somewhere in the
+    assert!(pix - stix <= text.len());  // string, or at most 1 past end (where C null would be)
     pix - stix
 }
 
@@ -598,10 +734,10 @@ impl Transform
 }
 
 pub fn deg_to_rad(deg: f32) -> f32 {
-	unsafe { ffi::nvgDegToRad(deg) }
+    unsafe { ffi::nvgDegToRad(deg) }
 }
 pub fn rad_to_deg(rad: f32) -> f32 {
-	unsafe { ffi::nvgRadToDeg(rad) }
+    unsafe { ffi::nvgRadToDeg(rad) }
 }
 
 // image-write functions from nanovg/examples/stb_image_write.h
