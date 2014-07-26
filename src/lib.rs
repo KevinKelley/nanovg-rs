@@ -323,7 +323,7 @@ impl Transform {
         }
     }
 
-    accessors!(a -> 0, b -> 1, c -> 1, d -> 1, e -> 1, f -> 1)
+    accessors!(a -> 0, b -> 1, c -> 2, d -> 3, e -> 4, f -> 5)
 
     pub fn set_identity(&mut self) {
         unsafe { ffi::nvgTransformIdentity(self.as_mut_ptr()) }
