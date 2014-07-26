@@ -181,7 +181,7 @@ impl fmt::Show for Image {
     }
 }
 
-//impl Drop for Font {
+//impl Drop for Image {
 //    fn drop(&mut self) {
 //        Ctx::delete_image(nvg, self.handle);
 //        self.handle = ffi::STB_IMAGE_INVALID;
@@ -680,13 +680,6 @@ impl Ctx {
             unsafe { ffi::nvgText(self.ptr, x, y, text, ptr::null()) }
         })
     }
-    //pub fn text(&self, x: f32, y: f32, text: &str, end: &str) -> f32 {
-    //    text.with_c_str(|text| {
-    //        end.with_c_str(|end| {
-    //            unsafe { ffi::nvgText(self.ptr, x, y, text, end) }
-    //        })
-    //    })
-    //}
     pub fn text_box(&self, x: f32, y: f32, breakRowWidth: f32, text: &str) {
         text.with_c_str(|text| {
              unsafe { ffi::nvgTextBox(self.ptr, x, y, breakRowWidth, text, ptr::null()) }
@@ -795,20 +788,9 @@ impl Ctx {
         return ret_vec;
     }
 
-
-    //pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, rows: *mut NVGtextRow, maxRows: i32) -> i32 {
-    //    if text.len() == 0 { return 0; }
-    //    let st: *const u8 = text.as_ptr();
-    //    let en: *const u8 = unsafe { st.offset(text.len() as int) };
-    //    unsafe { ffi::nvgTextBreakLines(self.ptr, st as *const i8, en as *const i8, breakRowWidth, rows, maxRows) }
-    //}
-
-
     pub fn text_metrics(&self, ascender: *mut f32, descender: *mut f32, lineh: *mut f32) {
         unsafe { ffi::nvgTextMetrics(self.ptr, ascender, descender, lineh) }
     }
-
-
 
     pub fn debug_dump_path_cache(&self) {
         unsafe { ffi::nvgDebugDumpPathCache(self.ptr) }
