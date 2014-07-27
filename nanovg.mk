@@ -1,5 +1,3 @@
-CC ?= gcc
-
 NANOVG_REPO = https://github.com/memononen/nanovg
 NANOVG_DIR = $(DEPS_DIR)/nanovg
 LIBNANOVG = $(DEPS_DIR)/libnanovg.a
