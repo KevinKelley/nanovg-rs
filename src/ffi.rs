@@ -259,3 +259,6 @@ extern "C" {
     pub fn stbi_write_bmp(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
     pub fn stbi_write_tga(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
 }
+
+#[link(name = "nanovg_shim", kind = "static")]
+extern "C" {}
