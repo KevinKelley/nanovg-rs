@@ -392,7 +392,7 @@ impl Transform {
 pub struct Ctx {
     ptr: *mut ffi::NVGcontext,
     no_send: marker::NoSend,
-    no_share: marker::NoShare,
+    no_sync: marker::NoSync,
 }
 
 impl fmt::Show for Ctx {
@@ -414,7 +414,7 @@ impl Ctx {
         Ctx {
             ptr: unsafe { ffi::nvgCreateGL3(flags.bits) },
             no_send: marker::NoSend,
-            no_share: marker::NoShare,
+            no_sync: marker::NoSync,
         }
     }
 
