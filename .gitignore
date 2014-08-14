@@ -7,3 +7,4 @@ watch.sh
 target/
 *.swp
 *.orig
+Cargo.lock
