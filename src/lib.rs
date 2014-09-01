@@ -3,7 +3,7 @@
 #![feature(unsafe_destructor)]  // use Option instead
 #![feature(globs, macro_rules)]
 #![allow(non_camel_case_types)]
-#![allow(non_snake_case_functions)]
+#![allow(non_snake_case)]
 #![deny(unnecessary_parens)]
 #![deny(non_uppercase_statics)]
 #![allow(unnecessary_qualification)]
@@ -422,8 +422,8 @@ impl Ctx {
         unsafe { ffi::nvgDeleteGL3(self.ptr) }
     }
 
-    pub fn begin_frame(&self, windowWidth: i32, windowHeight: i32, devicePixelRatio: f32) {
-        unsafe { ffi::nvgBeginFrame(self.ptr, windowWidth, windowHeight, devicePixelRatio) }
+    pub fn begin_frame(&self, window_width: i32, window_height: i32, device_pixel_ratio: f32) {
+        unsafe { ffi::nvgBeginFrame(self.ptr, window_width, window_height, device_pixel_ratio) }
     }
     pub fn end_frame(&self) {
         unsafe { ffi::nvgEndFrame(self.ptr) }
@@ -661,8 +661,8 @@ impl Ctx {
     pub fn text_letter_spacing(&self, spacing: f32) {
         unsafe { ffi::nvgTextLetterSpacing(self.ptr, spacing) }
     }
-    pub fn text_line_height(&self, lineHeight: f32) {
-        unsafe { ffi::nvgTextLineHeight(self.ptr, lineHeight) }
+    pub fn text_line_height(&self, line_height: f32) {
+        unsafe { ffi::nvgTextLineHeight(self.ptr, line_height) }
     }
     pub fn text_align(&self, align: Align) {
         unsafe { ffi::nvgTextAlign(self.ptr, align.bits) }
@@ -680,9 +680,9 @@ impl Ctx {
             unsafe { ffi::nvgText(self.ptr, x, y, text, ptr::null()) }
         })
     }
-    pub fn text_box(&self, x: f32, y: f32, breakRowWidth: f32, text: &str) {
+    pub fn text_box(&self, x: f32, y: f32, break_row_width: f32, text: &str) {
         text.with_c_str(|text| {
-             unsafe { ffi::nvgTextBox(self.ptr, x, y, breakRowWidth, text, ptr::null()) }
+             unsafe { ffi::nvgTextBox(self.ptr, x, y, break_row_width, text, ptr::null()) }
         })
     }
     // Measures the specified text string. Parameter bounds should be a pointer to float[4],
@@ -703,13 +703,13 @@ impl Ctx {
     // Measures the specified multi-text string. Parameter bounds should be float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Measured values are returned in local coordinate space.
-    pub fn text_box_bounds(&self, x: f32, y: f32, breakRowWidth: f32, text: &str, bounds: &mut [f32, ..4]) {
+    pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32, ..4]) {
         //let bptr: *mut f32 = match bounds {
         //    Some(vec) => { bptr = vec.as_mut_ptr() }
         //    None => ptr::null()
         //}
         text.with_c_str(|text| {
-            unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, breakRowWidth, text, ptr::null(), bounds.as_mut_ptr()) }
+            unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, break_row_width, text, ptr::null(), bounds.as_mut_ptr()) }
         })
     }
 
@@ -750,11 +750,11 @@ impl Ctx {
         return ret_vec;
     }
 
-    pub fn text_break_lines(&self, text: &str, breakRowWidth: f32, maxRows: uint) -> Vec<TextRow> {
+    pub fn text_break_lines(&self, text: &str, break_row_width: f32, max_rows: uint) -> Vec<TextRow> {
         let st = text.as_ptr() as *const i8;
         let en = unsafe { st.offset(text.len() as int) };
-        let mut rows: Vec<NVGtextRow> = Vec::with_capacity(maxRows);
-        for _ in range(0, maxRows) {
+        let mut rows: Vec<NVGtextRow> = Vec::with_capacity(max_rows);
+        for _ in range(0, max_rows) {
             rows.push(NVGtextRow {
                 start: ptr::null(),
                 end:   ptr::null(),
@@ -766,7 +766,7 @@ impl Ctx {
         }
 
         let actual_n = unsafe {
-            ffi::nvgTextBreakLines(self.ptr, st, en, breakRowWidth, rows.as_mut_ptr(), maxRows as c_int)
+            ffi::nvgTextBreakLines(self.ptr, st, en, break_row_width, rows.as_mut_ptr(), max_rows as c_int)
         };
         assert!(actual_n >= 0);
         let actual_n = actual_n as uint;

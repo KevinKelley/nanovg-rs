@@ -4,6 +4,7 @@
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variable)]
+#![allow(non_snake_case)]
 
 extern crate num;
 extern crate native;

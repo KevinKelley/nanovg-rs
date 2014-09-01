@@ -20,7 +20,7 @@ static PI: f32 = 3.1415926535;
 
 fn min(a: f32, b: f32) -> f32 { if a < b { a } else { b } }
 fn max(a: f32, b: f32) -> f32 { if a > b { a } else { b } }
-fn abs(a: f32) -> f32 { if a >= 0.0 { a } else { -a } }
+//fn abs(a: f32) -> f32 { if a >= 0.0 { a } else { -a } }
 fn clamp(a: f32, mn: f32, mx: f32) -> f32 { if a < mn { mn } else { if a > mx { mx } else { a } } }
 fn floor(x: f32) -> f32 { x.floor() }
 fn sqrt(x: f32) -> f32 { x.sqrt() }
