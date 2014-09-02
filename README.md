@@ -46,7 +46,7 @@ The Makefile is probably out of date now.  Build using cargo:
 To build the demo, then:
 
 ```
-  cd example
+  cd example/demo
   cargo build
   ./target/example
 ```
