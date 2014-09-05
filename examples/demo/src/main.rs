@@ -18,9 +18,6 @@ use glfw::Context;
 use std::cell::Cell; // for glfw error count
 use nanovg::Ctx;
 
-//#[link(name = "glfw")]
-//extern {}
-
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck(
