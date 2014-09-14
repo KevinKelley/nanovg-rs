@@ -91,6 +91,7 @@ pub bitflags!(
 
 // Color
 
+#[deriving(Clone, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }

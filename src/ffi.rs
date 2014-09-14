@@ -38,6 +38,7 @@ pub static NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
+#[deriving(Clone, PartialEq)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
