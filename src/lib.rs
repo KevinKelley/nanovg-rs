@@ -264,11 +264,11 @@ impl fmt::Show for Transform {
     }
 }
 
-macro_rules! accessors(
-    ($($name:ident -> $idx:expr),+) => (
-        $(pub fn $name(&self) -> f32 { self.array[$idx] })+
-    )
-)
+//macro_rules! accessors(
+//    ($($name:ident -> $idx:expr),+) => (
+//        $(#[inline] pub fn $name(&self) -> f32 { self.array[$idx] })+
+//    )
+//)
 
 macro_rules! mutators(
     ($($name:ident ($($p:ident : $t:ty),+) via $d:ident),+) => (
@@ -324,7 +324,13 @@ impl Transform {
         }
     }
 
-    accessors!(a -> 0, b -> 1, c -> 2, d -> 3, e -> 4, f -> 5)
+    //accessors!(a -> 0, b -> 1, c -> 2, d -> 3, e -> 4, f -> 5)
+    #[inline] pub fn a(&self) -> f32 { self.array[0] }
+    #[inline] pub fn b(&self) -> f32 { self.array[1] }
+    #[inline] pub fn c(&self) -> f32 { self.array[2] }
+    #[inline] pub fn d(&self) -> f32 { self.array[3] }
+    #[inline] pub fn e(&self) -> f32 { self.array[4] }
+    #[inline] pub fn f(&self) -> f32 { self.array[5] }
 
     pub fn set_identity(&mut self) {
         unsafe { ffi::nvgTransformIdentity(self.as_mut_ptr()) }
