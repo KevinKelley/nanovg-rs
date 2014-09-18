@@ -455,7 +455,7 @@ impl fmt::Show for Ctx {
 impl Drop for Ctx {
     fn drop(&mut self) {
         self.delete_gl3();
-        self.ptr = ptr::mut_null();
+        self.ptr = ptr::null_mut();
     }
 }
 
@@ -747,7 +747,7 @@ impl Ctx {
     // Measures the needed advance for text, without computing complete bounds
     pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
         text.with_c_str(|text| {
-           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), ptr::mut_null()) }
+           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), ptr::null_mut()) }
         })
     }
     // Measures the specified multi-text string. Parameter bounds should be float[4],
