@@ -270,18 +270,18 @@ impl fmt::Show for Transform {
 //    )
 //)
 
-macro_rules! mutators(
-    ($($name:ident ($($p:ident : $t:ty),+) via $d:ident),+) => (
-        $(
-        pub fn $name(mut self, $($p:$t),+) -> Transform {
-            let mut t = Transform::new_zero();
-            t.$d($($p),+);
-            self.set_premultiply(&t);
-            self
-        }
-        )+
-    )
-)
+//macro_rules! mutators(
+//    ($($name:ident ($($p:ident : $t:ty),+) via $d:ident),+) => (
+//        $(
+//        pub fn $name(mut self, $($p:$t),+) -> Transform {
+//            let mut t = Transform::new_zero();
+//            t.$d($($p),+);
+//            self.set_premultiply(&t);
+//            self
+//        }
+//        )+
+//    )
+//)
 
 impl Transform {
     #[inline]
@@ -368,15 +368,21 @@ impl Transform {
         unsafe { ffi::nvgTransformInverse(self.as_mut_ptr(), src.as_ptr()) == 1 }
     }
 
-    mutators!(
-        translate(tx: f32, ty: f32) via set_translate,
-        scale(sx: f32, sy: f32) via set_scale,
-        rotate(a: f32) via set_rotate,
-        skew_x(a: f32) via set_skew_x,
-        skew_y(a: f32) via set_skew_y,
-        multiply(src: &Transform) via set_multiply,
-        premultiply(src: &Transform) via set_premultiply
-    )
+//    mutators!(
+//        translate(tx: f32, ty: f32) via set_translate,
+//        scale(sx: f32, sy: f32) via set_scale,
+//        rotate(a: f32) via set_rotate,
+//        skew_x(a: f32) via set_skew_x,
+//        skew_y(a: f32) via set_skew_y,
+//        multiply(src: &Transform) via set_multiply,
+//        premultiply(src: &Transform) via set_premultiply
+//    )
+//        pub fn $name(mut self, $($p:$t),+) -> Transform {
+//            let mut t = Transform::new_zero();
+//            t.$d($($p),+);
+//            self.set_premultiply(&t);
+//            self
+//        }
 
     pub fn inverted(mut self) -> Result<Transform, Transform> {
         let copy = self;
