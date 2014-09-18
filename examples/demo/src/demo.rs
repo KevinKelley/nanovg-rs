@@ -1061,9 +1061,9 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
     // Unpremultiply
     for y in range(0, h) {
         //unsigned char *row = &image[y*stride];
-        let row = image.mut_slice(y*stride, y*stride + w*4);
+        let row = image.slice_mut(y*stride, y*stride + w*4);
         for x in range(0, w) {
-            let pix = row.mut_slice(x*4, x*4 + 4);
+            let pix = row.slice_mut(x*4, x*4 + 4);
             let r = pix[0] as f32;
             let g = pix[1] as f32;
             let b = pix[2] as f32;
@@ -1124,7 +1124,7 @@ fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
     let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
     for y in range(0, h) {
-        let row = image.mut_slice(y*stride, y*stride + w*4); //&image[y*stride];
+        let row = image.slice_mut(y*stride, y*stride + w*4); //&image[y*stride];
         for x in range(0, w) {
             row[x*4+3] = a;
         }
@@ -1137,8 +1137,8 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
     let mut i: uint = 0;
     let mut j: uint = h-1;
     while i < j {
-        //let row_i = image.mut_slice(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
-        //let row_j = image.mut_slice(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
+        //let row_i = image.slice_mut(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
+        //let row_j = image.slice_mut(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
         // error; can't borrow twice from the same source
         let ix: uint = i*stride;
         let jx: uint = j*stride;
