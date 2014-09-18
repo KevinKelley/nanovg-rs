@@ -266,7 +266,7 @@ impl fmt::Show for Transform {
 
 macro_rules! accessors(
     ($($name:ident -> $idx:expr),+) => (
-        $(#[inline] pub fn $name(&self) -> f32 { self.array[$idx] })+
+        $(pub fn $name(&self) -> f32 { self.array[$idx] })+
     )
 )
 
