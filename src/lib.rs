@@ -377,12 +377,49 @@ impl Transform {
 //        multiply(src: &Transform) via set_multiply,
 //        premultiply(src: &Transform) via set_premultiply
 //    )
-//        pub fn $name(mut self, $($p:$t),+) -> Transform {
-//            let mut t = Transform::new_zero();
-//            t.$d($($p),+);
-//            self.set_premultiply(&t);
-//            self
-//        }
+    pub fn translate(mut self, tx: f32, ty: f32) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_translate(tx, ty);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn scale(mut self, sx: f32, sy: f32) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_scale(sx, sy);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn rotate(mut self, a: f32) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_rotate(a);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn skew_x(mut self, a: f32) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_skew_x(a);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn skew_y(mut self, a: f32) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_skew_y(a);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn multiply(mut self, src: &Transform) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_multiply(src);
+        self.set_premultiply(&t);
+        self
+    }
+    pub fn premultiply(mut self, src: &Transform) -> Transform {
+        let mut t = Transform::new_zero();
+        t.set_premultiply(src);
+        self.set_premultiply(&t);
+        self
+    }
+
 
     pub fn inverted(mut self) -> Result<Transform, Transform> {
         let copy = self;
