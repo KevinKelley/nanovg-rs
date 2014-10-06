@@ -1,10 +1,12 @@
+language: rust
+
 before_install:
-  - sudo add-apt-repository --yes ppa:hansjorg/rust
-  - sudo add-apt-repository --yes ppa:cmrx64/cargo
+  #- sudo add-apt-repository --yes ppa:hansjorg/rust
+  #- sudo add-apt-repository --yes ppa:cmrx64/cargo
   - sudo add-apt-repository --yes ppa:codegear/release
   - sudo apt-get update -qq
 install:
-  - sudo apt-get install -qq rust-nightly cargo
+  #- sudo apt-get install -qq rust-nightly cargo
   - sudo apt-get install -qq premake4
   - sudo apt-get install libXxf86vm-dev
 script:
