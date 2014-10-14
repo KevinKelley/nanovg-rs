@@ -14,7 +14,7 @@ pub enum Style {
     MS
 }
 
-static CAP:uint = 100;
+const CAP:uint = 100;
 
 pub struct PerfGraph {
 	pub style: Style,

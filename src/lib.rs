@@ -66,26 +66,26 @@ pub enum PatternRepeat {
 
 pub bitflags!(
     flags Align: u32 {
-        static LEFT         = ffi::NVG_ALIGN_LEFT,
-        static CENTER       = ffi::NVG_ALIGN_CENTER,
-        static RIGHT        = ffi::NVG_ALIGN_RIGHT,
-        static TOP          = ffi::NVG_ALIGN_TOP,
-        static MIDDLE       = ffi::NVG_ALIGN_MIDDLE,
-        static BOTTOM       = ffi::NVG_ALIGN_BOTTOM,
-        static BASELINE     = ffi::NVG_ALIGN_BASELINE
+        const LEFT         = ffi::NVG_ALIGN_LEFT,
+        const CENTER       = ffi::NVG_ALIGN_CENTER,
+        const RIGHT        = ffi::NVG_ALIGN_RIGHT,
+        const TOP          = ffi::NVG_ALIGN_TOP,
+        const MIDDLE       = ffi::NVG_ALIGN_MIDDLE,
+        const BOTTOM       = ffi::NVG_ALIGN_BOTTOM,
+        const BASELINE     = ffi::NVG_ALIGN_BASELINE
     }
 )
 
 pub bitflags!(
     flags CreationFlags: u32 {
-        static ANTIALIAS        = ffi::NVG_ANTIALIAS,
-        static STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
+        const ANTIALIAS        = ffi::NVG_ANTIALIAS,
+        const STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
     }
 )
 
 pub bitflags!(
     flags ImageFlags: u32 {
-        static GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
+        const GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
     }
 )
 
@@ -884,5 +884,3 @@ pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> 
         unsafe { ffi::stbi_write_tga(filename, w as c_int, h as c_int, comp, data as *const c_void) }
     })
 }
-
-
