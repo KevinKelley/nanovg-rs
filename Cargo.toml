@@ -4,5 +4,5 @@ version = "0.2.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "make -f nanovg.mk"
 
-[[lib]]
+[lib]
 name = "nanovg"
