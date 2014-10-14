@@ -4,37 +4,37 @@ use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
 use std::kinds::marker;
 
-pub static FONT_INVALID: c_int = -1;
-pub static STB_IMAGE_INVALID: c_int = 0;
+pub const FONT_INVALID: c_int = -1;
+pub const STB_IMAGE_INVALID: c_int = 0;
 
-pub static NVG_CCW: c_uint = 1;
-pub static NVG_CW: c_uint = 2;
+pub const NVG_CCW: c_uint = 1;
+pub const NVG_CW: c_uint = 2;
 
-pub static NVG_SOLID: c_uint = 1;
-pub static NVG_HOLE: c_uint = 2;
+pub const NVG_SOLID: c_uint = 1;
+pub const NVG_HOLE: c_uint = 2;
 
-pub static NVG_BUTT: c_uint = 0;
-pub static NVG_ROUND: c_uint = 1;
-pub static NVG_SQUARE: c_uint = 2;
-pub static NVG_BEVEL: c_uint = 3;
-pub static NVG_MITER: c_uint = 4;
+pub const NVG_BUTT: c_uint = 0;
+pub const NVG_ROUND: c_uint = 1;
+pub const NVG_SQUARE: c_uint = 2;
+pub const NVG_BEVEL: c_uint = 3;
+pub const NVG_MITER: c_uint = 4;
 
-pub static NVG_NOREPEAT: c_uint = 0;
-pub static NVG_REPEATX: c_uint = 1;
-pub static NVG_REPEATY: c_uint = 2;
+pub const NVG_NOREPEAT: c_uint = 0;
+pub const NVG_REPEATX: c_uint = 1;
+pub const NVG_REPEATY: c_uint = 2;
 
-pub static NVG_ALIGN_LEFT: c_uint = 1;
-pub static NVG_ALIGN_CENTER: c_uint = 2;
-pub static NVG_ALIGN_RIGHT: c_uint = 4;
-pub static NVG_ALIGN_TOP: c_uint = 8;
-pub static NVG_ALIGN_MIDDLE: c_uint = 16;
-pub static NVG_ALIGN_BOTTOM: c_uint = 32;
-pub static NVG_ALIGN_BASELINE: c_uint = 64;
+pub const NVG_ALIGN_LEFT: c_uint = 1;
+pub const NVG_ALIGN_CENTER: c_uint = 2;
+pub const NVG_ALIGN_RIGHT: c_uint = 4;
+pub const NVG_ALIGN_TOP: c_uint = 8;
+pub const NVG_ALIGN_MIDDLE: c_uint = 16;
+pub const NVG_ALIGN_BOTTOM: c_uint = 32;
+pub const NVG_ALIGN_BASELINE: c_uint = 64;
 
-pub static NVG_ANTIALIAS: c_uint = 1;
-pub static NVG_STENCIL_STROKES: c_uint = 2;
+pub const NVG_ANTIALIAS: c_uint = 1;
+pub const NVG_STENCIL_STROKES: c_uint = 2;
 
-pub static NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
+pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
@@ -47,7 +47,6 @@ pub struct NVGcolor {
     pub a: c_float
 }
 
-#[allow(visible_private_types)]  // if you can see NVGpaint, you should be okay with NVGcolor
 #[repr(C)]
 pub struct NVGpaint {
     pub xform: [c_float, ..6u],

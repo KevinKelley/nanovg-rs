@@ -16,7 +16,7 @@ It is however small and hardware-accelerated, which is what I want.
 
 ![yay! screenshot works in rust demo!](/dump.png?raw=true)
 
-Dependencies
+Prerequisites
 ============
 This build process will produce a Rust library, which includes the Rust wrapper
 for nanovg functions, and which statically links in those functions.
@@ -25,17 +25,13 @@ getting a GL context from somewhere.  The examples use GLFW.
 
 Premake4 is required for building NanoVG itself.
 
-rust-bindgen was used to create the initial ffi binding.
-
-gl-rs, by bjz, is used to grab the GL framebuffer for snapshots.
-
-glfw-rs, also bjz's, is used to create the window and expose events.
+GLFW3 needs to be installed.
 
 
 Building
 ========
 
-The Makefile is probably out of date now.  Build using cargo:
+Build using cargo:
 
 ```
   git clone https://github.com/KevinKelley/nanovg-rs

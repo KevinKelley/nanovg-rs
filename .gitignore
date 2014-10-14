@@ -9,3 +9,4 @@ target/
 *.swp
 *.orig
 Cargo.lock
+examples/demo/dump.png
