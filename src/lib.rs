@@ -883,5 +883,3 @@ pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> 
         unsafe { ffi::stbi_write_tga(filename, w as c_int, h as c_int, comp, data as *const c_void) }
     })
 }
-
-

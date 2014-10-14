@@ -77,8 +77,8 @@ pub struct NVGtextRow {
 }
 
 pub type Enum_NVGtexture = c_uint;
-pub static NVG_TEXTURE_ALPHA: c_uint = 1;
-pub static NVG_TEXTURE_RGBA: c_uint = 2;
+pub const NVG_TEXTURE_ALPHA: c_uint = 1;
+pub const NVG_TEXTURE_RGBA: c_uint = 2;
 
 #[repr(C)]
 pub struct NVGscissor {

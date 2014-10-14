@@ -8,15 +8,15 @@ use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
 use libc::{c_void};
 
 /// use unicode characters for icons
-static NO_ICON:            char = '\0';
-static ICON_SEARCH:        char = '\U0001F50D';
-static ICON_CIRCLED_CROSS: char = '\u2716';
-static ICON_CHEVRON_RIGHT: char = '\uE75E';
-static ICON_CHECK:         char = '\u2713';
-static ICON_LOGIN:         char = '\uE740';
-static ICON_TRASH:         char = '\uE729';
+const NO_ICON:            char = '\0';
+const ICON_SEARCH:        char = '\U0001F50D';
+const ICON_CIRCLED_CROSS: char = '\u2716';
+const ICON_CHEVRON_RIGHT: char = '\uE75E';
+const ICON_CHECK:         char = '\u2713';
+const ICON_LOGIN:         char = '\uE740';
+const ICON_TRASH:         char = '\uE729';
 
-static PI: f32 = 3.1415926535;
+const PI: f32 = 3.1415926535;
 
 fn min(a: f32, b: f32) -> f32 { if a < b { a } else { b } }
 fn max(a: f32, b: f32) -> f32 { if a > b { a } else { b } }
@@ -1171,4 +1171,3 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
     flip_image(image.as_mut_slice(), w, h, w*4);
      write_png(name, w, h, 4, &image.as_slice()[0], w*4);
 }
-
