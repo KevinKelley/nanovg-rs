@@ -12,7 +12,6 @@
 #![allow(unused_imports)]
 #![allow(unused_attribute)]
 #![deny(unnecessary_typecast)]
-#![warn(visible_private_types)]
 #![allow(dead_code)]
 
 extern crate libc;

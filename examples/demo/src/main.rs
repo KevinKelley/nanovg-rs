@@ -88,7 +88,7 @@ fn main()
     window.make_current();
 
     // use glfw to load GL function pointers
-    glcheck!(gl::load_with(|name| glfw.get_proc_address(name)));
+    glcheck!(gl::load_with(|name| window.get_proc_address(name)));
     init_gl();
 
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);

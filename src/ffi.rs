@@ -47,7 +47,6 @@ pub struct NVGcolor {
     pub a: c_float
 }
 
-#[allow(visible_private_types)]  // if you can see NVGpaint, you should be okay with NVGcolor
 #[repr(C)]
 pub struct NVGpaint {
     pub xform: [c_float, ..6u],
