@@ -49,8 +49,8 @@ pub struct NVGcolor {
 
 #[repr(C)]
 pub struct NVGpaint {
-    pub xform: [c_float, ..6u],
-    pub extent: [c_float, ..2u],
+    pub xform: [c_float; 6u],
+    pub extent: [c_float; 2u],
     pub radius: c_float,
     pub feather: c_float,
     pub innerColor: NVGcolor,
@@ -82,8 +82,8 @@ pub const NVG_TEXTURE_RGBA: c_uint = 2;
 
 #[repr(C)]
 pub struct NVGscissor {
-    pub xform: [c_float, ..6u],
-    pub extent: [c_float, ..2u],
+    pub xform: [c_float; 6u],
+    pub extent: [c_float; 2u],
 }
 
 #[repr(C)]
