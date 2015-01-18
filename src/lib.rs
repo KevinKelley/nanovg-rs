@@ -63,7 +63,7 @@ pub enum PatternRepeat {
     REPEATY                 = ffi::NVG_REPEATY,
 }
 
-pub bitflags!(
+pub bitflags!{
     flags Align: u32 {
         const LEFT         = ffi::NVG_ALIGN_LEFT,
         const CENTER       = ffi::NVG_ALIGN_CENTER,
@@ -73,20 +73,20 @@ pub bitflags!(
         const BOTTOM       = ffi::NVG_ALIGN_BOTTOM,
         const BASELINE     = ffi::NVG_ALIGN_BASELINE
     }
-)
+}
 
-pub bitflags!(
+pub bitflags!{
     flags CreationFlags: u32 {
         const ANTIALIAS        = ffi::NVG_ANTIALIAS,
         const STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
     }
-)
+}
 
-pub bitflags!(
+pub bitflags!{
     flags ImageFlags: u32 {
         const GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
     }
-)
+}
 
 // Color
 
@@ -253,7 +253,7 @@ impl GlyphPosition {
 // Transform
 
 pub struct Transform {
-    array: [f32, ..6]
+    array: [f32; 6]
 }
 
 impl fmt::Show for Transform {
@@ -293,10 +293,10 @@ impl Transform {
     pub fn as_mut_slice<'a>(&'a mut self) -> &'a mut [f32] { self.array.as_mut_slice() }
 
     #[inline]
-    pub fn into_array(self) -> [f32, ..6] { self.array }
+    pub fn into_array(self) -> [f32; 6] { self.array }
 
     #[inline]
-    pub fn from_array(array: [f32, ..6]) -> Transform {
+    pub fn from_array(array: [f32; 6]) -> Transform {
         Transform { array: array }
     }
 
@@ -307,7 +307,7 @@ impl Transform {
 
     #[inline]
     fn new_zero() -> Transform {
-        Transform { array: [0.0, ..6] }
+        Transform { array: [0.0; 6] }
     }
 
     pub fn new_identity() -> Transform {
@@ -738,7 +738,7 @@ impl Ctx {
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
     // Measured values are returned in local coordinate space.
-    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32, ..4]) -> f32 {
+    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32; 4]) -> f32 {
         text.with_c_str(|text| {
            unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
         })
@@ -752,7 +752,7 @@ impl Ctx {
     // Measures the specified multi-text string. Parameter bounds should be float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Measured values are returned in local coordinate space.
-    pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32, ..4]) {
+    pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32; 4]) {
         //let bptr: *mut f32 = match bounds {
         //    Some(vec) => { bptr = vec.as_mut_ptr() }
         //    None => ptr::null()
