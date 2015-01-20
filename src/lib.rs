@@ -218,18 +218,18 @@ impl fmt::Show for Font {
 
 #[deriving(PartialEq,Show,Clone)]
 pub struct TextRow {
-    start_index: uint,
-    end_index: uint,
-    next_index: uint,
+    start_index: usize,
+    end_index: usize,
+    next_index: usize,
     width: c_float,
     minx: c_float,
     maxx: c_float,
 }
 
 impl TextRow {
-    pub fn start_index(&self) -> uint { self.start_index }
-    pub fn end_index(&self) -> uint { self.end_index }
-    pub fn next_index(&self) -> uint { self.next_index }
+    pub fn start_index(&self) -> usize { self.start_index }
+    pub fn end_index(&self) -> usize { self.end_index }
+    pub fn next_index(&self) -> usize { self.next_index }
     pub fn width(&self) -> f32 { self.width }
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
@@ -239,14 +239,14 @@ impl TextRow {
 
 #[deriving(PartialEq,Show,Clone)]
 pub struct GlyphPosition {
-    byte_index: uint,   // start index of this glyph in string
+    byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position
     minx: f32,          // glyph spans from minx to max x
     maxx: f32           // (span may or may not actually contain x, depending on the font)
 }
 
 impl GlyphPosition {
-    pub fn byte_index(&self) -> uint { self.byte_index }
+    pub fn byte_index(&self) -> usize { self.byte_index }
     pub fn x(&self) -> f32 { self.x }
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
@@ -770,13 +770,13 @@ impl Ctx {
             })
         }
         let st = text.as_ptr() as *const i8;
-        let en = unsafe { st.offset(text.len() as int) };
+        let en = unsafe { st.offset(text.len() as isize) };
 
         let actual_n = unsafe {
             ffi::nvgTextGlyphPositions(self.ptr, x, y, st, en, positions.as_mut_ptr(), positions.len() as c_int)
         };
         assert!(actual_n >= 0);
-        let actual_n = actual_n as uint;
+        let actual_n = actual_n as usize;
 
         // convert pointers to indexes
         let mut ret_vec:Vec<GlyphPosition> = Vec::with_capacity(actual_n);
@@ -793,9 +793,9 @@ impl Ctx {
         return ret_vec;
     }
 
-    pub fn text_break_lines(&self, text: &str, break_row_width: f32, max_rows: uint) -> Vec<TextRow> {
+    pub fn text_break_lines(&self, text: &str, break_row_width: f32, max_rows: usize) -> Vec<TextRow> {
         let st = text.as_ptr() as *const i8;
-        let en = unsafe { st.offset(text.len() as int) };
+        let en = unsafe { st.offset(text.len() as isize) };
         let mut rows: Vec<NVGtextRow> = Vec::with_capacity(max_rows);
         for _ in range(0, max_rows) {
             rows.push(NVGtextRow {
@@ -812,7 +812,7 @@ impl Ctx {
             ffi::nvgTextBreakLines(self.ptr, st, en, break_row_width, rows.as_mut_ptr(), max_rows as c_int)
         };
         assert!(actual_n >= 0);
-        let actual_n = actual_n as uint;
+        let actual_n = actual_n as usize;
 
         // convert pointers to indexes
         let mut ret_vec:Vec<TextRow> = Vec::with_capacity(actual_n);
@@ -843,10 +843,10 @@ impl Ctx {
 
 // given a utf8 string, and a ptr that walks through it,
 // return instead the corresponding byte-index into the string.
-pub fn relative_index(text: &str, p: *const i8) -> uint {
+pub fn relative_index(text: &str, p: *const i8) -> usize {
     let st = text.as_ptr();
-    let stix: uint = st as uint;
-    let pix: uint = p as uint;
+    let stix: usize = st as usize;
+    let pix: usize = p as usize;
     assert!(pix >= stix);               // require that 'p' point somewhere in the
     assert!(pix - stix <= text.len());  // string, or at most 1 past end (where C null would be)
     pix - stix
