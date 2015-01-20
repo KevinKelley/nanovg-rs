@@ -2,7 +2,7 @@
 
 use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
-use std::kinds::marker;
+use std::marker;
 
 pub const FONT_INVALID: c_int = -1;
 pub const STB_IMAGE_INVALID: c_int = 0;
@@ -60,6 +60,7 @@ pub struct NVGpaint {
 }
 
 #[repr(C)]
+#[derive(Copy)]
 pub struct NVGglyphPosition {
     pub byte_ptr: *const c_char,
     pub x: c_float,
@@ -67,6 +68,7 @@ pub struct NVGglyphPosition {
     pub maxx: c_float,
 }
 #[repr(C)]
+#[derive(Copy)]
 pub struct NVGtextRow {
     pub start: *const c_char,
     pub end: *const c_char,
