@@ -47,7 +47,7 @@ impl DemoData {
     pub fn load(vg: &Ctx, res_path: &str) -> DemoData
     {
         let mut images: Vec<Image> = Vec::new();
-        for i in range(0, 12u) {
+        for i in range(0, 12us) {
             let filename = format!("{}/images/image{}.jpg", res_path, i+1);
             let img = vg.create_image(filename.as_slice())
                 .expect(format!("Could not load {}.", filename).as_slice());
@@ -502,7 +502,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     samples[4] = (1.0+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
     samples[5] = (1.0+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
 
-    for i in range(0, 6u) {
+    for i in range(0, 6us) {
         sx[i] = x+ (i as f32)*dx;
         sy[i] = y+h*samples[i]*0.8;
     }
@@ -511,7 +511,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6u) {
+    for i in range(1, 6us) {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.line_to(x+w, y+h);
@@ -522,7 +522,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     // Graph line
     vg.begin_path();
     vg.move_to(sx[0], sy[0]+2.0);
-    for i in range(1, 6u) {
+    for i in range(1, 6us) {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2.0, sx[i]-dx*0.5,sy[i]+2.0, sx[i],sy[i]+2.0);
     }
     vg.stroke_color(rgba(0,0,0,32));
@@ -531,7 +531,7 @@ fn draw_graph(vg: &Ctx, x: f32,
 
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6u) {
+    for i in range(1, 6us) {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.stroke_color(rgba(0,160,192,255));
@@ -539,7 +539,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     vg.stroke();
 
     // Graph sample pos
-    for i in range(0, 6u) {
+    for i in range(0, 6us) {
         let bg = vg.radial_gradient(sx[i],sy[i]+2.0, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
         vg.begin_path();
         vg.rect(sx[i]-10.0, sy[i]-10.0+2.0, 20.0,20.0);
@@ -548,7 +548,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     }
 
     vg.begin_path();
-    for i in range(0, 6u) {
+    for i in range(0, 6us) {
         vg.circle(sx[i], sy[i], 4.0);
     }
     vg.fill_color(rgba(0,160,192,255));
@@ -731,7 +731,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     let r0 = r1 - 20.0;
     let aeps = 0.5 / r1;    // half a pixel arc length in radians (2pi cancels out).
 
-    for i in range(0, 6u) {
+    for i in range(0, 6us) {
         let a0 = (i as f32) / 6.0 * PI * 2.0 - aeps;
         let a1 = ((i as f32)+1.0) / 6.0 * PI * 2.0 + aeps;
         vg.begin_path();
@@ -834,8 +834,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
     pts[6] = s*0.25 + cos(-t*0.3) * s*0.5;
     pts[7] = sin(-t*0.3) * s*0.5;
 
-    for i in range(0, 3u) {
-        for j in range(0, 3u) {
+    for i in range(0, 3us) {
+        for j in range(0, 3us) {
             let fx = x + s*0.5 + ((i as f32)*3.0+(j as f32))/9.0*w + pad;
             let fy = y - s*0.5 + pad;
 
@@ -891,8 +891,8 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     // The text break API can be used to fill a large buffer of rows,
     // or to iterate over the text just few lines (or just one) at a time.
     // The "next" variable of the last returned item tells where to continue.
-    let mut start: uint = 0;    // byte pos in utf8 'text' str
-    let end: uint = text.len(); // exclusive
+    let mut start: usize = 0;    // byte pos in utf8 'text' str
+    let end: usize = text.len(); // exclusive
     let mut lnum = 0;
     'chunks: loop {
         let text = text.slice(start, end);
@@ -1041,7 +1041,7 @@ fn draw_caps(vg: &Ctx, x: f32,
     vg.fill();
 
     vg.stroke_width(lineWidth);
-    for i in range(0, 3u) {
+    for i in range(0, 3us) {
         vg.line_cap(caps[i]);
         vg.stroke_color(rgba(0,0,0,255));
         vg.begin_path();
@@ -1056,7 +1056,7 @@ fn draw_caps(vg: &Ctx, x: f32,
 
 fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
 
     // Unpremultiply
     for y in range(0, h) {
@@ -1122,7 +1122,7 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 
 fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
     for y in range(0, h) {
         let row = image.slice_mut(y*stride, y*stride + w*4); //&image[y*stride];
         for x in range(0, w) {
@@ -1133,15 +1133,15 @@ fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 
 fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
-    let mut i: uint = 0;
-    let mut j: uint = h-1;
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
+    let mut i: usize = 0;
+    let mut j: usize = h-1;
     while i < j {
         //let row_i = image.slice_mut(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
         //let row_j = image.slice_mut(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
         // error; can't borrow twice from the same source
-        let ix: uint = i*stride;
-        let jx: uint = j*stride;
+        let ix: usize = i*stride;
+        let jx: usize = j*stride;
         for k in range(0, w*4) {
             let t       = image[ix+k];  // let t = row_i[k];
             image[ix+k] = image[jx+k];  // row_i[k] = row_j[k];
@@ -1154,7 +1154,7 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 
 pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
 {
-    let sz: uint = (w*h*4) as uint;
+    let sz: usize = (w*h*4) as usize;
     //let mut image: [u8, ..sz] = [0, ..sz];
     let mut image: Vec<u8> = Vec::with_capacity(sz);
     unsafe {image.set_len(sz);}

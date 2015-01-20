@@ -49,8 +49,8 @@ pub struct NVGcolor {
 
 #[repr(C)]
 pub struct NVGpaint {
-    pub xform: [c_float; 6u],
-    pub extent: [c_float; 2u],
+    pub xform: [c_float; 6],
+    pub extent: [c_float; 2],
     pub radius: c_float,
     pub feather: c_float,
     pub innerColor: NVGcolor,
@@ -84,8 +84,8 @@ pub const NVG_TEXTURE_RGBA: c_uint = 2;
 
 #[repr(C)]
 pub struct NVGscissor {
-    pub xform: [c_float; 6u],
-    pub extent: [c_float; 2u],
+    pub xform: [c_float; 6],
+    pub extent: [c_float; 2],
 }
 
 #[repr(C)]
@@ -241,7 +241,7 @@ extern "C" {
     //// Flags should be combination of the create flags above.
 
     //#if defined NANOVG_GL2
-    //struct NVGcontext* nvgCreateGL2(int flags);
+    //struct NVGcontext* nvgCreateGL2(isize flags);
     //void nvgDeleteGL2(struct NVGcontext* ctx);
 
     //#if defined NANOVG_GL3
@@ -249,7 +249,7 @@ extern "C" {
     pub fn nvgDeleteGL3(ctx: *mut NVGcontext);
 
     //#if defined NANOVG_GLES2
-    //struct NVGcontext* nvgCreateGLES2(int flags);
+    //struct NVGcontext* nvgCreateGLES2(isize flags);
     //void nvgDeleteGLES2(struct NVGcontext* ctx);
 
     //#if defined NANOVG_GLES3
