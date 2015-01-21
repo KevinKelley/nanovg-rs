@@ -38,7 +38,7 @@ pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
-#[deriving(Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
@@ -60,15 +60,16 @@ pub struct NVGpaint {
 }
 
 #[repr(C)]
-#[derive(Copy)]
 pub struct NVGglyphPosition {
     pub byte_ptr: *const c_char,
     pub x: c_float,
     pub minx: c_float,
     pub maxx: c_float,
 }
+
+impl Copy for NVGglyphPosition {}
+
 #[repr(C)]
-#[derive(Copy)]
 pub struct NVGtextRow {
     pub start: *const c_char,
     pub end: *const c_char,
@@ -77,6 +78,8 @@ pub struct NVGtextRow {
     pub minx: c_float,
     pub maxx: c_float,
 }
+
+impl Copy for NVGtextRow {}
 
 pub type Enum_NVGtexture = c_uint;
 pub const NVG_TEXTURE_ALPHA: c_uint = 1;

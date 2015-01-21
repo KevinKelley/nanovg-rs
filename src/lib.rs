@@ -1,18 +1,17 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
-#![feature(globs, macro_rules)]
 #![feature(optin_builtin_traits)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![deny(unnecessary_parens)]
-#![deny(non_uppercase_statics)]
-#![allow(unnecessary_qualification)]
+#![deny(unused_parens)]
+#![deny(non_upper_case_globals)]
+#![allow(unused_qualifications)]
 //#![warn(missing_doc)]
-#![deny(unused_result)]
+#![deny(unused_results)]
 #![allow(unused_imports)]
-#![allow(unused_attribute)]
-#![deny(unnecessary_typecast)]
+#![allow(unused_attributes)]
+#![deny(unused_typecasts)]
 #![allow(dead_code)]
 
 extern crate libc;
@@ -33,21 +32,21 @@ use ffi::NVGtextRow;
 
 mod ffi;
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
 #[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
 #[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
 #[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
@@ -57,7 +56,7 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
 #[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
@@ -92,7 +91,7 @@ pub bitflags!{
 
 // Color
 
-#[deriving(Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }
@@ -172,6 +171,8 @@ pub struct Image {
     handle: c_int
 }
 
+impl Copy for Image {}
+
 impl Image {
     #[inline]
     fn wrap(handle: c_int) -> Image { Image { handle: handle } }
@@ -201,6 +202,8 @@ impl Font {
     fn wrap(handle: c_int) -> Font { Font { handle: handle } }
 }
 
+impl Copy for Font {}
+
 impl fmt::Show for Font {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Font #{}", self.handle)
@@ -216,7 +219,7 @@ impl fmt::Show for Font {
 
 // TextRow
 
-#[deriving(PartialEq,Show,Clone)]
+#[derive(PartialEq,Show,Clone)]
 pub struct TextRow {
     start_index: usize,
     end_index: usize,
@@ -235,9 +238,11 @@ impl TextRow {
     pub fn maxx(&self) -> f32 { self.maxx }
 }
 
+impl Copy for TextRow {}
+
 // GlyphPosition
 
-#[deriving(PartialEq,Show,Clone)]
+#[derive(PartialEq,Show,Clone)]
 pub struct GlyphPosition {
     byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position
@@ -251,6 +256,8 @@ impl GlyphPosition {
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
 }
+
+impl Copy for GlyphPosition {}
 
 // Transform
 
@@ -761,7 +768,7 @@ impl Ctx {
     /// 'text' is utf8-encoded unicode, so the number of glyphs isn't necessarily the byte-length of the text.
     pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str) -> Vec<GlyphPosition> {
         let mut positions: Vec<NVGglyphPosition> = Vec::with_capacity(text.len());
-        for _ in range(0, text.len()) { // we may not need all of them, but if text is ascii, we will
+        for _ in 0..text.len() { // we may not need all of them, but if text is ascii, we will
             positions.push(NVGglyphPosition {
                 byte_ptr: ptr::null(),
                 x: 0.0,
@@ -780,7 +787,7 @@ impl Ctx {
 
         // convert pointers to indexes
         let mut ret_vec:Vec<GlyphPosition> = Vec::with_capacity(actual_n);
-        for i in range(0, actual_n) {
+        for i in (0..actual_n) {
             let nvg = positions[i];
             ret_vec.push(GlyphPosition {
                 byte_index: relative_index(text, nvg.byte_ptr),
@@ -797,7 +804,7 @@ impl Ctx {
         let st = text.as_ptr() as *const i8;
         let en = unsafe { st.offset(text.len() as isize) };
         let mut rows: Vec<NVGtextRow> = Vec::with_capacity(max_rows);
-        for _ in range(0, max_rows) {
+        for _ in (0..max_rows) {
             rows.push(NVGtextRow {
                 start: ptr::null(),
                 end:   ptr::null(),
@@ -816,7 +823,7 @@ impl Ctx {
 
         // convert pointers to indexes
         let mut ret_vec:Vec<TextRow> = Vec::with_capacity(actual_n);
-        for i in range(0, actual_n) {
+        for i in (0..actual_n) {
             let nvg = rows[i];
             ret_vec.push(TextRow {
                 start_index: relative_index(text, nvg.start),
