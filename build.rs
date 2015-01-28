@@ -11,6 +11,6 @@ fn main() {
     // Build nanovg
     Command::new("make").arg("-f").arg("nanovg.mk").status().unwrap();
 
-    let out_dir = os.getenv("OUT_DIR").unwrap();
-    println!("cargo:rustc-flags=-L native={} -l static=shim", out_dir);
+    let out_dir = os::getenv("OUT_DIR").unwrap();
+    println!("cargo:rustc-flags=-L native={} -l static=nanovg_shim", out_dir);
 }
