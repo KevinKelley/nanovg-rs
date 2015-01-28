@@ -14,12 +14,13 @@
 #![deny(unused_typecasts)]
 #![allow(dead_code)]
 
+#[macro_use]
+extern crate bitflags;
 extern crate libc;
 
 use std::fmt;
 use std::ptr;
 use std::str;
-use std::bitflags;
 use std::ffi::CString;
 use std::num::ToPrimitive;
 
@@ -141,7 +142,7 @@ impl Color {
     }
 }
 
-impl fmt::Show for Color {
+impl fmt::Debug for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "r:{}, g:{}, b:{}, a:{}", self.r(), self.g(), self.b(), self.a())
     }
@@ -158,7 +159,7 @@ impl Paint {
     fn wrap(nvg: NVGpaint) -> Paint { Paint { nvg: nvg } }
 }
 
-impl fmt::Show for Paint {
+impl fmt::Debug for Paint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let p: *const NVGpaint = &self.nvg;
         write!(f, "Paint @ {:?}", p)
@@ -178,7 +179,7 @@ impl Image {
     fn wrap(handle: c_int) -> Image { Image { handle: handle } }
 }
 
-impl fmt::Show for Image {
+impl fmt::Debug for Image {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Image #{}", self.handle)
     }
@@ -204,7 +205,7 @@ impl Font {
 
 impl Copy for Font {}
 
-impl fmt::Show for Font {
+impl fmt::Debug for Font {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Font #{}", self.handle)
     }
@@ -266,7 +267,7 @@ pub struct Transform {
     array: [f32; 6]
 }
 
-impl fmt::Show for Transform {
+impl fmt::Debug for Transform {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Transform(tx: {}, ty: {}, sx: {}, sy: {}, kx: {}, ky: {})",
                self.e(), self.f(), self.a(), self.d(), self.c(), self.b())
@@ -449,16 +450,14 @@ impl Transform {
 // Ctx
 
 pub struct Ctx {
-    ptr: *mut ffi::NVGcontext/*,
-    no_send: marker::NoSend,
-    no_sync: marker::NoSync,*/
+    ptr: *mut ffi::NVGcontext
 }
 
 impl !Send for Ctx {}
 
 impl !Sync for Ctx {}
 
-impl fmt::Show for Ctx {
+impl fmt::Debug for Ctx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "NVGcontext @ {:?}", self.ptr)
     }

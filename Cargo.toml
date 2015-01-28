@@ -6,3 +6,6 @@ build = "build.rs"
 
 [lib]
 name = "nanovg"
+
+[dependencies]
+bitflags = "0.1"
