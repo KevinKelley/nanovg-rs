@@ -2,7 +2,7 @@ NANOVG_REPO = https://github.com/memononen/nanovg
 NANOVG_DIR = $(OUT_DIR)/nanovg
 LIBNANOVG = $(OUT_DIR)/libnanovg.a
 
-ORIG_SHIM_DIR = $(PWD)/shim
+ORIG_SHIM_DIR = $(CARGO_MANIFEST_DIR)/shim
 SHIM_DIR = $(OUT_DIR)/shim
 LIBNANOVG_SHIM = $(OUT_DIR)/libnanovg_shim.a
 
