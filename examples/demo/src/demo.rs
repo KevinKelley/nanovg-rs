@@ -32,7 +32,7 @@ fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
 
 
 
-fn cp_to_utf8(cp:char) -> String { format!("{}", cp) }
+fn cp_to_utf8(cp:char) -> String { format!{"{}", cp} }
 
 pub struct DemoData {
     //vg: &Ctx,
@@ -48,19 +48,19 @@ impl DemoData {
     {
         let mut images: Vec<Image> = Vec::new();
         for i in range(0, 12us) {
-            let filename = format!("{}/images/image{}.jpg", res_path, i+1);
+            let filename = format!{"{}/images/image{}.jpg", res_path, i+1};
             let img = vg.create_image(filename.as_slice())
-                .expect(format!("Could not load {}.", filename).as_slice());
+                .expect(format!{"Could not load {}.", filename}.as_slice());
             images.push(img);
         }
 
-        let fontIcons = vg.create_font("icons", format!("{}/entypo.ttf", res_path).as_slice())
+        let fontIcons = vg.create_font("icons", format!{"{}/entypo.ttf", res_path}.as_slice())
             .expect("Could not add font 'icons'.");
 
-        let fontNormal = vg.create_font("sans", format!("{}/Roboto-Regular.ttf", res_path).as_slice())
+        let fontNormal = vg.create_font("sans", format!{"{}/Roboto-Regular.ttf", res_path}.as_slice())
             .expect("Could not add font 'sans'.");
 
-        let fontBold = vg.create_font("sans-bold", format!("{}/Roboto-Bold.ttf", res_path).as_slice())
+        let fontBold = vg.create_font("sans-bold", format!{"{}/Roboto-Bold.ttf", res_path}.as_slice())
             .expect("Could not add font 'sans-bold'.");
 
 
@@ -157,7 +157,7 @@ fn draw_window(vg: &Ctx, title: &str, x: f32, y: f32, w: f32, h: f32)
     vg.begin_path();
     vg.rect(x-10.0,y-10.0, w+20.0,h+30.0);
     vg.rounded_rect(x,y, w,h, cornerRadius);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadowPaint);
     vg.fill();
 
@@ -292,7 +292,7 @@ fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h
 {
     draw_editbox_base(vg, x,y, w,h);
 
-    let mut bounds = [0.0, ..4];
+    let mut bounds = [0.0; 4];
     let uw = vg.text_bounds(0.0,0.0, units, &mut bounds);
 
     vg.font_size(18.0);
@@ -334,7 +334,15 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 {
     let cornerRadius = 4.0;
 
-    let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
+    let bg = vg.linear_gradient(
+        x,y,x,y+h, 
+        rgba(255,255,255,
+        if is_black(col) {
+            16
+        } else {
+            32
+        }),
+        rgba(0,0,0,if is_black(col){16}else{32}));
     vg.begin_path();
     vg.rounded_rect(x+1.0,y+1.0, w-2.0,h-2.0, cornerRadius-1.0);
     if !is_black(col) {
@@ -351,7 +359,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 
     vg.font_size(20.0);
     vg.font_face("sans-bold");
-    let mut bounds = [0.0, ..4];
+    let mut bounds = [0.0; 4];
     let tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
     let mut iw = 0.0;
     if preicon != NO_ICON {
@@ -398,7 +406,7 @@ fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
     vg.begin_path();
     vg.rect(x+floor(pos*w)-kr-5.0,cy-kr-5.0,kr*2.0+5.0+5.0,kr*2.0+5.0+5.0+3.0);
     vg.circle(x+floor(pos*w),cy, kr);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadow);
     vg.fill();
 
@@ -431,7 +439,7 @@ fn draw_eyes(vg: &Ctx, x: f32,
     let rx = x + w - ex;
     let ry = y + ey;
     let br = min(ex, ey) * 0.5;
-    let blink: f32 = 1.0 - pow(sin(t*0.5),200)*0.8;
+    let blink: f32 = 1.0 - (t*0.5).sin().powi(200)*0.8;
 
     let bg = vg.linear_gradient(x,y+h*0.5,x+w*0.1,y+h, rgba(0,0,0,32), rgba(0,0,0,16));
     vg.begin_path();
@@ -490,9 +498,9 @@ fn draw_graph(vg: &Ctx, x: f32,
              y: f32, w: f32,
              h: f32, t: f32)
 {
-    let mut samples: [f32, ..6] = [0.0, ..6];
-    let mut sx: [f32, ..6] = [0.0, ..6];
-    let mut sy: [f32, ..6] = [0.0, ..6];
+    let mut samples: [f32; 6] = [0.0; 6];
+    let mut sx: [f32; 6] = [0.0; 6];
+    let mut sy: [f32; 6] = [0.0; 6];
     let dx = w/5.0;
 
     samples[0] = (1.0+sin(t*1.2345+cos(t*0.33457)*0.44))*0.5;
@@ -573,8 +581,8 @@ fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
     vg.save();
 
     vg.begin_path();
-    vg.arc(cx,cy, r0, a0, a1, CW);
-    vg.arc(cx,cy, r1, a1, a0, CCW);
+    vg.arc(cx,cy, r0, a0, a1, Winding::CW);
+    vg.arc(cx,cy, r1, a1, a0, Winding::CCW);
     vg.close_path();
     let ax = cx + cos(a0) * (r0+r1)*0.5;
     let ay = cy + sin(a0) * (r0+r1)*0.5;
@@ -607,7 +615,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
     vg.begin_path();
     vg.rect(x-10.0,y-10.0, w+20.0,h+30.0);
     vg.rounded_rect(x,y, w,h, cornerRadius);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadowPaint);
     vg.fill();
 
@@ -657,7 +665,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
             draw_spinner(vg, tx+thumb/2.0,ty+thumb/2.0, thumb*0.25, t);
         }
 
-        let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, &images[i], NOREPEAT, a);
+        let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, &images[i], PatternRepeat::NOREPEAT, a);
         vg.begin_path();
         vg.rounded_rect(tx,ty, thumb,thumb, 5.0);
         vg.fill_paint(imgPaint);
@@ -667,7 +675,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
         vg.begin_path();
         vg.rect(tx-5.0,ty-5.0, thumb+10.0,thumb+10.0);
         vg.rounded_rect(tx,ty, thumb,thumb, 6.0);
-        vg.path_winding(HOLE);
+        vg.path_winding(Solidity::HOLE);
         vg.fill_paint(shadowPaint);
         vg.fill();
 
@@ -735,8 +743,8 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
         let a0 = (i as f32) / 6.0 * PI * 2.0 - aeps;
         let a1 = ((i as f32)+1.0) / 6.0 * PI * 2.0 + aeps;
         vg.begin_path();
-        vg.arc(cx,cy, r0, a0, a1, CW);
-        vg.arc(cx,cy, r1, a1, a0, CCW);
+        vg.arc(cx,cy, r0, a0, a1, Winding::CW);
+        vg.arc(cx,cy, r1, a1, a0, Winding::CCW);
         vg.close_path();
         let ax = cx + cos(a0) * (r0+r1)*0.5;
         let ay = cy + sin(a0) * (r0+r1)*0.5;
@@ -770,7 +778,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     vg.begin_path();
     vg.rect(r0-2.0-10.0,-4.0-10.0,r1-r0+4.0+20.0,8.0+20.0);
     vg.rect(r0-2.0,-4.0,r1-r0+4.0,8.0);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(paint);
     vg.fill();
 
@@ -807,7 +815,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     vg.begin_path();
     vg.rect(ax-20.0,ay-20.0,40.0,40.0);
     vg.circle(ax,ay,7.0);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(paint);
     vg.fill();
 
@@ -820,9 +828,9 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
 {
     let pad = 5.0;
     let s = w/9.0 - pad*2.0;
-    let mut pts: [f32, ..4*2] = [0.0, ..4*2];
-    let joins: [LineCap, ..3] = [MITER, ROUND, BEVEL];
-    let caps: [LineCap, ..3] = [BUTT, ROUND, SQUARE];
+    let mut pts: [f32; 4*2] = [0.0; 4*2];
+    let joins: [LineCap; 3] = [LineCap::MITER, LineCap::ROUND, LineCap::BEVEL];
+    let caps: [LineCap; 3] = [LineCap::BUTT, LineCap::ROUND, LineCap::SQUARE];
 
     vg.save();
     pts[0] = -s*0.25 + cos(t*0.3) * s*0.5;
@@ -851,8 +859,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
             vg.line_to(fx+pts[6], fy+pts[7]);
             vg.stroke();
 
-            vg.line_cap(BUTT);
-            vg.line_join(BEVEL);
+            vg.line_cap(LineCap::BUTT);
+            vg.line_join(LineCap::BEVEL);
 
             vg.stroke_width(1.0);
             vg.stroke_color(rgba(0,192,255,255));
@@ -879,7 +887,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     let mut gx: f32 = 0.0;
     let mut gy: f32 = 0.0;
     let mut gutter:i32 = 0;
-    let mut bounds: [f32, ..4] = [0.0, ..4];
+    let mut bounds: [f32; 4] = [0.0; 4];
 
     vg.save();
 
@@ -945,7 +953,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
 
     if gutter > 0 {
         //char txt[16]; snprintf(txt, sizeof(txt), "%d", gutter);
-        let txt = format!("{}", gutter);
+        let txt = format!{"{}", gutter};
         vg.font_size(13.0);
         vg.text_align(RIGHT|MIDDLE);
 
@@ -976,8 +984,8 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
         &mut bounds);
 
     // Fade the tooltip out when close to it.
-    gx = abs((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2]));
-    gy = abs((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3]));
+    gx = ((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2])).abs();
+    gy = ((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3])).abs();
     let a = clamp( max(gx, gy) - 0.5,  0.0, 1.0);
     vg.global_alpha(a);
 
@@ -1025,7 +1033,7 @@ fn draw_widths(vg: &Ctx, x: f32,
 fn draw_caps(vg: &Ctx, x: f32,
             y: f32, width: f32)
 {
-    let caps: [LineCap, ..3] = [BUTT, ROUND, SQUARE];
+    let caps: [LineCap; 3] = [LineCap::BUTT, LineCap::ROUND, LineCap::SQUARE];
     let lineWidth = 8.0;
 
     vg.save();
@@ -1155,7 +1163,7 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
 {
     let sz: usize = (w*h*4) as usize;
-    //let mut image: [u8, ..sz] = [0, ..sz];
+    //let mut image: [u8; sz] = [0; sz];
     let mut image: Vec<u8> = Vec::with_capacity(sz);
     unsafe {image.set_len(sz);}
     assert!(image.len() == sz);

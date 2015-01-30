@@ -47,6 +47,8 @@ pub struct NVGcolor {
     pub a: c_float
 }
 
+impl Copy for NVGcolor {}
+
 #[repr(C)]
 pub struct NVGpaint {
     pub xform: [c_float; 6],
@@ -58,6 +60,8 @@ pub struct NVGpaint {
     pub image: c_int,
     pub repeat: c_int,
 }
+
+impl Copy for NVGpaint {}
 
 #[repr(C)]
 pub struct NVGglyphPosition {
@@ -91,6 +95,8 @@ pub struct NVGscissor {
     pub extent: [c_float; 2],
 }
 
+impl Copy for NVGscissor {}
+
 #[repr(C)]
 pub struct NVGvertex {
     pub x: c_float,
@@ -98,6 +104,8 @@ pub struct NVGvertex {
     pub u: c_float,
     pub v: c_float,
 }
+
+impl Copy for NVGvertex {}
 
 #[repr(C)]
 pub struct NVGpath {

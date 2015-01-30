@@ -97,6 +97,8 @@ pub struct Color {
     nvg: NVGcolor
 }
 
+impl Copy for Color {}
+
 impl Color {
     #[inline]
     fn wrap(nvg: NVGcolor) -> Color { Color { nvg: nvg } }
@@ -153,6 +155,8 @@ impl fmt::Debug for Color {
 pub struct Paint {
     nvg: NVGpaint
 }
+
+impl Copy for Paint {}
 
 impl Paint {
     #[inline]

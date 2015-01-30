@@ -1,13 +1,14 @@
 
 #![feature(globs)]
 #![feature(macro_rules)]
+#![feature(start)]
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variable)]
 #![allow(non_snake_case)]
 
 extern crate num;
-extern crate native;
+//extern crate native;
 extern crate libc;
 
 extern crate glfw;
@@ -20,23 +21,23 @@ use nanovg::Ctx;
 
 
 /// evaluate the expression, then check for GL error.
-macro_rules! glcheck(
+macro_rules! glcheck {
     ($e: expr) => (
         {
             $e;
-            assert_eq!(gl::GetError(), 0);
+            assert_eq!(unsafe {gl::GetError()}, 0);
         }
     )
-)
+}
 
 
 mod perf;
 mod demo;
 
-#[start]
+/*#[start]
 fn start(argc: int, argv: *const *const u8) -> int {
     native::start(argc, argv, main)
-}
+}*/
 
 
 
@@ -47,13 +48,13 @@ fn error_callback(_: glfw::Error, description: String, error_count: &Cell<uint>)
 }
 
 fn init_gl() {
-    glcheck!(gl::FrontFace(gl::CCW));
-    glcheck!(gl::Enable(gl::DEPTH_TEST));
-    glcheck!(gl::Enable(gl::SCISSOR_TEST));
-    glcheck!(gl::DepthFunc(gl::LEQUAL));
-    glcheck!(gl::FrontFace(gl::CCW));
-    glcheck!(gl::Enable(gl::CULL_FACE));
-    glcheck!(gl::CullFace(gl::BACK));
+    glcheck!(unsafe {gl::FrontFace(gl::CCW)});
+    glcheck!(unsafe {gl::Enable(gl::DEPTH_TEST)});
+    glcheck!(unsafe {gl::Enable(gl::SCISSOR_TEST)});
+    glcheck!(unsafe {gl::DepthFunc(gl::LEQUAL)});
+    glcheck!(unsafe {gl::FrontFace(gl::CCW)});
+    glcheck!(unsafe {gl::Enable(gl::CULL_FACE)});
+    glcheck!(unsafe {gl::CullFace(gl::BACK)});
 }
 
 
@@ -63,23 +64,24 @@ static mut premult: bool = false;
 
 fn main()
 {
-    let glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
-	// set up GLFW error callback, with an error-counter
+    // TODO: Get this working? No idea what's wrong with it, but the example of usage in glfw-rs is out of date
+	/*// set up GLFW error callback, with an error-counter
 	glfw.set_error_callback(Some(
 	    glfw::Callback {
 	        f: error_callback,
 	        data: Cell::new(0),
 	    }
-	));
+	));*/
 
 
-	glfw.window_hint(glfw::ContextVersion(3, 2));
- 	glfw.window_hint(glfw::OpenglForwardCompat(true));
- 	glfw.window_hint(glfw::OpenglProfile(glfw::OpenGlCoreProfile));
- 	glfw.window_hint(glfw::OpenglDebugContext(true));
+	glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
+ 	glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
+ 	glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
+ 	glfw.window_hint(glfw::WindowHint::OpenglDebugContext(true));
 
-    let (window, events) = glfw.create_window(1100, 800, "NanoVG GL3 Rust demo", glfw::Windowed)
+    let (mut window, events) = glfw.create_window(1100, 800, "NanoVG GL3 Rust demo", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
 
 	// window.set_key_callback(key);
@@ -103,7 +105,7 @@ fn main()
 	glfw.set_time(0.0);
 	let mut prevt = glfw.get_time();
 
-	let mut fps = perf::PerfGraph::init(perf::FPS, "Frame Time");
+	let mut fps = perf::PerfGraph::init(perf::Style::FPS, "Frame Time");
 
     while !window.should_close()
     {
@@ -119,20 +121,18 @@ fn main()
         let pxRatio = fbWidth as f32 / winWidth as f32;
 
         // Update and render
-        glcheck!(gl::Viewport(0, 0, fbWidth, fbHeight));
-        unsafe {
-            if premult {
-                glcheck!(gl::ClearColor(0.0, 0.0, 0.0, 0.0));
-            } else {
-                glcheck!(gl::ClearColor(0.3, 0.3, 0.32, 1.0));
-            }
+        glcheck!(unsafe {gl::Viewport(0, 0, fbWidth, fbHeight)});
+        if unsafe {premult} {
+            glcheck!(unsafe {gl::ClearColor(0.0, 0.0, 0.0, 0.0)});
+        } else {
+            glcheck!(unsafe {gl::ClearColor(0.3, 0.3, 0.32, 1.0)});
         }
-        glcheck!(gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT));
+        glcheck!(unsafe {gl::Clear(gl::COLOR_BUFFER_BIT|gl::DEPTH_BUFFER_BIT|gl::STENCIL_BUFFER_BIT)});
 
-        glcheck!(gl::Enable(gl::BLEND));
-        glcheck!(gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA));
-        glcheck!(gl::Enable(gl::CULL_FACE));
-        glcheck!(gl::Disable(gl::DEPTH_TEST));
+        glcheck!(unsafe {gl::Enable(gl::BLEND)});
+        glcheck!(unsafe {gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA)});
+        glcheck!(unsafe {gl::Enable(gl::CULL_FACE)});
+        glcheck!(unsafe {gl::Disable(gl::DEPTH_TEST)});
 
         vg.begin_frame(winWidth, winHeight, pxRatio as f32);
 
@@ -142,8 +142,7 @@ fn main()
         vg.end_frame();
 
 
-        gl::Enable(gl::DEPTH_TEST);
-
+        unsafe {gl::Enable(gl::DEPTH_TEST);}
         unsafe {
 	        if screenshot {
 	        	screenshot = false;
@@ -155,23 +154,23 @@ fn main()
 
         glfw.poll_events();
         for (_, event) in glfw::flush_messages(&events) {
-            handle_window_event(&window, event);
+            handle_window_event(&mut window, event);
         }
     }
 }
 
-fn handle_window_event(window: &glfw::Window, event: glfw::WindowEvent) {
+fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
     match event {
-        glfw::KeyEvent(glfw::KeyEscape, _, glfw::Press, _) => {
+        glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
             window.set_should_close(true)
         }
-        glfw::KeyEvent(glfw::KeySpace, _, glfw::Press, _) => {
+        glfw::WindowEvent::Key(glfw::Key::Space, _, glfw::Action::Press, _) => {
             unsafe {blowup = !blowup};
         }
-        glfw::KeyEvent(glfw::KeyS, _, glfw::Press, _) => {
+        glfw::WindowEvent::Key(glfw::Key::S, _, glfw::Action::Press, _) => {
             unsafe {screenshot = true};
         }
-        glfw::KeyEvent(glfw::KeyP, _, glfw::Press, _) => {
+        glfw::WindowEvent::Key(glfw::Key::P, _, glfw::Action::Press, _) => {
             unsafe {premult = !premult};
         }
         _ => {}
