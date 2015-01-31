@@ -1,3 +1,4 @@
+#![allow(unstable)]
 extern crate gl;
 
 use std::num::*;
@@ -9,12 +10,12 @@ use libc::{c_void};
 
 /// use unicode characters for icons
 const NO_ICON:            char = '\0';
-const ICON_SEARCH:        char = '\U0001F50D';
-const ICON_CIRCLED_CROSS: char = '\u2716';
-const ICON_CHEVRON_RIGHT: char = '\uE75E';
-const ICON_CHECK:         char = '\u2713';
-const ICON_LOGIN:         char = '\uE740';
-const ICON_TRASH:         char = '\uE729';
+const ICON_SEARCH:        char = '\u{01F50D}';
+const ICON_CIRCLED_CROSS: char = '\u{2716}';
+const ICON_CHEVRON_RIGHT: char = '\u{E75E}';
+const ICON_CHECK:         char = '\u{2713}';
+const ICON_LOGIN:         char = '\u{E740}';
+const ICON_TRASH:         char = '\u{E729}';
 
 const PI: f32 = 3.1415926535;
 
@@ -47,7 +48,7 @@ impl DemoData {
     pub fn load(vg: &Ctx, res_path: &str) -> DemoData
     {
         let mut images: Vec<Image> = Vec::new();
-        for i in range(0, 12us) {
+        for i in 0..12us {
             let filename = format!{"{}/images/image{}.jpg", res_path, i+1};
             let img = vg.create_image(filename.as_slice())
                 .expect(format!{"Could not load {}.", filename}.as_slice());
@@ -335,7 +336,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
     let cornerRadius = 4.0;
 
     let bg = vg.linear_gradient(
-        x,y,x,y+h, 
+        x,y,x,y+h,
         rgba(255,255,255,
         if is_black(col) {
             16
@@ -510,7 +511,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     samples[4] = (1.0+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
     samples[5] = (1.0+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
 
-    for i in range(0, 6us) {
+    for i in 0..6us {
         sx[i] = x+ (i as f32)*dx;
         sy[i] = y+h*samples[i]*0.8;
     }
@@ -519,7 +520,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6us) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.line_to(x+w, y+h);
@@ -530,7 +531,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     // Graph line
     vg.begin_path();
     vg.move_to(sx[0], sy[0]+2.0);
-    for i in range(1, 6us) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2.0, sx[i]-dx*0.5,sy[i]+2.0, sx[i],sy[i]+2.0);
     }
     vg.stroke_color(rgba(0,0,0,32));
@@ -539,7 +540,7 @@ fn draw_graph(vg: &Ctx, x: f32,
 
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6us) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.stroke_color(rgba(0,160,192,255));
@@ -547,7 +548,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     vg.stroke();
 
     // Graph sample pos
-    for i in range(0, 6us) {
+    for i in 0..6us {
         let bg = vg.radial_gradient(sx[i],sy[i]+2.0, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
         vg.begin_path();
         vg.rect(sx[i]-10.0, sy[i]-10.0+2.0, 20.0,20.0);
@@ -556,13 +557,13 @@ fn draw_graph(vg: &Ctx, x: f32,
     }
 
     vg.begin_path();
-    for i in range(0, 6us) {
+    for i in 0..6us {
         vg.circle(sx[i], sy[i], 4.0);
     }
     vg.fill_color(rgba(0,160,192,255));
     vg.fill();
     vg.begin_path();
-    for i in range(0, 6u) {
+    for i in 0..6us {
         vg.circle(sx[i], sy[i], 2.0);
     }
     vg.fill_color(rgba(220,220,220,255));
@@ -634,7 +635,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 
     let dv = 1.0 / (nimages as f32 - 1.0);
 
-    for i in range(0, nimages) {
+    for i in (0..nimages) {
         let mut tx = x+10.0;
         let mut ty = y+10.0;
         tx += (i%2) as f32 * (thumb+10.0);
@@ -739,7 +740,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     let r0 = r1 - 20.0;
     let aeps = 0.5 / r1;    // half a pixel arc length in radians (2pi cancels out).
 
-    for i in range(0, 6us) {
+    for i in 0..6us {
         let a0 = (i as f32) / 6.0 * PI * 2.0 - aeps;
         let a1 = ((i as f32)+1.0) / 6.0 * PI * 2.0 + aeps;
         vg.begin_path();
@@ -842,8 +843,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
     pts[6] = s*0.25 + cos(-t*0.3) * s*0.5;
     pts[7] = sin(-t*0.3) * s*0.5;
 
-    for i in range(0, 3us) {
-        for j in range(0, 3us) {
+    for i in 0..3us {
+        for j in 0..3us {
             let fx = x + s*0.5 + ((i as f32)*3.0+(j as f32))/9.0*w + pad;
             let fy = y - s*0.5 + pad;
 
@@ -903,12 +904,12 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     let end: usize = text.len(); // exclusive
     let mut lnum = 0;
     'chunks: loop {
-        let text = text.slice(start, end);
+        let text = &text[start..end];
         let rows = vg.text_break_lines(text, width, 3);
         let nrows = rows.len();
         if nrows == 0 { break 'chunks; }
 
-        for i in range(0, nrows) {
+        for i in (0..nrows) {
             let row = &rows[i];
             let hit: bool = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
 
@@ -918,7 +919,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
             vg.fill();
 
             vg.fill_color(rgba(255,255,255,255));
-            let line = text.slice(row.start_index(), row.end_index());
+            let line = &text[row.start_index()..row.end_index()];
             vg.text(x, y, line);
 
             if hit { // test for mouse-hit and display cursor
@@ -926,7 +927,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
                 let mut px = x;
                 let glyphs = vg.text_glyph_positions(x, y, line);
                 let nglyphs = glyphs.len();
-                for j in range(0, nglyphs) {
+                for j in (0..nglyphs) {
                     let x0 = glyphs[j].x();
                     let x1 = if j+1 < nglyphs { glyphs[j+1].x() } else { x+row.width() };
                     let gx = x0 * 0.3 + x1 * 0.7;
@@ -1017,7 +1018,7 @@ fn draw_widths(vg: &Ctx, x: f32,
 
     vg.stroke_color(rgba(0,0,0,255));
 
-    for i in range(0, 20u) {
+    for i in 0..20us {
         let w = ((i as f32)+0.5)*0.1;
         vg.stroke_width(w);
         vg.begin_path();
@@ -1049,7 +1050,7 @@ fn draw_caps(vg: &Ctx, x: f32,
     vg.fill();
 
     vg.stroke_width(lineWidth);
-    for i in range(0, 3us) {
+    for i in 0..3us {
         vg.line_cap(caps[i]);
         vg.stroke_color(rgba(0,0,0,255));
         vg.begin_path();
@@ -1067,11 +1068,11 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
 
     // Unpremultiply
-    for y in range(0, h) {
+    for y in (0..h) {
         //unsigned char *row = &image[y*stride];
-        let row = image.slice_mut(y*stride, y*stride + w*4);
-        for x in range(0, w) {
-            let pix = row.slice_mut(x*4, x*4 + 4);
+        let row = &mut image[y*stride..y*stride + w*4];
+        for x in (0..w) {
+            let pix = &mut row[x*4..x*4 + 4];
             let r = pix[0] as f32;
             let g = pix[1] as f32;
             let b = pix[2] as f32;
@@ -1085,8 +1086,8 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
     }
 
     // Defringe
-    for y in range(0, h) {
-        for x in range(0, w) {
+    for y in (0..h) {
+        for x in (0..w) {
             let ix = y*stride + x*4;
             let mut r = 0;
             let mut g = 0;
@@ -1131,9 +1132,9 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
-    for y in range(0, h) {
-        let row = image.slice_mut(y*stride, y*stride + w*4); //&image[y*stride];
-        for x in range(0, w) {
+    for y in (0..h) {
+        let row = &mut image[y*stride..y*stride + w*4]; //&image[y*stride];
+        for x in (0..w) {
             row[x*4+3] = a;
         }
     }
@@ -1150,7 +1151,7 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
         // error; can't borrow twice from the same source
         let ix: usize = i*stride;
         let jx: usize = j*stride;
-        for k in range(0, w*4) {
+        for k in (0..w*4) {
             let t       = image[ix+k];  // let t = row_i[k];
             image[ix+k] = image[jx+k];  // row_i[k] = row_j[k];
             image[jx+k] = t;            // row_j[k] = t;

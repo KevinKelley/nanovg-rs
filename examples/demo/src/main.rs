@@ -1,11 +1,10 @@
 
-#![feature(globs)]
-#![feature(macro_rules)]
 #![feature(start)]
 #![allow(dead_code)]
 #![allow(unreachable_code)]
-#![allow(unused_variable)]
+#![allow(unused_variables)]
 #![allow(non_snake_case)]
+#![allow(unstable)]
 
 extern crate num;
 //extern crate native;
@@ -42,7 +41,7 @@ fn start(argc: int, argv: *const *const u8) -> int {
 
 
 /// give GLFW a way to report errors, and count them.
-fn error_callback(_: glfw::Error, description: String, error_count: &Cell<uint>) {
+fn error_callback(_: glfw::Error, description: String, error_count: &Cell<usize>) {
     println!("GLFW error {}: {}", error_count.get(), description);
     error_count.set(error_count.get() + 1);
 }

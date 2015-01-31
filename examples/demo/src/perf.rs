@@ -1,5 +1,5 @@
-//use std::str;
-//use std::vec;
+#![allow(unstable)]
+
 use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, Color};
 use std::f32;
 
@@ -9,20 +9,19 @@ fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
 
 
 #[repr(i32)]
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
 pub enum Style {
     FPS,
     MS
 }
 
-const CAP:uint = 100;
+const CAP: usize = 100;
 
 pub struct PerfGraph {
 	pub style: Style,
 	pub name: String,
 	values: [f32; CAP],
-	head: uint,
-	count: uint,
+	head: usize,
+	count: usize,
 }
 
 
@@ -46,7 +45,7 @@ impl PerfGraph
 		//fps->values[fps->head] = frameTime;
 		if self.count == CAP { self.head = (self.head + 1) % CAP }
 		self.count = if self.count < CAP { self.count + 1 } else { CAP } ;
-		self.values[((self.head+self.count) % CAP) as uint] = frameTime as f32;
+		self.values[((self.head+self.count) % CAP) as usize] = frameTime as f32;
 	}
 
 	pub fn render(&self, vg: &Ctx, x: f32, y: f32)
@@ -65,7 +64,7 @@ impl PerfGraph
 		vg.move_to(x, y+h);
 		match self.style {
             Style::FPS => {
-    			for i in range(0, CAP) { //(i = 0; i < CAP; i++) {
+    			for i in (0..CAP) { //(i = 0; i < CAP; i++) {
     				let mut v = 1.0 / (0.00001 + self.values[(self.head+i) % CAP]);
     				if v > 80.0 {v = 80.0;}
     				let vx = x + (i as f32 / (CAP-1) as f32) * w;
@@ -74,7 +73,7 @@ impl PerfGraph
     			}
             }
             _ => {
-                for i in range(0, CAP) {
+                for i in (0..CAP) {
                     let mut v = self.values[(self.head+i) % CAP] * 1000.0;
                     if v > 20.0 {v = 20.0;}
                     let vx = x + (i as f32 / (CAP-1) as f32) * w;
@@ -130,7 +129,7 @@ impl PerfGraph
 		let mut i = self.head;
 		while i < self.head + self.count {
 			let ix = i % CAP;
-			sum += self.values[ix as uint];
+			sum += self.values[ix as usize];
 			i = i+1;
 		}
 		sum / self.count as f32
