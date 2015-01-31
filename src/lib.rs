@@ -13,6 +13,7 @@
 #![allow(unused_attributes)]
 #![deny(unused_typecasts)]
 #![allow(dead_code)]
+#![allow(unstable)]
 
 #[macro_use]
 extern crate bitflags;

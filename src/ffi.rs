@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(unstable)]
 
 use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
