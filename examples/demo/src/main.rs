@@ -7,7 +7,6 @@
 #![allow(unstable)]
 
 extern crate num;
-//extern crate native;
 extern crate libc;
 
 extern crate glfw;
@@ -32,13 +31,6 @@ macro_rules! glcheck {
 
 mod perf;
 mod demo;
-
-/*#[start]
-fn start(argc: int, argv: *const *const u8) -> int {
-    native::start(argc, argv, main)
-}*/
-
-
 
 /// give GLFW a way to report errors, and count them.
 fn error_callback(_: glfw::Error, description: String, error_count: &Cell<usize>) {
@@ -65,14 +57,13 @@ fn main()
 {
     let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
 
-    // TODO: Get this working? No idea what's wrong with it, but the example of usage in glfw-rs is out of date
-	/*// set up GLFW error callback, with an error-counter
+	// set up GLFW error callback, with an error-counter
 	glfw.set_error_callback(Some(
 	    glfw::Callback {
-	        f: error_callback,
+	        f: error_callback as fn(glfw::Error, String, &Cell<usize>),
 	        data: Cell::new(0),
 	    }
-	));*/
+	));
 
 
 	glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
