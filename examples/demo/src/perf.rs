@@ -1,5 +1,3 @@
-#![allow(unstable)]
-
 use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, Color};
 use std::f32;
 

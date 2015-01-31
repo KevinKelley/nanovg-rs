@@ -4,7 +4,6 @@
 #![allow(unreachable_code)]
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
-#![allow(unstable)]
 
 extern crate num;
 extern crate libc;

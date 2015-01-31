@@ -1,7 +1,7 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
-#![feature(optin_builtin_traits)] // Until 1.0, when this feature stablizes
+#![feature(optin_builtin_traits, hash, libc, core, std_misc)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![deny(unused_parens)]
@@ -13,7 +13,6 @@
 #![allow(unused_attributes)]
 #![deny(unused_typecasts)]
 #![allow(dead_code)]
-#![allow(unstable)]
 
 #[macro_use]
 extern crate bitflags;
@@ -34,21 +33,21 @@ use ffi::NVGtextRow;
 
 mod ffi;
 
-#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
@@ -58,7 +57,7 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Show, Copy)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
@@ -225,7 +224,7 @@ impl fmt::Debug for Font {
 
 // TextRow
 
-#[derive(PartialEq,Show,Clone)]
+#[derive(PartialEq,Debug,Clone)]
 pub struct TextRow {
     start_index: usize,
     end_index: usize,
@@ -248,7 +247,7 @@ impl Copy for TextRow {}
 
 // GlyphPosition
 
-#[derive(PartialEq,Show,Clone)]
+#[derive(PartialEq,Debug,Clone)]
 pub struct GlyphPosition {
     byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position

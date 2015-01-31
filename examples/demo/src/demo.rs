@@ -1,4 +1,3 @@
-#![allow(unstable)]
 extern crate gl;
 
 use std::num::*;
