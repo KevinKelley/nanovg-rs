@@ -1,26 +1,28 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
-#![feature(globs, macro_rules)]
+#![feature(optin_builtin_traits, hash, libc, core, std_misc)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![deny(unnecessary_parens)]
-#![deny(non_uppercase_statics)]
-#![allow(unnecessary_qualification)]
+#![deny(unused_parens)]
+#![deny(non_upper_case_globals)]
+#![allow(unused_qualifications)]
 //#![warn(missing_doc)]
-#![deny(unused_result)]
+#![deny(unused_results)]
 #![allow(unused_imports)]
-#![allow(unused_attribute)]
-#![deny(unnecessary_typecast)]
+#![allow(unused_attributes)]
+#![deny(unused_typecasts)]
 #![allow(dead_code)]
 
+#[macro_use]
+extern crate bitflags;
 extern crate libc;
 
 use std::fmt;
-use std::kinds::marker;
 use std::ptr;
 use std::str;
-use std::bitflags;
+use std::ffi::CString;
+use std::num::ToPrimitive;
 
 use libc::{c_char, c_int, c_void, c_float};
 
@@ -31,21 +33,21 @@ use ffi::NVGtextRow;
 
 mod ffi;
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
@@ -55,7 +57,7 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[deriving(Clone, Eq, Hash, PartialEq, Show)]
+#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
 #[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
@@ -63,7 +65,7 @@ pub enum PatternRepeat {
     REPEATY                 = ffi::NVG_REPEATY,
 }
 
-pub bitflags!(
+pub bitflags!{
     flags Align: u32 {
         const LEFT         = ffi::NVG_ALIGN_LEFT,
         const CENTER       = ffi::NVG_ALIGN_CENTER,
@@ -73,27 +75,29 @@ pub bitflags!(
         const BOTTOM       = ffi::NVG_ALIGN_BOTTOM,
         const BASELINE     = ffi::NVG_ALIGN_BASELINE
     }
-)
+}
 
-pub bitflags!(
+pub bitflags!{
     flags CreationFlags: u32 {
         const ANTIALIAS        = ffi::NVG_ANTIALIAS,
         const STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
     }
-)
+}
 
-pub bitflags!(
+pub bitflags!{
     flags ImageFlags: u32 {
         const GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
     }
-)
+}
 
 // Color
 
-#[deriving(Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }
+
+impl Copy for Color {}
 
 impl Color {
     #[inline]
@@ -140,7 +144,7 @@ impl Color {
     }
 }
 
-impl fmt::Show for Color {
+impl fmt::Debug for Color {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "r:{}, g:{}, b:{}, a:{}", self.r(), self.g(), self.b(), self.a())
     }
@@ -152,15 +156,17 @@ pub struct Paint {
     nvg: NVGpaint
 }
 
+impl Copy for Paint {}
+
 impl Paint {
     #[inline]
     fn wrap(nvg: NVGpaint) -> Paint { Paint { nvg: nvg } }
 }
 
-impl fmt::Show for Paint {
+impl fmt::Debug for Paint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let p: *const NVGpaint = &self.nvg;
-        write!(f, "Paint @ {}", p)
+        write!(f, "Paint @ {:?}", p)
     }
 }
 
@@ -170,12 +176,14 @@ pub struct Image {
     handle: c_int
 }
 
+impl Copy for Image {}
+
 impl Image {
     #[inline]
     fn wrap(handle: c_int) -> Image { Image { handle: handle } }
 }
 
-impl fmt::Show for Image {
+impl fmt::Debug for Image {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Image #{}", self.handle)
     }
@@ -199,7 +207,9 @@ impl Font {
     fn wrap(handle: c_int) -> Font { Font { handle: handle } }
 }
 
-impl fmt::Show for Font {
+impl Copy for Font {}
+
+impl fmt::Debug for Font {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Font #{}", self.handle)
     }
@@ -214,49 +224,54 @@ impl fmt::Show for Font {
 
 // TextRow
 
-#[deriving(PartialEq,Show,Clone)]
+#[derive(PartialEq,Debug,Clone)]
 pub struct TextRow {
-    start_index: uint,
-    end_index: uint,
-    next_index: uint,
+    start_index: usize,
+    end_index: usize,
+    next_index: usize,
     width: c_float,
     minx: c_float,
     maxx: c_float,
 }
 
 impl TextRow {
-    pub fn start_index(&self) -> uint { self.start_index }
-    pub fn end_index(&self) -> uint { self.end_index }
-    pub fn next_index(&self) -> uint { self.next_index }
+    pub fn start_index(&self) -> usize { self.start_index }
+    pub fn end_index(&self) -> usize { self.end_index }
+    pub fn next_index(&self) -> usize { self.next_index }
     pub fn width(&self) -> f32 { self.width }
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
 }
 
+impl Copy for TextRow {}
+
 // GlyphPosition
 
-#[deriving(PartialEq,Show,Clone)]
+#[derive(PartialEq,Debug,Clone)]
 pub struct GlyphPosition {
-    byte_index: uint,   // start index of this glyph in string
+    byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position
     minx: f32,          // glyph spans from minx to max x
     maxx: f32           // (span may or may not actually contain x, depending on the font)
 }
 
 impl GlyphPosition {
-    pub fn byte_index(&self) -> uint { self.byte_index }
+    pub fn byte_index(&self) -> usize { self.byte_index }
     pub fn x(&self) -> f32 { self.x }
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
 }
 
+impl Copy for GlyphPosition {}
+
 // Transform
 
+#[derive(Copy)]
 pub struct Transform {
-    array: [f32, ..6]
+    array: [f32; 6]
 }
 
-impl fmt::Show for Transform {
+impl fmt::Debug for Transform {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Transform(tx: {}, ty: {}, sx: {}, sy: {}, kx: {}, ky: {})",
                self.e(), self.f(), self.a(), self.d(), self.c(), self.b())
@@ -293,10 +308,10 @@ impl Transform {
     pub fn as_mut_slice<'a>(&'a mut self) -> &'a mut [f32] { self.array.as_mut_slice() }
 
     #[inline]
-    pub fn into_array(self) -> [f32, ..6] { self.array }
+    pub fn into_array(self) -> [f32; 6] { self.array }
 
     #[inline]
-    pub fn from_array(array: [f32, ..6]) -> Transform {
+    pub fn from_array(array: [f32; 6]) -> Transform {
         Transform { array: array }
     }
 
@@ -307,7 +322,7 @@ impl Transform {
 
     #[inline]
     fn new_zero() -> Transform {
-        Transform { array: [0.0, ..6] }
+        Transform { array: [0.0; 6] }
     }
 
     pub fn new_identity() -> Transform {
@@ -439,14 +454,16 @@ impl Transform {
 // Ctx
 
 pub struct Ctx {
-    ptr: *mut ffi::NVGcontext,
-    no_send: marker::NoSend,
-    no_sync: marker::NoSync,
+    ptr: *mut ffi::NVGcontext
 }
 
-impl fmt::Show for Ctx {
+impl !Send for Ctx {}
+
+impl !Sync for Ctx {}
+
+impl fmt::Debug for Ctx {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "NVGcontext @ {}", self.ptr)
+        write!(f, "NVGcontext @ {:?}", self.ptr)
     }
 }
 
@@ -461,9 +478,7 @@ impl Drop for Ctx {
 impl Ctx {
     pub fn create_gl3(flags: CreationFlags) -> Ctx {
         Ctx {
-            ptr: unsafe { ffi::nvgCreateGL3(flags.bits) },
-            no_send: marker::NoSend,
-            no_sync: marker::NoSync,
+            ptr: unsafe { ffi::nvgCreateGL3(flags.bits) }
         }
     }
 
@@ -538,7 +553,7 @@ impl Ctx {
         unsafe { ffi::nvgScale(self.ptr, x, y) }
     }
     pub fn current_transform(&self) -> Transform {
-        let mut arr = [0.0f32, ..6];
+        let mut arr = [0.0f32; 6];
 		unsafe { ffi::nvgCurrentTransform(self.ptr, arr.as_mut_ptr()) }
         Transform::from_array(arr)
     }
@@ -549,14 +564,13 @@ impl Ctx {
     }
 
     pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
-        filename.with_c_str(|filename| {
-            let handle = unsafe { ffi::nvgCreateImage(self.ptr, filename, flags.bits() as c_int) };
-            // stb_image returns 0 for failure; unlike fontstash which returns -1
-            match handle {
-                ffi::STB_IMAGE_INVALID => { None },
-                _ => { Some(Image::wrap(handle)) }
-            }
-        })
+        let c_filename = CString::from_slice(filename.as_bytes());
+        let handle = unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(), flags.bits() as c_int) };
+        // stb_image returns 0 for failure; unlike fontstash which returns -1
+        match handle {
+            ffi::STB_IMAGE_INVALID => { None },
+            _ => { Some(Image::wrap(handle)) }
+        }
     }
 
     #[inline]
@@ -667,39 +681,35 @@ impl Ctx {
     }
 
     pub fn create_font(&self, name: &str, filename: &str) -> Option<Font> {
-        name.with_c_str(|name| {
-            filename.with_c_str(|filename| {
-              let handle = unsafe { ffi::nvgCreateFont(self.ptr, name, filename) };
-              match handle {
-                ffi::FONT_INVALID => None,
-                _ => Some(Font::wrap(handle))
-              }
-            })
-        })
+        let c_name = CString::from_slice(name.as_bytes());
+        let c_filename = CString::from_slice(filename.as_bytes());
+        let handle = unsafe { ffi::nvgCreateFont(self.ptr, c_name.as_ptr(), c_filename.as_ptr()) };
+        match handle {
+            ffi::FONT_INVALID => None,
+            _ => Some(Font::wrap(handle))
+        }
     }
 
     pub fn create_font_mem(&self, name: &str, data: &[u8]) -> Option<Font> {
-        name.with_c_str(|name| {
-            let handle = unsafe {
-                ffi::nvgCreateFontMem(self.ptr, name,
-                                      data.as_ptr() as *mut u8, data.len() as c_int,
-                                      0 /* do not free */)
-            };
-            match handle {
-                ffi::FONT_INVALID => None,
-                _ => Some(Font::wrap(handle))
-            }
-        })
+        let c_name = CString::from_slice(name.as_bytes());
+        let handle = unsafe {
+            ffi::nvgCreateFontMem(self.ptr, c_name.as_ptr(),
+                                  data.as_ptr() as *mut u8, data.len() as c_int,
+                                  0 /* do not free */)
+        };
+        match handle {
+            ffi::FONT_INVALID => None,
+            _ => Some(Font::wrap(handle))
+        }
     }
 
     pub fn find_font(&self, name: &str) -> Option<Font> {
-        name.with_c_str(|name| {
-            let handle = unsafe { ffi::nvgFindFont(self.ptr, name) };
-            match handle {
-                ffi::FONT_INVALID => None,
-                _ => Some(Font::wrap(handle))
-            }
-        })
+        let c_name = CString::from_slice(name.as_bytes());
+        let handle = unsafe { ffi::nvgFindFont(self.ptr, c_name.as_ptr()) };
+        match handle {
+            ffi::FONT_INVALID => None,
+            _ => Some(Font::wrap(handle))
+        }
     }
     pub fn font_size(&self, size: f32) {
         unsafe { ffi::nvgFontSize(self.ptr, size) }
@@ -720,46 +730,40 @@ impl Ctx {
         unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
     }
     pub fn font_face(&self, font: &str) {
-        font.with_c_str(|font| {
-            unsafe { ffi::nvgFontFace(self.ptr, font) }
-        })
+        let c_font = CString::from_slice(font.as_bytes());
+        unsafe { ffi::nvgFontFace(self.ptr, c_font.as_ptr()) }
     }
     pub fn text(&self, x: f32, y: f32, text: &str) -> f32 {
-        text.with_c_str(|text| {
-            unsafe { ffi::nvgText(self.ptr, x, y, text, ptr::null()) }
-        })
+        let c_text = CString::from_slice(text.as_bytes());
+            unsafe { ffi::nvgText(self.ptr, x, y, c_text.as_ptr(), ptr::null()) }
     }
     pub fn text_box(&self, x: f32, y: f32, break_row_width: f32, text: &str) {
-        text.with_c_str(|text| {
-             unsafe { ffi::nvgTextBox(self.ptr, x, y, break_row_width, text, ptr::null()) }
-        })
+        let c_text = CString::from_slice(text.as_bytes());
+        unsafe { ffi::nvgTextBox(self.ptr, x, y, break_row_width, c_text.as_ptr(), ptr::null()) }
     }
     // Measures the specified text string. Parameter bounds should be a pointer to float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
     // Measured values are returned in local coordinate space.
-    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32, ..4]) -> f32 {
-        text.with_c_str(|text| {
-           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), bounds.as_mut_ptr()) }
-        })
+    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32; 4]) -> f32 {
+        let c_text = CString::from_slice(text.as_bytes());
+        unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), bounds.as_mut_ptr()) }
     }
     // Measures the needed advance for text, without computing complete bounds
     pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
-        text.with_c_str(|text| {
-           unsafe { ffi::nvgTextBounds(self.ptr, x, y, text, ptr::null(), ptr::null_mut()) }
-        })
+        let c_text = CString::from_slice(text.as_bytes());
+        unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), ptr::null_mut()) }
     }
     // Measures the specified multi-text string. Parameter bounds should be float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Measured values are returned in local coordinate space.
-    pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32, ..4]) {
+    pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32; 4]) {
+        let c_text = CString::from_slice(text.as_bytes());
         //let bptr: *mut f32 = match bounds {
         //    Some(vec) => { bptr = vec.as_mut_ptr() }
         //    None => ptr::null()
         //}
-        text.with_c_str(|text| {
-            unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, break_row_width, text, ptr::null(), bounds.as_mut_ptr()) }
-        })
+        unsafe { ffi::nvgTextBoxBounds(self.ptr, x, y, break_row_width, c_text.as_ptr(), ptr::null(), bounds.as_mut_ptr()) }
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -767,7 +771,7 @@ impl Ctx {
     /// 'text' is utf8-encoded unicode, so the number of glyphs isn't necessarily the byte-length of the text.
     pub fn text_glyph_positions(&self, x: f32, y: f32, text: &str) -> Vec<GlyphPosition> {
         let mut positions: Vec<NVGglyphPosition> = Vec::with_capacity(text.len());
-        for _ in range(0, text.len()) { // we may not need all of them, but if text is ascii, we will
+        for _ in 0..text.len() { // we may not need all of them, but if text is ascii, we will
             positions.push(NVGglyphPosition {
                 byte_ptr: ptr::null(),
                 x: 0.0,
@@ -776,17 +780,17 @@ impl Ctx {
             })
         }
         let st = text.as_ptr() as *const i8;
-        let en = unsafe { st.offset(text.len() as int) };
+        let en = unsafe { st.offset(text.len() as isize) };
 
         let actual_n = unsafe {
             ffi::nvgTextGlyphPositions(self.ptr, x, y, st, en, positions.as_mut_ptr(), positions.len() as c_int)
         };
         assert!(actual_n >= 0);
-        let actual_n = actual_n as uint;
+        let actual_n = actual_n as usize;
 
         // convert pointers to indexes
         let mut ret_vec:Vec<GlyphPosition> = Vec::with_capacity(actual_n);
-        for i in range(0, actual_n) {
+        for i in (0..actual_n) {
             let nvg = positions[i];
             ret_vec.push(GlyphPosition {
                 byte_index: relative_index(text, nvg.byte_ptr),
@@ -799,11 +803,11 @@ impl Ctx {
         return ret_vec;
     }
 
-    pub fn text_break_lines(&self, text: &str, break_row_width: f32, max_rows: uint) -> Vec<TextRow> {
+    pub fn text_break_lines(&self, text: &str, break_row_width: f32, max_rows: usize) -> Vec<TextRow> {
         let st = text.as_ptr() as *const i8;
-        let en = unsafe { st.offset(text.len() as int) };
+        let en = unsafe { st.offset(text.len() as isize) };
         let mut rows: Vec<NVGtextRow> = Vec::with_capacity(max_rows);
-        for _ in range(0, max_rows) {
+        for _ in (0..max_rows) {
             rows.push(NVGtextRow {
                 start: ptr::null(),
                 end:   ptr::null(),
@@ -818,11 +822,11 @@ impl Ctx {
             ffi::nvgTextBreakLines(self.ptr, st, en, break_row_width, rows.as_mut_ptr(), max_rows as c_int)
         };
         assert!(actual_n >= 0);
-        let actual_n = actual_n as uint;
+        let actual_n = actual_n as usize;
 
         // convert pointers to indexes
         let mut ret_vec:Vec<TextRow> = Vec::with_capacity(actual_n);
-        for i in range(0, actual_n) {
+        for i in (0..actual_n) {
             let nvg = rows[i];
             ret_vec.push(TextRow {
                 start_index: relative_index(text, nvg.start),
@@ -849,10 +853,10 @@ impl Ctx {
 
 // given a utf8 string, and a ptr that walks through it,
 // return instead the corresponding byte-index into the string.
-pub fn relative_index(text: &str, p: *const i8) -> uint {
-    let st: *const u8 = text.as_ptr();
-    let stix: uint = st.to_uint();
-    let pix: uint = p.to_uint();
+pub fn relative_index(text: &str, p: *const i8) -> usize {
+    let st = text.as_ptr();
+    let stix: usize = st as usize;
+    let pix: usize = p as usize;
     assert!(pix >= stix);               // require that 'p' point somewhere in the
     assert!(pix - stix <= text.len());  // string, or at most 1 past end (where C null would be)
     pix - stix
@@ -869,17 +873,14 @@ pub fn rad_to_deg(rad: f32) -> f32 {
 // image-write functions from nanovg/examples/stb_image_write.h
 //
 pub fn write_png(filename: &str, w: u32, h: u32, comp: i32, data: *const u8, stride_in_bytes: u32) -> i32 {
-    filename.with_c_str(|filename| {
-        unsafe { ffi::stbi_write_png(filename, w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
-    })
+    let c_filename = CString::from_slice(filename.as_bytes());
+    unsafe { ffi::stbi_write_png(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
 }
 pub fn write_bmp(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    filename.with_c_str(|filename| {
-        unsafe { ffi::stbi_write_bmp(filename, w as c_int, h as c_int, comp, data as *const c_void) }
-    })
+    let c_filename = CString::from_slice(filename.as_bytes());
+    unsafe { ffi::stbi_write_bmp(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }
 pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    filename.with_c_str(|filename| {
-        unsafe { ffi::stbi_write_tga(filename, w as c_int, h as c_int, comp, data as *const c_void) }
-    })
+    let c_filename = CString::from_slice(filename.as_bytes());
+    unsafe { ffi::stbi_write_tga(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }

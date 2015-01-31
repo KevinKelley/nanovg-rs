@@ -2,7 +2,10 @@
 name = "nanovg"
 version = "0.2.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
-build = "make -f nanovg.mk"
+build = "build.rs"
 
 [lib]
 name = "nanovg"
+
+[dependencies]
+bitflags = "0.1"

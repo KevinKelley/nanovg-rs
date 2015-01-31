@@ -7,6 +7,9 @@ authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 name = "example"
 path = "src/main.rs"
 
+[dependencies.num]
+version = "*"
+
 [dependencies.nanovg]
 #git = "https://github.com/KevinKelley/nanovg-rs"
 path = "../.."

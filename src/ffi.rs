@@ -2,7 +2,7 @@
 
 use libc::{c_double, c_float, c_int, c_char};
 use libc::{c_uint, c_ushort, c_uchar, c_void};
-use std::kinds::marker;
+use std::marker;
 
 pub const FONT_INVALID: c_int = -1;
 pub const STB_IMAGE_INVALID: c_int = 0;
@@ -38,7 +38,7 @@ pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
-#[deriving(Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
@@ -47,10 +47,12 @@ pub struct NVGcolor {
     pub a: c_float
 }
 
+impl Copy for NVGcolor {}
+
 #[repr(C)]
 pub struct NVGpaint {
-    pub xform: [c_float, ..6u],
-    pub extent: [c_float, ..2u],
+    pub xform: [c_float; 6],
+    pub extent: [c_float; 2],
     pub radius: c_float,
     pub feather: c_float,
     pub innerColor: NVGcolor,
@@ -59,6 +61,8 @@ pub struct NVGpaint {
     pub repeat: c_int,
 }
 
+impl Copy for NVGpaint {}
+
 #[repr(C)]
 pub struct NVGglyphPosition {
     pub byte_ptr: *const c_char,
@@ -66,6 +70,9 @@ pub struct NVGglyphPosition {
     pub minx: c_float,
     pub maxx: c_float,
 }
+
+impl Copy for NVGglyphPosition {}
+
 #[repr(C)]
 pub struct NVGtextRow {
     pub start: *const c_char,
@@ -76,15 +83,19 @@ pub struct NVGtextRow {
     pub maxx: c_float,
 }
 
+impl Copy for NVGtextRow {}
+
 pub type Enum_NVGtexture = c_uint;
 pub const NVG_TEXTURE_ALPHA: c_uint = 1;
 pub const NVG_TEXTURE_RGBA: c_uint = 2;
 
 #[repr(C)]
 pub struct NVGscissor {
-    pub xform: [c_float, ..6u],
-    pub extent: [c_float, ..2u],
+    pub xform: [c_float; 6],
+    pub extent: [c_float; 2],
 }
+
+impl Copy for NVGscissor {}
 
 #[repr(C)]
 pub struct NVGvertex {
@@ -93,6 +104,8 @@ pub struct NVGvertex {
     pub u: c_float,
     pub v: c_float,
 }
+
+impl Copy for NVGvertex {}
 
 #[repr(C)]
 pub struct NVGpath {
@@ -239,7 +252,7 @@ extern "C" {
     //// Flags should be combination of the create flags above.
 
     //#if defined NANOVG_GL2
-    //struct NVGcontext* nvgCreateGL2(int flags);
+    //struct NVGcontext* nvgCreateGL2(isize flags);
     //void nvgDeleteGL2(struct NVGcontext* ctx);
 
     //#if defined NANOVG_GL3
@@ -247,7 +260,7 @@ extern "C" {
     pub fn nvgDeleteGL3(ctx: *mut NVGcontext);
 
     //#if defined NANOVG_GLES2
-    //struct NVGcontext* nvgCreateGLES2(int flags);
+    //struct NVGcontext* nvgCreateGLES2(isize flags);
     //void nvgDeleteGLES2(struct NVGcontext* ctx);
 
     //#if defined NANOVG_GLES3

@@ -9,12 +9,12 @@ use libc::{c_void};
 
 /// use unicode characters for icons
 const NO_ICON:            char = '\0';
-const ICON_SEARCH:        char = '\U0001F50D';
-const ICON_CIRCLED_CROSS: char = '\u2716';
-const ICON_CHEVRON_RIGHT: char = '\uE75E';
-const ICON_CHECK:         char = '\u2713';
-const ICON_LOGIN:         char = '\uE740';
-const ICON_TRASH:         char = '\uE729';
+const ICON_SEARCH:        char = '\u{01F50D}';
+const ICON_CIRCLED_CROSS: char = '\u{2716}';
+const ICON_CHEVRON_RIGHT: char = '\u{E75E}';
+const ICON_CHECK:         char = '\u{2713}';
+const ICON_LOGIN:         char = '\u{E740}';
+const ICON_TRASH:         char = '\u{E729}';
 
 const PI: f32 = 3.1415926535;
 
@@ -32,7 +32,7 @@ fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
 
 
 
-fn cp_to_utf8(cp:char) -> String { format!("{}", cp) }
+fn cp_to_utf8(cp:char) -> String { format!{"{}", cp} }
 
 pub struct DemoData {
     //vg: &Ctx,
@@ -47,20 +47,20 @@ impl DemoData {
     pub fn load(vg: &Ctx, res_path: &str) -> DemoData
     {
         let mut images: Vec<Image> = Vec::new();
-        for i in range(0, 12u) {
-            let filename = format!("{}/images/image{}.jpg", res_path, i+1);
+        for i in 0..12us {
+            let filename = format!{"{}/images/image{}.jpg", res_path, i+1};
             let img = vg.create_image(filename.as_slice())
-                .expect(format!("Could not load {}.", filename).as_slice());
+                .expect(format!{"Could not load {}.", filename}.as_slice());
             images.push(img);
         }
 
-        let fontIcons = vg.create_font("icons", format!("{}/entypo.ttf", res_path).as_slice())
+        let fontIcons = vg.create_font("icons", format!{"{}/entypo.ttf", res_path}.as_slice())
             .expect("Could not add font 'icons'.");
 
-        let fontNormal = vg.create_font("sans", format!("{}/Roboto-Regular.ttf", res_path).as_slice())
+        let fontNormal = vg.create_font("sans", format!{"{}/Roboto-Regular.ttf", res_path}.as_slice())
             .expect("Could not add font 'sans'.");
 
-        let fontBold = vg.create_font("sans-bold", format!("{}/Roboto-Bold.ttf", res_path).as_slice())
+        let fontBold = vg.create_font("sans-bold", format!{"{}/Roboto-Bold.ttf", res_path}.as_slice())
             .expect("Could not add font 'sans-bold'.");
 
 
@@ -157,7 +157,7 @@ fn draw_window(vg: &Ctx, title: &str, x: f32, y: f32, w: f32, h: f32)
     vg.begin_path();
     vg.rect(x-10.0,y-10.0, w+20.0,h+30.0);
     vg.rounded_rect(x,y, w,h, cornerRadius);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadowPaint);
     vg.fill();
 
@@ -292,7 +292,7 @@ fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h
 {
     draw_editbox_base(vg, x,y, w,h);
 
-    let mut bounds = [0.0, ..4];
+    let mut bounds = [0.0; 4];
     let uw = vg.text_bounds(0.0,0.0, units, &mut bounds);
 
     vg.font_size(18.0);
@@ -334,7 +334,15 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 {
     let cornerRadius = 4.0;
 
-    let bg = vg.linear_gradient(x,y,x,y+h, rgba(255,255,255,if is_black(col){16}else{32}), rgba(0,0,0,if is_black(col){16}else{32}));
+    let bg = vg.linear_gradient(
+        x,y,x,y+h,
+        rgba(255,255,255,
+        if is_black(col) {
+            16
+        } else {
+            32
+        }),
+        rgba(0,0,0,if is_black(col){16}else{32}));
     vg.begin_path();
     vg.rounded_rect(x+1.0,y+1.0, w-2.0,h-2.0, cornerRadius-1.0);
     if !is_black(col) {
@@ -351,7 +359,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
 
     vg.font_size(20.0);
     vg.font_face("sans-bold");
-    let mut bounds = [0.0, ..4];
+    let mut bounds = [0.0; 4];
     let tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
     let mut iw = 0.0;
     if preicon != NO_ICON {
@@ -398,7 +406,7 @@ fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
     vg.begin_path();
     vg.rect(x+floor(pos*w)-kr-5.0,cy-kr-5.0,kr*2.0+5.0+5.0,kr*2.0+5.0+5.0+3.0);
     vg.circle(x+floor(pos*w),cy, kr);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadow);
     vg.fill();
 
@@ -431,7 +439,7 @@ fn draw_eyes(vg: &Ctx, x: f32,
     let rx = x + w - ex;
     let ry = y + ey;
     let br = min(ex, ey) * 0.5;
-    let blink: f32 = 1.0 - pow(sin(t*0.5),200)*0.8;
+    let blink: f32 = 1.0 - (t*0.5).sin().powi(200)*0.8;
 
     let bg = vg.linear_gradient(x,y+h*0.5,x+w*0.1,y+h, rgba(0,0,0,32), rgba(0,0,0,16));
     vg.begin_path();
@@ -490,9 +498,9 @@ fn draw_graph(vg: &Ctx, x: f32,
              y: f32, w: f32,
              h: f32, t: f32)
 {
-    let mut samples: [f32, ..6] = [0.0, ..6];
-    let mut sx: [f32, ..6] = [0.0, ..6];
-    let mut sy: [f32, ..6] = [0.0, ..6];
+    let mut samples: [f32; 6] = [0.0; 6];
+    let mut sx: [f32; 6] = [0.0; 6];
+    let mut sy: [f32; 6] = [0.0; 6];
     let dx = w/5.0;
 
     samples[0] = (1.0+sin(t*1.2345+cos(t*0.33457)*0.44))*0.5;
@@ -502,7 +510,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     samples[4] = (1.0+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
     samples[5] = (1.0+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
 
-    for i in range(0, 6u) {
+    for i in 0..6us {
         sx[i] = x+ (i as f32)*dx;
         sy[i] = y+h*samples[i]*0.8;
     }
@@ -511,7 +519,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6u) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.line_to(x+w, y+h);
@@ -522,7 +530,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     // Graph line
     vg.begin_path();
     vg.move_to(sx[0], sy[0]+2.0);
-    for i in range(1, 6u) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2.0, sx[i]-dx*0.5,sy[i]+2.0, sx[i],sy[i]+2.0);
     }
     vg.stroke_color(rgba(0,0,0,32));
@@ -531,7 +539,7 @@ fn draw_graph(vg: &Ctx, x: f32,
 
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in range(1, 6u) {
+    for i in 1..6us {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.stroke_color(rgba(0,160,192,255));
@@ -539,7 +547,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     vg.stroke();
 
     // Graph sample pos
-    for i in range(0, 6u) {
+    for i in 0..6us {
         let bg = vg.radial_gradient(sx[i],sy[i]+2.0, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
         vg.begin_path();
         vg.rect(sx[i]-10.0, sy[i]-10.0+2.0, 20.0,20.0);
@@ -548,13 +556,13 @@ fn draw_graph(vg: &Ctx, x: f32,
     }
 
     vg.begin_path();
-    for i in range(0, 6u) {
+    for i in 0..6us {
         vg.circle(sx[i], sy[i], 4.0);
     }
     vg.fill_color(rgba(0,160,192,255));
     vg.fill();
     vg.begin_path();
-    for i in range(0, 6u) {
+    for i in 0..6us {
         vg.circle(sx[i], sy[i], 2.0);
     }
     vg.fill_color(rgba(220,220,220,255));
@@ -573,8 +581,8 @@ fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
     vg.save();
 
     vg.begin_path();
-    vg.arc(cx,cy, r0, a0, a1, CW);
-    vg.arc(cx,cy, r1, a1, a0, CCW);
+    vg.arc(cx,cy, r0, a0, a1, Winding::CW);
+    vg.arc(cx,cy, r1, a1, a0, Winding::CCW);
     vg.close_path();
     let ax = cx + cos(a0) * (r0+r1)*0.5;
     let ay = cy + sin(a0) * (r0+r1)*0.5;
@@ -607,7 +615,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
     vg.begin_path();
     vg.rect(x-10.0,y-10.0, w+20.0,h+30.0);
     vg.rounded_rect(x,y, w,h, cornerRadius);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(shadowPaint);
     vg.fill();
 
@@ -626,7 +634,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
 
     let dv = 1.0 / (nimages as f32 - 1.0);
 
-    for i in range(0, nimages) {
+    for i in (0..nimages) {
         let mut tx = x+10.0;
         let mut ty = y+10.0;
         tx += (i%2) as f32 * (thumb+10.0);
@@ -657,7 +665,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
             draw_spinner(vg, tx+thumb/2.0,ty+thumb/2.0, thumb*0.25, t);
         }
 
-        let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, &images[i], NOREPEAT, a);
+        let imgPaint = vg.image_pattern(tx+ix, ty+iy, iw,ih, 0.0/180.0*PI, &images[i], PatternRepeat::NOREPEAT, a);
         vg.begin_path();
         vg.rounded_rect(tx,ty, thumb,thumb, 5.0);
         vg.fill_paint(imgPaint);
@@ -667,7 +675,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
         vg.begin_path();
         vg.rect(tx-5.0,ty-5.0, thumb+10.0,thumb+10.0);
         vg.rounded_rect(tx,ty, thumb,thumb, 6.0);
-        vg.path_winding(HOLE);
+        vg.path_winding(Solidity::HOLE);
         vg.fill_paint(shadowPaint);
         vg.fill();
 
@@ -731,12 +739,12 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     let r0 = r1 - 20.0;
     let aeps = 0.5 / r1;    // half a pixel arc length in radians (2pi cancels out).
 
-    for i in range(0, 6u) {
+    for i in 0..6us {
         let a0 = (i as f32) / 6.0 * PI * 2.0 - aeps;
         let a1 = ((i as f32)+1.0) / 6.0 * PI * 2.0 + aeps;
         vg.begin_path();
-        vg.arc(cx,cy, r0, a0, a1, CW);
-        vg.arc(cx,cy, r1, a1, a0, CCW);
+        vg.arc(cx,cy, r0, a0, a1, Winding::CW);
+        vg.arc(cx,cy, r1, a1, a0, Winding::CCW);
         vg.close_path();
         let ax = cx + cos(a0) * (r0+r1)*0.5;
         let ay = cy + sin(a0) * (r0+r1)*0.5;
@@ -770,7 +778,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     vg.begin_path();
     vg.rect(r0-2.0-10.0,-4.0-10.0,r1-r0+4.0+20.0,8.0+20.0);
     vg.rect(r0-2.0,-4.0,r1-r0+4.0,8.0);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(paint);
     vg.fill();
 
@@ -807,7 +815,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     vg.begin_path();
     vg.rect(ax-20.0,ay-20.0,40.0,40.0);
     vg.circle(ax,ay,7.0);
-    vg.path_winding(HOLE);
+    vg.path_winding(Solidity::HOLE);
     vg.fill_paint(paint);
     vg.fill();
 
@@ -820,9 +828,9 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
 {
     let pad = 5.0;
     let s = w/9.0 - pad*2.0;
-    let mut pts: [f32, ..4*2] = [0.0, ..4*2];
-    let joins: [LineCap, ..3] = [MITER, ROUND, BEVEL];
-    let caps: [LineCap, ..3] = [BUTT, ROUND, SQUARE];
+    let mut pts: [f32; 4*2] = [0.0; 4*2];
+    let joins: [LineCap; 3] = [LineCap::MITER, LineCap::ROUND, LineCap::BEVEL];
+    let caps: [LineCap; 3] = [LineCap::BUTT, LineCap::ROUND, LineCap::SQUARE];
 
     vg.save();
     pts[0] = -s*0.25 + cos(t*0.3) * s*0.5;
@@ -834,8 +842,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
     pts[6] = s*0.25 + cos(-t*0.3) * s*0.5;
     pts[7] = sin(-t*0.3) * s*0.5;
 
-    for i in range(0, 3u) {
-        for j in range(0, 3u) {
+    for i in 0..3us {
+        for j in 0..3us {
             let fx = x + s*0.5 + ((i as f32)*3.0+(j as f32))/9.0*w + pad;
             let fy = y - s*0.5 + pad;
 
@@ -851,8 +859,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
             vg.line_to(fx+pts[6], fy+pts[7]);
             vg.stroke();
 
-            vg.line_cap(BUTT);
-            vg.line_join(BEVEL);
+            vg.line_cap(LineCap::BUTT);
+            vg.line_join(LineCap::BEVEL);
 
             vg.stroke_width(1.0);
             vg.stroke_color(rgba(0,192,255,255));
@@ -879,7 +887,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     let mut gx: f32 = 0.0;
     let mut gy: f32 = 0.0;
     let mut gutter:i32 = 0;
-    let mut bounds: [f32, ..4] = [0.0, ..4];
+    let mut bounds: [f32; 4] = [0.0; 4];
 
     vg.save();
 
@@ -891,16 +899,16 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     // The text break API can be used to fill a large buffer of rows,
     // or to iterate over the text just few lines (or just one) at a time.
     // The "next" variable of the last returned item tells where to continue.
-    let mut start: uint = 0;    // byte pos in utf8 'text' str
-    let end: uint = text.len(); // exclusive
+    let mut start: usize = 0;    // byte pos in utf8 'text' str
+    let end: usize = text.len(); // exclusive
     let mut lnum = 0;
     'chunks: loop {
-        let text = text.slice(start, end);
+        let text = &text[start..end];
         let rows = vg.text_break_lines(text, width, 3);
         let nrows = rows.len();
         if nrows == 0 { break 'chunks; }
 
-        for i in range(0, nrows) {
+        for i in (0..nrows) {
             let row = &rows[i];
             let hit: bool = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
 
@@ -910,7 +918,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
             vg.fill();
 
             vg.fill_color(rgba(255,255,255,255));
-            let line = text.slice(row.start_index(), row.end_index());
+            let line = &text[row.start_index()..row.end_index()];
             vg.text(x, y, line);
 
             if hit { // test for mouse-hit and display cursor
@@ -918,7 +926,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
                 let mut px = x;
                 let glyphs = vg.text_glyph_positions(x, y, line);
                 let nglyphs = glyphs.len();
-                for j in range(0, nglyphs) {
+                for j in (0..nglyphs) {
                     let x0 = glyphs[j].x();
                     let x1 = if j+1 < nglyphs { glyphs[j+1].x() } else { x+row.width() };
                     let gx = x0 * 0.3 + x1 * 0.7;
@@ -945,7 +953,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
 
     if gutter > 0 {
         //char txt[16]; snprintf(txt, sizeof(txt), "%d", gutter);
-        let txt = format!("{}", gutter);
+        let txt = format!{"{}", gutter};
         vg.font_size(13.0);
         vg.text_align(RIGHT|MIDDLE);
 
@@ -976,8 +984,8 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
         &mut bounds);
 
     // Fade the tooltip out when close to it.
-    gx = abs((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2]));
-    gy = abs((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3]));
+    gx = ((mx - (bounds[0]+bounds[2])*0.5) / (bounds[0] - bounds[2])).abs();
+    gy = ((my - (bounds[1]+bounds[3])*0.5) / (bounds[1] - bounds[3])).abs();
     let a = clamp( max(gx, gy) - 0.5,  0.0, 1.0);
     vg.global_alpha(a);
 
@@ -1009,7 +1017,7 @@ fn draw_widths(vg: &Ctx, x: f32,
 
     vg.stroke_color(rgba(0,0,0,255));
 
-    for i in range(0, 20u) {
+    for i in 0..20us {
         let w = ((i as f32)+0.5)*0.1;
         vg.stroke_width(w);
         vg.begin_path();
@@ -1025,7 +1033,7 @@ fn draw_widths(vg: &Ctx, x: f32,
 fn draw_caps(vg: &Ctx, x: f32,
             y: f32, width: f32)
 {
-    let caps: [LineCap, ..3] = [BUTT, ROUND, SQUARE];
+    let caps: [LineCap; 3] = [LineCap::BUTT, LineCap::ROUND, LineCap::SQUARE];
     let lineWidth = 8.0;
 
     vg.save();
@@ -1041,7 +1049,7 @@ fn draw_caps(vg: &Ctx, x: f32,
     vg.fill();
 
     vg.stroke_width(lineWidth);
-    for i in range(0, 3u) {
+    for i in 0..3us {
         vg.line_cap(caps[i]);
         vg.stroke_color(rgba(0,0,0,255));
         vg.begin_path();
@@ -1056,14 +1064,14 @@ fn draw_caps(vg: &Ctx, x: f32,
 
 fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
 
     // Unpremultiply
-    for y in range(0, h) {
+    for y in (0..h) {
         //unsigned char *row = &image[y*stride];
-        let row = image.slice_mut(y*stride, y*stride + w*4);
-        for x in range(0, w) {
-            let pix = row.slice_mut(x*4, x*4 + 4);
+        let row = &mut image[y*stride..y*stride + w*4];
+        for x in (0..w) {
+            let pix = &mut row[x*4..x*4 + 4];
             let r = pix[0] as f32;
             let g = pix[1] as f32;
             let b = pix[2] as f32;
@@ -1077,8 +1085,8 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
     }
 
     // Defringe
-    for y in range(0, h) {
-        for x in range(0, w) {
+    for y in (0..h) {
+        for x in (0..w) {
             let ix = y*stride + x*4;
             let mut r = 0;
             let mut g = 0;
@@ -1122,10 +1130,10 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
 
 fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
-    for y in range(0, h) {
-        let row = image.slice_mut(y*stride, y*stride + w*4); //&image[y*stride];
-        for x in range(0, w) {
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
+    for y in (0..h) {
+        let row = &mut image[y*stride..y*stride + w*4]; //&image[y*stride];
+        for x in (0..w) {
             row[x*4+3] = a;
         }
     }
@@ -1133,16 +1141,16 @@ fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
 
 fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 {
-    let w: uint = w as uint; let h: uint = h as uint; let stride: uint = stride as uint;
-    let mut i: uint = 0;
-    let mut j: uint = h-1;
+    let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
+    let mut i: usize = 0;
+    let mut j: usize = h-1;
     while i < j {
         //let row_i = image.slice_mut(i*stride, i*stride + w*4); //&image[i * stride]; //unsigned char*
         //let row_j = image.slice_mut(j*stride, j*stride + w*4); //&image[j * stride]; //unsigned char*
         // error; can't borrow twice from the same source
-        let ix: uint = i*stride;
-        let jx: uint = j*stride;
-        for k in range(0, w*4) {
+        let ix: usize = i*stride;
+        let jx: usize = j*stride;
+        for k in (0..w*4) {
             let t       = image[ix+k];  // let t = row_i[k];
             image[ix+k] = image[jx+k];  // row_i[k] = row_j[k];
             image[jx+k] = t;            // row_j[k] = t;
@@ -1154,8 +1162,8 @@ fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
 
 pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
 {
-    let sz: uint = (w*h*4) as uint;
-    //let mut image: [u8, ..sz] = [0, ..sz];
+    let sz: usize = (w*h*4) as usize;
+    //let mut image: [u8; sz] = [0; sz];
     let mut image: Vec<u8> = Vec::with_capacity(sz);
     unsafe {image.set_len(sz);}
     assert!(image.len() == sz);
