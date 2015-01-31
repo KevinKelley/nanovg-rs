@@ -1,5 +1,5 @@
 
-#![feature(start)]
+#![feature(core, std_misc, libc, collections)] // unstable features, should be able to remove this post-rust-1.0
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variables)]
