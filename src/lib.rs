@@ -65,7 +65,7 @@ pub enum PatternRepeat {
     REPEATY                 = ffi::NVG_REPEATY,
 }
 
-pub bitflags!{
+bitflags!{
     flags Align: u32 {
         const LEFT         = ffi::NVG_ALIGN_LEFT,
         const CENTER       = ffi::NVG_ALIGN_CENTER,
@@ -77,14 +77,14 @@ pub bitflags!{
     }
 }
 
-pub bitflags!{
+bitflags!{
     flags CreationFlags: u32 {
         const ANTIALIAS        = ffi::NVG_ANTIALIAS,
         const STENCIL_STROKES  = ffi::NVG_STENCIL_STROKES
     }
 }
 
-pub bitflags!{
+bitflags!{
     flags ImageFlags: u32 {
         const GENERATE_MIPMAPS = ffi::NVG_IMAGE_GENERATE_MIPMAPS
     }
