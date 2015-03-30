@@ -1,7 +1,7 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
 #![feature(unsafe_destructor)]  // use Option instead
-#![feature(optin_builtin_traits, hash, libc, core, std_misc)] // Until 1.0, when this feature stablizes
+#![feature(optin_builtin_traits, hash, libc, core, std_misc, slice_patterns)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![deny(unused_parens)]
@@ -305,7 +305,7 @@ impl Transform {
     fn as_ptr(&self) -> *const f32 { self.array.as_ptr() }
 
     #[inline]
-    pub fn as_mut_slice<'a>(&'a mut self) -> &'a mut [f32] { self.array.as_mut_slice() }
+    pub fn as_mut_slice<'a>(&'a mut self) -> &'a mut [f32] { &mut self.array }
 
     #[inline]
     pub fn into_array(self) -> [f32; 6] { self.array }

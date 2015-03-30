@@ -5,7 +5,7 @@ unified build.rs
 */
 #![feature(io, os)]
 
-use std::old_io::Command;
+use std::process::Command;
 use std::os;
 
 fn main() {
