@@ -6,12 +6,12 @@ unified build.rs
 #![feature(io, os)]
 
 use std::process::Command;
-use std::os;
+use std::env;
 
 fn main() {
     // Build nanovg
     Command::new("make").arg("-f").arg("nanovg.mk").status().unwrap();
 
-    let out_dir = os::getenv("OUT_DIR").unwrap();
+    let out_dir = env::var("OUT_DIR").unwrap();
     println!("cargo:rustc-flags=-L native={} -l static=nanovg_shim", out_dir);
 }
