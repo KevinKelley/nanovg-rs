@@ -38,7 +38,7 @@ pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
@@ -49,6 +49,7 @@ pub struct NVGcolor {
 
 impl Copy for NVGcolor {}
 
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct NVGpaint {
     pub xform: [c_float; 6],
@@ -61,8 +62,7 @@ pub struct NVGpaint {
     pub repeat: c_int,
 }
 
-impl Copy for NVGpaint {}
-
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct NVGglyphPosition {
     pub byte_ptr: *const c_char,
@@ -71,8 +71,7 @@ pub struct NVGglyphPosition {
     pub maxx: c_float,
 }
 
-impl Copy for NVGglyphPosition {}
-
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct NVGtextRow {
     pub start: *const c_char,
@@ -83,20 +82,18 @@ pub struct NVGtextRow {
     pub maxx: c_float,
 }
 
-impl Copy for NVGtextRow {}
-
 pub type Enum_NVGtexture = c_uint;
 pub const NVG_TEXTURE_ALPHA: c_uint = 1;
 pub const NVG_TEXTURE_RGBA: c_uint = 2;
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct NVGscissor {
     pub xform: [c_float; 6],
     pub extent: [c_float; 2],
 }
 
-impl Copy for NVGscissor {}
-
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct NVGvertex {
     pub x: c_float,
@@ -104,8 +101,6 @@ pub struct NVGvertex {
     pub u: c_float,
     pub v: c_float,
 }
-
-impl Copy for NVGvertex {}
 
 #[repr(C)]
 pub struct NVGpath {

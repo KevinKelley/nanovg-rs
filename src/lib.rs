@@ -97,8 +97,6 @@ pub struct Color {
     nvg: NVGcolor
 }
 
-impl Copy for Color {}
-
 impl Color {
     #[inline]
     fn wrap(nvg: NVGcolor) -> Color { Color { nvg: nvg } }
@@ -156,8 +154,6 @@ pub struct Paint {
     nvg: NVGpaint
 }
 
-impl Copy for Paint {}
-
 impl Paint {
     #[inline]
     fn wrap(nvg: NVGpaint) -> Paint { Paint { nvg: nvg } }
@@ -175,8 +171,6 @@ impl fmt::Debug for Paint {
 pub struct Image {
     handle: c_int
 }
-
-impl Copy for Image {}
 
 impl Image {
     #[inline]
@@ -206,8 +200,6 @@ impl Font {
     #[inline]
     fn wrap(handle: c_int) -> Font { Font { handle: handle } }
 }
-
-impl Copy for Font {}
 
 impl fmt::Debug for Font {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -266,7 +258,7 @@ impl Copy for GlyphPosition {}
 
 // Transform
 
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub struct Transform {
     array: [f32; 6]
 }
@@ -564,7 +556,10 @@ impl Ctx {
     }
 
     pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
-        let c_filename = CString::from_slice(filename.as_bytes());
+        let c_filename = match CString::new(filename.as_bytes()){
+            Ok(e) => e,
+            Err(e) => return None,
+        };
         let handle = unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(), flags.bits() as c_int) };
         // stb_image returns 0 for failure; unlike fontstash which returns -1
         match handle {
@@ -681,8 +676,14 @@ impl Ctx {
     }
 
     pub fn create_font(&self, name: &str, filename: &str) -> Option<Font> {
-        let c_name = CString::from_slice(name.as_bytes());
-        let c_filename = CString::from_slice(filename.as_bytes());
+        let c_name = match CString::new(name.as_bytes()){
+            Ok(o) => o,
+            Err(_) => return None
+        };
+        let c_filename = match CString::new(filename.as_bytes()){
+            Ok(o) => o,
+            Err(_) => return None
+        };
         let handle = unsafe { ffi::nvgCreateFont(self.ptr, c_name.as_ptr(), c_filename.as_ptr()) };
         match handle {
             ffi::FONT_INVALID => None,
@@ -691,7 +692,10 @@ impl Ctx {
     }
 
     pub fn create_font_mem(&self, name: &str, data: &[u8]) -> Option<Font> {
-        let c_name = CString::from_slice(name.as_bytes());
+        let c_name = match CString::new(name.as_bytes()){
+            Ok(o) => o,
+            Err(_) => return None
+        };
         let handle = unsafe {
             ffi::nvgCreateFontMem(self.ptr, c_name.as_ptr(),
                                   data.as_ptr() as *mut u8, data.len() as c_int,
@@ -704,7 +708,10 @@ impl Ctx {
     }
 
     pub fn find_font(&self, name: &str) -> Option<Font> {
-        let c_name = CString::from_slice(name.as_bytes());
+        let c_name = match CString::new(name.as_bytes()){
+            Ok(o) => o,
+            Err(_) => return None
+        };
         let handle = unsafe { ffi::nvgFindFont(self.ptr, c_name.as_ptr()) };
         match handle {
             ffi::FONT_INVALID => None,
@@ -730,15 +737,24 @@ impl Ctx {
         unsafe { ffi::nvgFontFaceId(self.ptr, font.handle) }
     }
     pub fn font_face(&self, font: &str) {
-        let c_font = CString::from_slice(font.as_bytes());
+        let c_font = match CString::new(font.as_bytes()){
+            Ok(o) => o,
+            Err(_) => return
+        };
         unsafe { ffi::nvgFontFace(self.ptr, c_font.as_ptr()) }
     }
     pub fn text(&self, x: f32, y: f32, text: &str) -> f32 {
-        let c_text = CString::from_slice(text.as_bytes());
-            unsafe { ffi::nvgText(self.ptr, x, y, c_text.as_ptr(), ptr::null()) }
+        let c_text = match CString::new(text.as_bytes()){
+            Ok(o) => o,
+            _ => return 0.
+        };
+        unsafe { ffi::nvgText(self.ptr, x, y, c_text.as_ptr(), ptr::null()) }
     }
     pub fn text_box(&self, x: f32, y: f32, break_row_width: f32, text: &str) {
-        let c_text = CString::from_slice(text.as_bytes());
+        let c_text = match CString::new(text.as_bytes()){
+            Ok(o) => o,
+            _ => return
+        };
         unsafe { ffi::nvgTextBox(self.ptr, x, y, break_row_width, c_text.as_ptr(), ptr::null()) }
     }
     // Measures the specified text string. Parameter bounds should be a pointer to float[4],
@@ -746,19 +762,28 @@ impl Ctx {
     // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
     // Measured values are returned in local coordinate space.
     pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32; 4]) -> f32 {
-        let c_text = CString::from_slice(text.as_bytes());
+        let c_text = match CString::new(text.as_bytes()){
+            Ok(o) => o,
+            _ => return 0.
+        };
         unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), bounds.as_mut_ptr()) }
     }
     // Measures the needed advance for text, without computing complete bounds
     pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
-        let c_text = CString::from_slice(text.as_bytes());
+        let c_text = match CString::new(text.as_bytes()){
+            Ok(o) => o,
+            _ => return 0.
+        };
         unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), ptr::null_mut()) }
     }
     // Measures the specified multi-text string. Parameter bounds should be float[4],
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Measured values are returned in local coordinate space.
     pub fn text_box_bounds(&self, x: f32, y: f32, break_row_width: f32, text: &str, bounds: &mut [f32; 4]) {
-        let c_text = CString::from_slice(text.as_bytes());
+        let c_text = match CString::new(text.as_bytes()){
+            Ok(o) => o,
+            _ => return
+        };
         //let bptr: *mut f32 = match bounds {
         //    Some(vec) => { bptr = vec.as_mut_ptr() }
         //    None => ptr::null()
@@ -873,14 +898,23 @@ pub fn rad_to_deg(rad: f32) -> f32 {
 // image-write functions from nanovg/examples/stb_image_write.h
 //
 pub fn write_png(filename: &str, w: u32, h: u32, comp: i32, data: *const u8, stride_in_bytes: u32) -> i32 {
-    let c_filename = CString::from_slice(filename.as_bytes());
+    let c_filename = match CString::new(filename.as_bytes()){
+        Ok(o) => o,
+        _ => return 0
+    };
     unsafe { ffi::stbi_write_png(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
 }
 pub fn write_bmp(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = CString::from_slice(filename.as_bytes());
+    let c_filename = match CString::new(filename.as_bytes()){
+        Ok(o) => o,
+        _ => return 0
+    };
     unsafe { ffi::stbi_write_bmp(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }
 pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = CString::from_slice(filename.as_bytes());
+    let c_filename = match CString::new(filename.as_bytes()){
+        Ok(o) => o,
+        _ => return 0
+    };
     unsafe { ffi::stbi_write_tga(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }
