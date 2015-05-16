@@ -459,7 +459,7 @@ impl fmt::Debug for Ctx {
     }
 }
 
-#[unsafe_destructor]
+//#[unsafe_destructor]
 impl Drop for Ctx {
     fn drop(&mut self) {
         self.delete_gl3();
