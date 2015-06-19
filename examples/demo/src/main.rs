@@ -82,7 +82,7 @@ fn main()
    	let vg: nanovg::Ctx = nanovg::Ctx::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	//assert!(!vg.ptr.is_null());
 
-    let data = demo::DemoData::load(&vg, "../../res");
+    let data = demo::DemoData::load(&vg, "res");
 
 //    return test_linebreaks(vg);
 
