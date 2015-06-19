@@ -1,6 +1,6 @@
 extern crate gl;
+extern crate libc;
 
-use std::num::*;
 use std::vec::Vec;
 
 use nanovg::*;
@@ -47,20 +47,20 @@ impl DemoData {
     pub fn load(vg: &Ctx, res_path: &str) -> DemoData
     {
         let mut images: Vec<Image> = Vec::new();
-        for i in 0..12us {
+        for i in 0..12 {
             let filename = format!{"{}/images/image{}.jpg", res_path, i+1};
-            let img = vg.create_image(filename.as_slice())
-                .expect(format!{"Could not load {}.", filename}.as_slice());
+            let img = vg.create_image(filename.as_str())
+                .expect(format!{"Could not load {}.", filename}.as_str());
             images.push(img);
         }
 
-        let fontIcons = vg.create_font("icons", format!{"{}/entypo.ttf", res_path}.as_slice())
+        let fontIcons = vg.create_font("icons", format!{"{}/entypo.ttf", res_path}.as_str())
             .expect("Could not add font 'icons'.");
 
-        let fontNormal = vg.create_font("sans", format!{"{}/Roboto-Regular.ttf", res_path}.as_slice())
+        let fontNormal = vg.create_font("sans", format!{"{}/Roboto-Regular.ttf", res_path}.as_str())
             .expect("Could not add font 'sans'.");
 
-        let fontBold = vg.create_font("sans-bold", format!{"{}/Roboto-Bold.ttf", res_path}.as_slice())
+        let fontBold = vg.create_font("sans-bold", format!{"{}/Roboto-Bold.ttf", res_path}.as_str())
             .expect("Could not add font 'sans-bold'.");
 
 
@@ -208,7 +208,7 @@ fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,64));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+h*0.55, y+h*0.55, cp_to_utf8(ICON_SEARCH).as_slice());
+    vg.text(x+h*0.55, y+h*0.55, cp_to_utf8(ICON_SEARCH).as_str());
 
     vg.font_size(20.0);
     vg.font_face("sans");
@@ -221,7 +221,7 @@ fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,32));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+w-h*0.55, y+h*0.55, cp_to_utf8(ICON_CIRCLED_CROSS).as_slice());
+    vg.text(x+w-h*0.55, y+h*0.55, cp_to_utf8(ICON_CIRCLED_CROSS).as_str());
 }
 
 fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -249,7 +249,7 @@ fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,64));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+w-h*0.5, y+h*0.5, cp_to_utf8(ICON_CHEVRON_RIGHT).as_slice());
+    vg.text(x+w-h*0.5, y+h*0.5, cp_to_utf8(ICON_CHEVRON_RIGHT).as_str());
 }
 
 fn draw_label(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -365,7 +365,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
     if preicon != NO_ICON {
         vg.font_size(h*1.3);
         vg.font_face("icons");
-        iw = vg.text_bounds(0.0,0.0, cp_to_utf8(preicon).as_slice(), &mut bounds);
+        iw = vg.text_bounds(0.0,0.0, cp_to_utf8(preicon).as_str(), &mut bounds);
         iw += h*0.15;
     }
 
@@ -374,7 +374,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
         vg.font_face("icons");
         vg.fill_color(rgba(255,255,255,96));
         vg.text_align(LEFT|MIDDLE);
-        vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cp_to_utf8(preicon).as_slice());
+        vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cp_to_utf8(preicon).as_str());
     }
 
     vg.font_size(20.0);
@@ -510,7 +510,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     samples[4] = (1.0+sin(t*1.6245+cos(t*0.254)*0.3))*0.5;
     samples[5] = (1.0+sin(t*0.345+cos(t*0.03)*0.6))*0.5;
 
-    for i in 0..6us {
+    for i in 0..6 {
         sx[i] = x+ (i as f32)*dx;
         sy[i] = y+h*samples[i]*0.8;
     }
@@ -519,7 +519,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     let bg = vg.linear_gradient(x,y,x,y+h, rgba(0,160,192,0), rgba(0,160,192,64));
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in 1..6us {
+    for i in 1..6 {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.line_to(x+w, y+h);
@@ -530,7 +530,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     // Graph line
     vg.begin_path();
     vg.move_to(sx[0], sy[0]+2.0);
-    for i in 1..6us {
+    for i in 1..6 {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1]+2.0, sx[i]-dx*0.5,sy[i]+2.0, sx[i],sy[i]+2.0);
     }
     vg.stroke_color(rgba(0,0,0,32));
@@ -539,7 +539,7 @@ fn draw_graph(vg: &Ctx, x: f32,
 
     vg.begin_path();
     vg.move_to(sx[0], sy[0]);
-    for i in 1..6us {
+    for i in 1..6 {
         vg.bezier_to(sx[i-1]+dx*0.5,sy[i-1], sx[i]-dx*0.5,sy[i], sx[i],sy[i]);
     }
     vg.stroke_color(rgba(0,160,192,255));
@@ -547,7 +547,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     vg.stroke();
 
     // Graph sample pos
-    for i in 0..6us {
+    for i in 0..6 {
         let bg = vg.radial_gradient(sx[i],sy[i]+2.0, 3.0,8.0, rgba(0,0,0,32), rgba(0,0,0,0));
         vg.begin_path();
         vg.rect(sx[i]-10.0, sy[i]-10.0+2.0, 20.0,20.0);
@@ -556,13 +556,13 @@ fn draw_graph(vg: &Ctx, x: f32,
     }
 
     vg.begin_path();
-    for i in 0..6us {
+    for i in 0..6 {
         vg.circle(sx[i], sy[i], 4.0);
     }
     vg.fill_color(rgba(0,160,192,255));
     vg.fill();
     vg.begin_path();
-    for i in 0..6us {
+    for i in 0..6 {
         vg.circle(sx[i], sy[i], 2.0);
     }
     vg.fill_color(rgba(220,220,220,255));
@@ -739,7 +739,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     let r0 = r1 - 20.0;
     let aeps = 0.5 / r1;    // half a pixel arc length in radians (2pi cancels out).
 
-    for i in 0..6us {
+    for i in 0..6 {
         let a0 = (i as f32) / 6.0 * PI * 2.0 - aeps;
         let a1 = ((i as f32)+1.0) / 6.0 * PI * 2.0 + aeps;
         vg.begin_path();
@@ -842,8 +842,8 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
     pts[6] = s*0.25 + cos(-t*0.3) * s*0.5;
     pts[7] = sin(-t*0.3) * s*0.5;
 
-    for i in 0..3us {
-        for j in 0..3us {
+    for i in 0..3 {
+        for j in 0..3 {
             let fx = x + s*0.5 + ((i as f32)*3.0+(j as f32))/9.0*w + pad;
             let fy = y - s*0.5 + pad;
 
@@ -957,7 +957,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
         vg.font_size(13.0);
         vg.text_align(RIGHT|MIDDLE);
 
-        vg.text_bounds(gx,gy, txt.as_slice(), &mut bounds);
+        vg.text_bounds(gx,gy, txt.as_str(), &mut bounds);
 
         vg.begin_path();
         vg.fill_color(rgba(255,192,0,255));
@@ -970,7 +970,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
         vg.fill();
 
         vg.fill_color(rgba(32,32,32,255));
-        vg.text(gx,gy, txt.as_slice());
+        vg.text(gx,gy, txt.as_str());
     }
 
     y += 20.0;
@@ -1017,7 +1017,7 @@ fn draw_widths(vg: &Ctx, x: f32,
 
     vg.stroke_color(rgba(0,0,0,255));
 
-    for i in 0..20us {
+    for i in 0..20 {
         let w = ((i as f32)+0.5)*0.1;
         vg.stroke_width(w);
         vg.begin_path();
@@ -1049,7 +1049,7 @@ fn draw_caps(vg: &Ctx, x: f32,
     vg.fill();
 
     vg.stroke_width(lineWidth);
-    for i in 0..3us {
+    for i in 0..3 {
         vg.line_cap(caps[i]);
         vg.stroke_color(rgba(0,0,0,255));
         vg.begin_path();
@@ -1177,5 +1177,5 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
         set_alpha(image.as_mut_slice(), w, h, w*4, 255);
     }
     flip_image(image.as_mut_slice(), w, h, w*4);
-     write_png(name, w, h, 4, &image.as_slice()[0], w*4);
+     write_png(name, w, h, 4, &image[0], w*4);
 }

@@ -7,7 +7,7 @@ authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 name = "example"
 path = "src/main.rs"
 
-[dependencies.num]
+[dependencies.libc]
 version = "*"
 
 [dependencies.nanovg]

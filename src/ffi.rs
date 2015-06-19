@@ -38,7 +38,7 @@ pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
@@ -46,8 +46,6 @@ pub struct NVGcolor {
     pub b: c_float,
     pub a: c_float
 }
-
-impl Copy for NVGcolor {}
 
 #[derive(Clone, Debug)]
 #[repr(C)]

@@ -3,7 +3,6 @@ At this stage this build script is just a shim to get the old build script
 working. At some point they'll both need to be refactored into a single
 unified build.rs
 */
-#![feature(io, os)]
 
 use std::process::Command;
 use std::env;

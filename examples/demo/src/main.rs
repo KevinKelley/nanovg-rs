@@ -1,11 +1,9 @@
-
-#![feature(core, std_misc, libc, collections)] // unstable features, should be able to remove this post-rust-1.0
+#![feature(collections, convert)] // unstable features, should be able to remove this post-rust-1.0
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
 
-extern crate num;
 extern crate libc;
 
 extern crate glfw;
@@ -15,7 +13,6 @@ extern crate nanovg;
 use glfw::Context;
 use std::cell::Cell; // for glfw error count
 use nanovg::Ctx;
-
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck {
@@ -66,9 +63,9 @@ fn main()
 
 
 	glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
- 	glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
- 	glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
- 	glfw.window_hint(glfw::WindowHint::OpenglDebugContext(true));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlDebugContext(true));
 
     let (mut window, events) = glfw.create_window(1100, 800, "NanoVG GL3 Rust demo", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");

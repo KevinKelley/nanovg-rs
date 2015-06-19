@@ -1,5 +1,4 @@
 use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, Color};
-use std::f32;
 
 // convenience forwarders
 fn rgba(r:u8, g:u8, b:u8, a:u8) -> Color { Color::rgba(r,g,b,a) }
@@ -90,7 +89,7 @@ impl PerfGraph
 			vg.font_size(14.0);
 			vg.text_align(LEFT|TOP);
 			vg.fill_color(rgba(240,240,240,192));
-			vg.text(x+3.0,y+1.0, self.name.as_slice());
+			vg.text(x+3.0,y+1.0, self.name.as_str());
 		}
 
 		match self.style {
@@ -98,24 +97,24 @@ impl PerfGraph
     			vg.font_size(18.0);
     			vg.text_align(RIGHT|TOP);
     			vg.fill_color(rgba(240,240,240,255));
-                let num_str = f32::to_str_exact(1.0 / avg, 2);
+                let num_str = format!("{:.*e}", 2, 1.0 / avg);
     			let txt = format!("{} FPS", num_str);
-    			vg.text(x+w-3.0,y+1.0, txt.as_slice());
+    			vg.text(x+w-3.0,y+1.0, txt.as_str());
 
     			vg.font_size(15.0);
     			vg.text_align(RIGHT|BOTTOM);
     			vg.fill_color(rgba(240,240,240,160));
-                let num_str = f32::to_str_exact(avg * 1000.0, 3);
+                let num_str = format!("{:.*e}", 3, avg * 1000.0);
     			let txt = format!("{} ms", num_str);
-    			vg.text(x+w-3.0,y+h-1.0, txt.as_slice());
+    			vg.text(x+w-3.0,y+h-1.0, txt.as_str());
             }
             _ => {
                 vg.font_size(18.0);
                 vg.text_align(RIGHT|TOP);
                 vg.fill_color(rgba(240,240,240,255));
-                let num_str = f32::to_str_exact(avg * 1000.0, 3);
+                let num_str = format!("{:.*e}", 3, avg * 1000.0);
                 let txt = format!("{} ms", num_str);
-                vg.text(x+w-3.0,y+1.0, txt.as_slice());
+                vg.text(x+w-3.0,y+1.0, txt.as_str());
             }
 		}
 

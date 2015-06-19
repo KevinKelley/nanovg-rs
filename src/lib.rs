@@ -1,18 +1,16 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(unsafe_destructor)]  // use Option instead
-#![feature(optin_builtin_traits, hash, libc, core, std_misc, slice_patterns)] // Until 1.0, when this feature stablizes
+#![feature(optin_builtin_traits, libc, slice_patterns)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![deny(unused_parens)]
-#![deny(non_upper_case_globals)]
 #![allow(unused_qualifications)]
-//#![warn(missing_doc)]
-#![deny(unused_results)]
 #![allow(unused_imports)]
 #![allow(unused_attributes)]
-#![deny(unused_typecasts)]
 #![allow(dead_code)]
+//#![warn(missing_doc)]
+#![deny(unused_parens)]
+#![deny(non_upper_case_globals)]
+#![deny(unused_results)]
 
 #[macro_use]
 extern crate bitflags;
@@ -22,7 +20,6 @@ use std::fmt;
 use std::ptr;
 use std::str;
 use std::ffi::CString;
-use std::num::ToPrimitive;
 
 use libc::{c_char, c_int, c_void, c_float};
 
@@ -92,7 +89,7 @@ bitflags!{
 
 // Color
 
-#[derive(Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }
@@ -459,7 +456,6 @@ impl fmt::Debug for Ctx {
     }
 }
 
-//#[unsafe_destructor]
 impl Drop for Ctx {
     fn drop(&mut self) {
         self.delete_gl3();
@@ -558,7 +554,7 @@ impl Ctx {
     pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
         let c_filename = match CString::new(filename.as_bytes()){
             Ok(e) => e,
-            Err(e) => return None,
+            Err(_) => return None,
         };
         let handle = unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(), flags.bits() as c_int) };
         // stb_image returns 0 for failure; unlike fontstash which returns -1
