@@ -1,8 +1,7 @@
-#![allow(non_snake_case)]
+#![allow(non_snake_case, non_camel_case_types)]
 
-use libc::{c_double, c_float, c_int, c_char};
-use libc::{c_uint, c_ushort, c_uchar, c_void};
-use std::marker;
+use libc::{c_float, c_int, c_char};
+use libc::{c_uint, c_uchar, c_void};
 
 pub const FONT_INVALID: c_int = -1;
 pub const STB_IMAGE_INVALID: c_int = 0;
@@ -238,34 +237,28 @@ extern {
     pub fn nvgInternalParams(ctx: *mut NVGcontext) -> *mut NVGparams;
     pub fn nvgDebugDumpPathCache(ctx: *mut NVGcontext);
 
+    #[cfg(feature = "gl2")]
+    pub fn nvgCreateGL2(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gl2")]
+    pub fn nvgDeleteGL2(ctx: *mut NVGcontext);
 
-    // GL version specific
-
-    //// Creates NanoVG contexts for different OpenGL (ES) versions.
-    //// Flags should be combination of the create flags above.
-
-    //#if defined NANOVG_GL2
-    //struct NVGcontext* nvgCreateGL2(isize flags);
-    //void nvgDeleteGL2(struct NVGcontext* ctx);
-
-    //#if defined NANOVG_GL3
+    #[cfg(feature = "gl3")]
     pub fn nvgCreateGL3(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gl3")]
     pub fn nvgDeleteGL3(ctx: *mut NVGcontext);
 
-    //#if defined NANOVG_GLES2
-    //struct NVGcontext* nvgCreateGLES2(isize flags);
-    //void nvgDeleteGLES2(struct NVGcontext* ctx);
+    #[cfg(feature = "gles2")]
+    pub fn nvgCreateGLES2(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gles2")]
+    pub fn nvgDeleteGLES2(ctx: *mut NVGcontext);
 
-    //#if defined NANOVG_GLES3
-    //pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
-    //pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
+    #[cfg(feature = "gles3")]
+    pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gles3")]
+    pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
 
-
-
+    /* TODO: these are part of example code, should we export them? */
     pub fn stbi_write_png(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void, stride_in_bytes: c_int) -> c_int;
     pub fn stbi_write_bmp(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
     pub fn stbi_write_tga(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
 }
-
-#[link(name = "nanovg_shim", kind = "static")]
-extern "C" {}

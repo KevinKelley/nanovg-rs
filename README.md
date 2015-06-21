@@ -22,14 +22,12 @@ for nanovg functions, and which statically links in those functions.
 NanoVG only does the graphics drawing, though; you'll need to be
 getting a GL context from somewhere.  The examples use GLFW.
 
-Premake4 is required for building NanoVG itself.
-
 Examples require GLFW3 to be installed.
 
 Building
 ========
 
-Build using cargo:
+Build using Cargo:
 
     git clone https://github.com/KevinKelley/nanovg-rs
     cd nanovg-rs
@@ -48,6 +46,20 @@ In the demo,
 - 'p' switches between pre- and un-premultiplied alpha;
 - 's' saves a screenshot;
 - and 'space' toggles scale/rotate of the pseudo-window stuff.
+
+Usage
+=====
+
+Add the following to `Cargo.toml`:
+
+```toml
+[dependencies.nanovg]
+version = "*"
+features = ["glX"]
+```
+
+where `glX` should be exactly one of `gl2`, `gl3`, `gles2` or `gles3`,
+to specify the version of OpenGL for which NanoVG should be built.
 
 Used By
 =======

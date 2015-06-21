@@ -1,6 +1,6 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(optin_builtin_traits, libc, slice_patterns)] // Until 1.0, when this feature stablizes
+#![feature(optin_builtin_traits, slice_patterns)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_qualifications)]
@@ -464,14 +464,52 @@ impl Drop for Ctx {
 }
 
 impl Ctx {
+    #[cfg(feature = "gl2")]
+    pub fn create_gl2(flags: CreationFlags) -> Ctx {
+        Ctx {
+            ptr: unsafe { ffi::nvgCreateGL2(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gl2")]
+    fn delete_gl2(&self) {
+        unsafe { ffi::nvgDeleteGL2(self.ptr) }
+    }
+
+    #[cfg(feature = "gl3")]
     pub fn create_gl3(flags: CreationFlags) -> Ctx {
         Ctx {
             ptr: unsafe { ffi::nvgCreateGL3(flags.bits) }
         }
     }
 
+    #[cfg(feature = "gl3")]
     fn delete_gl3(&self) {
         unsafe { ffi::nvgDeleteGL3(self.ptr) }
+    }
+
+    #[cfg(feature = "gles2")]
+    pub fn create_gles2(flags: CreationFlags) -> Ctx {
+        Ctx {
+            ptr: unsafe { ffi::nvgCreateGLES2(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gles2")]
+    fn delete_gles2(&self) {
+        unsafe { ffi::nvgDeleteGLES2(self.ptr) }
+    }
+
+    #[cfg(feature = "gles3")]
+    pub fn create_gles3(flags: CreationFlags) -> Ctx {
+        Ctx {
+            ptr: unsafe { ffi::nvgCreateGLES3(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gles3")]
+    fn delete_gles3(&self) {
+        unsafe { ffi::nvgDeleteGLES3(self.ptr) }
     }
 
     pub fn begin_frame(&self, window_width: i32, window_height: i32, device_pixel_ratio: f32) {

@@ -1,16 +1,17 @@
-/*
-At this stage this build script is just a shim to get the old build script
-working. At some point they'll both need to be refactored into a single
-unified build.rs
-*/
+extern crate gcc;
 
-use std::process::Command;
 use std::env;
 
 fn main() {
-    // Build nanovg
-    Command::new("make").arg("-f").arg("nanovg.mk").status().unwrap();
-
-    let out_dir = env::var("OUT_DIR").unwrap();
-    println!("cargo:rustc-flags=-L native={} -l static=nanovg_shim", out_dir);
+    let mut config = gcc::Config::new();
+    config.include("nanovg/src");
+    config.include("nanovg/example");
+    config.file("nanovg/src/nanovg.c");
+    config.file("src/nanovg_shim.c");
+    for feature in &["GL2", "GL3", "GLES2", "GLES3"] {
+        if env::var(format!("CARGO_FEATURE_{}", feature)).is_ok() {
+            config.define(&format!("NANOVG_{}_IMPLEMENTATION", feature), None);
+        }
+    }
+    config.compile("libnanovg.a")
 }

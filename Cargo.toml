@@ -7,5 +7,15 @@ build = "build.rs"
 [lib]
 name = "nanovg"
 
+[features]
+gl2 = []
+gl3 = []
+gles2 = []
+gles3 = []
+
 [dependencies]
+libc = "*"
 bitflags = "0.1"
+
+[build-dependencies]
+gcc = "*"

@@ -1,4 +1,3 @@
-#define NANOVG_GL3_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #if defined(__APPLE__)
@@ -10,8 +9,6 @@
 #else
 #include <GL/gl.h>
 #endif
-
-#include <GLFW/glfw3.h>
 
 #include <nanovg.h>
 
