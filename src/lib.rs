@@ -30,21 +30,21 @@ use ffi::NVGtextRow;
 
 mod ffi;
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
@@ -54,7 +54,7 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
@@ -89,7 +89,7 @@ bitflags!{
 
 // Color
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }
@@ -213,7 +213,7 @@ impl fmt::Debug for Font {
 
 // TextRow
 
-#[derive(PartialEq,Debug,Clone)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct TextRow {
     start_index: usize,
     end_index: usize,
@@ -232,11 +232,9 @@ impl TextRow {
     pub fn maxx(&self) -> f32 { self.maxx }
 }
 
-impl Copy for TextRow {}
-
 // GlyphPosition
 
-#[derive(PartialEq,Debug,Clone)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct GlyphPosition {
     byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position
@@ -250,8 +248,6 @@ impl GlyphPosition {
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
 }
-
-impl Copy for GlyphPosition {}
 
 // Transform
 
