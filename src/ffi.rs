@@ -118,22 +118,22 @@ pub struct NVGpath {
 pub struct NVGparams {
     pub userPtr: *mut c_void,
     pub edgeAntiAlias: c_int,
-    pub renderCreate: Option<extern "C" fn (arg1: *mut c_void) -> c_int>,
-    pub renderCreateTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: *const c_uchar) -> c_int>,
-    pub renderDeleteTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int) -> c_int>,
-    pub renderUpdateTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: *const c_uchar) -> c_int>,
-    pub renderGetTextureSize: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: *mut c_int, arg4: *mut c_int) -> c_int>,
-    pub renderViewport: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int)>,
-    pub renderFlush: Option<extern "C" fn (arg1: *mut c_void)>,
-    pub renderFill: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: *const c_float, arg6: *const NVGpath, arg7: c_int)>,
-    pub renderStroke: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: c_float, arg6: *const NVGpath, arg7: c_int)>,
-    pub renderTriangles: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: *const NVGvertex, arg5: c_int)>,
-    pub renderDelete: Option<extern "C" fn (arg1: *mut c_void)>,
+    pub renderCreate: Option<extern fn (arg1: *mut c_void) -> c_int>,
+    pub renderCreateTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: *const c_uchar) -> c_int>,
+    pub renderDeleteTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int) -> c_int>,
+    pub renderUpdateTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: *const c_uchar) -> c_int>,
+    pub renderGetTextureSize: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: *mut c_int, arg4: *mut c_int) -> c_int>,
+    pub renderViewport: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int)>,
+    pub renderFlush: Option<extern fn (arg1: *mut c_void)>,
+    pub renderFill: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: *const c_float, arg6: *const NVGpath, arg7: c_int)>,
+    pub renderStroke: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: c_float, arg6: *const NVGpath, arg7: c_int)>,
+    pub renderTriangles: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: *const NVGvertex, arg5: c_int)>,
+    pub renderDelete: Option<extern fn (arg1: *mut c_void)>,
 }
 
 
 #[link(name = "nanovg", kind = "static")]
-extern "C" {
+extern {
     pub fn nvgBeginFrame(ctx: *mut NVGcontext, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float);
     pub fn nvgEndFrame(ctx: *mut NVGcontext);
 
