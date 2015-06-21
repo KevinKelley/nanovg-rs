@@ -15,7 +15,7 @@ gles3 = []
 
 [dependencies]
 libc = "*"
-bitflags = "0.1"
+bitflags = "0.2"
 
 [build-dependencies]
-gcc = "*"
+gcc = "0.3"
