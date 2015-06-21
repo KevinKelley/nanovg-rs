@@ -1,4 +1,4 @@
-use nanovg::{Ctx, LEFT,RIGHT,TOP,BOTTOM, Color};
+use nanovg::{Context, LEFT,RIGHT,TOP,BOTTOM, Color};
 
 // convenience forwarders
 fn rgba(r:u8, g:u8, b:u8, a:u8) -> Color { Color::rgba(r,g,b,a) }
@@ -45,7 +45,7 @@ impl PerfGraph
 		self.values[((self.head+self.count) % CAP) as usize] = frameTime as f32;
 	}
 
-	pub fn render(&self, vg: &Ctx, x: f32, y: f32)
+	pub fn render(&self, vg: &Context, x: f32, y: f32)
 	{
 		let avg = self.get_graph_average();
 

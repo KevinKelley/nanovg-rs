@@ -10,9 +10,9 @@ extern crate glfw;
 extern crate gl;
 extern crate nanovg;
 
-use glfw::Context;
+use glfw::Context as GlfwContext;
 use std::cell::Cell; // for glfw error count
-use nanovg::Ctx;
+use nanovg::Context;
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck {
@@ -79,7 +79,7 @@ fn main()
     glcheck!(gl::load_with(|name| window.get_proc_address(name)));
     init_gl();
 
-   	let vg: nanovg::Ctx = nanovg::Ctx::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
+   	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	//assert!(!vg.ptr.is_null());
 
     let data = demo::DemoData::load(&vg, "res");
@@ -164,7 +164,7 @@ fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
 }
 
 //// think linebreaks api needs some love
-//fn test_linebreaks(vg:Ctx) {
+//fn test_linebreaks(vg:Context) {
 //    let x=0.0; let y=0.0;
 //    let width = 120.0;
 //

@@ -182,7 +182,7 @@ impl fmt::Debug for Image {
 
 //impl Drop for Image {
 //    fn drop(&mut self) {
-//        Ctx::delete_image(nvg, self.handle);
+//        Context::delete_image(nvg, self.handle);
 //        self.handle = ffi::STB_IMAGE_INVALID;
 //    }
 //}
@@ -436,33 +436,33 @@ impl Transform {
     }
 }
 
-// Ctx
+// Context
 
-pub struct Ctx {
+pub struct Context {
     ptr: *mut ffi::NVGcontext
 }
 
-impl !Send for Ctx {}
+impl !Send for Context {}
 
-impl !Sync for Ctx {}
+impl !Sync for Context {}
 
-impl fmt::Debug for Ctx {
+impl fmt::Debug for Context {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "NVGcontext @ {:?}", self.ptr)
     }
 }
 
-impl Drop for Ctx {
+impl Drop for Context {
     fn drop(&mut self) {
         self.delete_gl3();
         self.ptr = ptr::null_mut();
     }
 }
 
-impl Ctx {
+impl Context {
     #[cfg(feature = "gl2")]
-    pub fn create_gl2(flags: CreationFlags) -> Ctx {
-        Ctx {
+    pub fn create_gl2(flags: CreationFlags) -> Context {
+        Context {
             ptr: unsafe { ffi::nvgCreateGL2(flags.bits) }
         }
     }
@@ -473,8 +473,8 @@ impl Ctx {
     }
 
     #[cfg(feature = "gl3")]
-    pub fn create_gl3(flags: CreationFlags) -> Ctx {
-        Ctx {
+    pub fn create_gl3(flags: CreationFlags) -> Context {
+        Context {
             ptr: unsafe { ffi::nvgCreateGL3(flags.bits) }
         }
     }
@@ -485,8 +485,8 @@ impl Ctx {
     }
 
     #[cfg(feature = "gles2")]
-    pub fn create_gles2(flags: CreationFlags) -> Ctx {
-        Ctx {
+    pub fn create_gles2(flags: CreationFlags) -> Context {
+        Context {
             ptr: unsafe { ffi::nvgCreateGLES2(flags.bits) }
         }
     }
@@ -497,8 +497,8 @@ impl Ctx {
     }
 
     #[cfg(feature = "gles3")]
-    pub fn create_gles3(flags: CreationFlags) -> Ctx {
-        Ctx {
+    pub fn create_gles3(flags: CreationFlags) -> Context {
+        Context {
             ptr: unsafe { ffi::nvgCreateGLES3(flags.bits) }
         }
     }

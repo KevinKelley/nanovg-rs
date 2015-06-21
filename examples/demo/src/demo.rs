@@ -35,7 +35,7 @@ fn hsla(h:f32, s:f32, l:f32, a:u8) -> Color { Color::hsla(h,s,l,a) }
 fn cp_to_utf8(cp:char) -> String { format!{"{}", cp} }
 
 pub struct DemoData {
-    //vg: &Ctx,
+    //vg: &Context,
     fontNormal: Font,
     fontBold: Font,
     fontIcons: Font,
@@ -44,7 +44,7 @@ pub struct DemoData {
 
 /// load and hold resources used in demo
 impl DemoData {
-    pub fn load(vg: &Ctx, res_path: &str) -> DemoData
+    pub fn load(vg: &Context, res_path: &str) -> DemoData
     {
         let mut images: Vec<Image> = Vec::new();
         for i in 0..12 {
@@ -75,7 +75,7 @@ impl DemoData {
 
 
 
-pub fn render_demo(vg: &Ctx, mx: f32, my: f32, width: f32, height: f32, t: f32, blowup: bool, data: &DemoData)
+pub fn render_demo(vg: &Context, mx: f32, my: f32, width: f32, height: f32, t: f32, blowup: bool, data: &DemoData)
 {
     draw_eyes(vg, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
     draw_paragraph(vg, width - 450.0, 50.0, 150.0, 100.0, mx, my);
@@ -138,7 +138,7 @@ fn is_black(col: Color) -> bool {
     col.r() == 0.0 && col.g() == 0.0 && col.b() == 0.0 && col.a() == 0.0
 }
 
-fn draw_window(vg: &Ctx, title: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_window(vg: &Context, title: &str, x: f32, y: f32, w: f32, h: f32)
 {
     let cornerRadius = 3.0;
 
@@ -188,7 +188,7 @@ fn draw_window(vg: &Ctx, title: &str, x: f32, y: f32, w: f32, h: f32)
     vg.restore();
 }
 
-fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_searchbox(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
 {
     let cornerRadius = h/2.0 - 1.0;
 
@@ -224,7 +224,7 @@ fn draw_searchbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.text(x+w-h*0.55, y+h*0.55, cp_to_utf8(ICON_CIRCLED_CROSS).as_str());
 }
 
-fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_dropdown(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
 {
     let cornerRadius = 4.0;
 
@@ -252,7 +252,7 @@ fn draw_dropdown(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.text(x+w-h*0.5, y+h*0.5, cp_to_utf8(ICON_CHEVRON_RIGHT).as_str());
 }
 
-fn draw_label(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_label(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
 {
     vg.font_size(18.0);
     vg.font_face("sans");
@@ -262,7 +262,7 @@ fn draw_label(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.text(x,y+h*0.5,text);
 }
 
-fn draw_editbox_base(vg: &Ctx, x: f32, y: f32, w: f32, h: f32)
+fn draw_editbox_base(vg: &Context, x: f32, y: f32, w: f32, h: f32)
 {
     // Edit
     let bg = vg.box_gradient(x+1.0,y+1.0+1.5, w-2.0,h-2.0, 3.0,4.0, rgba(255,255,255,32), rgba(32,32,32,32));
@@ -277,7 +277,7 @@ fn draw_editbox_base(vg: &Ctx, x: f32, y: f32, w: f32, h: f32)
     vg.stroke();
 }
 
-fn draw_editbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_editbox(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
 {
     draw_editbox_base(vg, x,y, w,h);
 
@@ -288,7 +288,7 @@ fn draw_editbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.text(x+h*0.3,y+h*0.5,text);
 }
 
-fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_editbox_num(vg: &Context, text: &str, units: &str, x: f32, y: f32, w: f32, h: f32)
 {
     draw_editbox_base(vg, x,y, w,h);
 
@@ -308,7 +308,7 @@ fn draw_editbox_num(vg: &Ctx, text: &str, units: &str, x: f32, y: f32, w: f32, h
     vg.text(x+w-uw-h*0.5,y+h*0.5,text);
 }
 
-fn draw_checkbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
+fn draw_checkbox(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
 {
     vg.font_size(18.0);
     vg.font_face("sans");
@@ -330,7 +330,7 @@ fn draw_checkbox(vg: &Ctx, text: &str, x: f32, y: f32, w: f32, h: f32)
 //    vg.text(x+9+2, y+h*0.5, cp_to_utf8(ICON_CHECK,icon), NULL);
 }
 
-fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: Color)
+fn draw_button(vg: &Context, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f32, col: Color)
 {
     let cornerRadius = 4.0;
 
@@ -386,7 +386,7 @@ fn draw_button(vg: &Ctx, preicon: char, text: &str, x: f32, y: f32, w: f32, h: f
     vg.text(x+w*0.5-tw*0.5+iw*0.25,y+h*0.5,text);
 }
 
-fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
+fn draw_slider(vg: &Context, pos: f32, x: f32, y: f32, w: f32, h: f32)
 {
     let cy: f32 = y+floor(h*0.5);
     let kr: f32 = floor(h*0.25);
@@ -427,7 +427,7 @@ fn draw_slider(vg: &Ctx, pos: f32, x: f32, y: f32, w: f32, h: f32)
     vg.restore();
 }
 
-fn draw_eyes(vg: &Ctx, x: f32,
+fn draw_eyes(vg: &Context, x: f32,
             y: f32, w: f32,
             h: f32, mx: f32,
             my: f32, t: f32)
@@ -494,7 +494,7 @@ fn draw_eyes(vg: &Ctx, x: f32,
     vg.fill();
 }
 
-fn draw_graph(vg: &Ctx, x: f32,
+fn draw_graph(vg: &Context, x: f32,
              y: f32, w: f32,
              h: f32, t: f32)
 {
@@ -571,7 +571,7 @@ fn draw_graph(vg: &Ctx, x: f32,
     vg.stroke_width(1.0);
 }
 
-fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
+fn draw_spinner(vg: &Context, cx: f32, cy: f32, r: f32, t: f32)
 {
     let a0 = 0.0 + t*6.0;
     let a1 = PI + t*6.0;
@@ -595,7 +595,7 @@ fn draw_spinner(vg: &Ctx, cx: f32, cy: f32, r: f32, t: f32)
     vg.restore();
 }
 
-fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
+fn draw_thumbnails(vg: &Context, x: f32, y: f32, w: f32, h: f32,
                   images: &Vec<Image>, t: f32)
 {
     let nimages = images.len();
@@ -719,7 +719,7 @@ fn draw_thumbnails(vg: &Ctx, x: f32, y: f32, w: f32, h: f32,
     vg.restore();
 }
 
-fn draw_colorwheel(vg: &Ctx, x: f32,
+fn draw_colorwheel(vg: &Context, x: f32,
                   y: f32, w: f32,
                   h: f32, t: f32)
 {
@@ -824,7 +824,7 @@ fn draw_colorwheel(vg: &Ctx, x: f32,
     vg.restore();
 }
 
-fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
+fn draw_lines(vg: &Context, x: f32, y: f32, w: f32, h: f32, t: f32)
 {
     let pad = 5.0;
     let s = w/9.0 - pad*2.0;
@@ -877,7 +877,7 @@ fn draw_lines(vg: &Ctx, x: f32, y: f32, w: f32, h: f32, t: f32)
     vg.restore();
 }
 
-fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my: f32)
+fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32, my: f32)
 {
     let mut y:f32 = y;
     let text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.";
@@ -1009,7 +1009,7 @@ fn draw_paragraph(vg: &Ctx, x: f32, y: f32, width: f32, height: f32, mx: f32, my
     vg.restore();
 }
 
-fn draw_widths(vg: &Ctx, x: f32,
+fn draw_widths(vg: &Context, x: f32,
               y: f32, width: f32)
 {
     vg.save();
@@ -1030,7 +1030,7 @@ fn draw_widths(vg: &Ctx, x: f32,
     vg.restore();
 }
 
-fn draw_caps(vg: &Ctx, x: f32,
+fn draw_caps(vg: &Context, x: f32,
             y: f32, width: f32)
 {
     let caps: [LineCap; 3] = [LineCap::BUTT, LineCap::ROUND, LineCap::SQUARE];
