@@ -1,5 +1,6 @@
-extern crate gl;
 extern crate libc;
+extern crate gl;
+extern crate png;
 
 use std::vec::Vec;
 
@@ -1177,5 +1178,11 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
         set_alpha(image.as_mut_slice(), w, h, w*4, 255);
     }
     flip_image(image.as_mut_slice(), w, h, w*4);
-     write_png(name, w, h, 4, &image[0], w*4);
+
+    let mut image = png::Image {
+        width: w,
+        height: h,
+        pixels: png::PixelsByColorType::RGBA8(image)
+    };
+    png::store_png(&mut image, name).unwrap()
 }

@@ -917,34 +917,9 @@ pub fn relative_index(text: &str, p: *const i8) -> usize {
     pix - stix
 }
 
-
 pub fn deg_to_rad(deg: f32) -> f32 {
     unsafe { ffi::nvgDegToRad(deg) }
 }
 pub fn rad_to_deg(rad: f32) -> f32 {
     unsafe { ffi::nvgRadToDeg(rad) }
-}
-
-// image-write functions from nanovg/examples/stb_image_write.h
-//
-pub fn write_png(filename: &str, w: u32, h: u32, comp: i32, data: *const u8, stride_in_bytes: u32) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_png(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
-}
-pub fn write_bmp(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_bmp(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
-}
-pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_tga(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }
