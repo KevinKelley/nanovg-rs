@@ -452,9 +452,30 @@ impl fmt::Debug for Context {
     }
 }
 
+#[cfg(any(feature = "gl2", feature = "gl3",
+          feature = "gles2", feature = "gles3"))]
 impl Drop for Context {
+    #[cfg(feature = "gl2")]
+    fn drop(&mut self) {
+        self.delete_gl2();
+        self.ptr = ptr::null_mut();
+    }
+
+    #[cfg(feature = "gl3")]
     fn drop(&mut self) {
         self.delete_gl3();
+        self.ptr = ptr::null_mut();
+    }
+
+    #[cfg(feature = "gles2")]
+    fn drop(&mut self) {
+        self.delete_gles2();
+        self.ptr = ptr::null_mut();
+    }
+
+    #[cfg(feature = "gles3")]
+    fn drop(&mut self) {
+        self.delete_gles3();
         self.ptr = ptr::null_mut();
     }
 }
