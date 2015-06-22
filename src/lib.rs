@@ -1,18 +1,16 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(unsafe_destructor)]  // use Option instead
-#![feature(optin_builtin_traits, hash, libc, core, std_misc, slice_patterns)] // Until 1.0, when this feature stablizes
+#![feature(optin_builtin_traits, slice_patterns, const_fn)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-#![deny(unused_parens)]
-#![deny(non_upper_case_globals)]
 #![allow(unused_qualifications)]
-//#![warn(missing_doc)]
-#![deny(unused_results)]
 #![allow(unused_imports)]
 #![allow(unused_attributes)]
-#![deny(unused_typecasts)]
 #![allow(dead_code)]
+//#![warn(missing_doc)]
+#![deny(unused_parens)]
+#![deny(non_upper_case_globals)]
+#![deny(unused_results)]
 
 #[macro_use]
 extern crate bitflags;
@@ -22,7 +20,6 @@ use std::fmt;
 use std::ptr;
 use std::str;
 use std::ffi::CString;
-use std::num::ToPrimitive;
 
 use libc::{c_char, c_int, c_void, c_float};
 
@@ -33,21 +30,21 @@ use ffi::NVGtextRow;
 
 mod ffi;
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum Winding {
     CCW                     = ffi::NVG_CCW,
     CW                      = ffi::NVG_CW,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum Solidity {
     SOLID                   = ffi::NVG_SOLID,
     HOLE                    = ffi::NVG_HOLE,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum LineCap {
     BUTT                    = ffi::NVG_BUTT,
@@ -57,7 +54,7 @@ pub enum LineCap {
     MITER                   = ffi::NVG_MITER,
 }
 
-#[derive(Clone, Eq, Hash, PartialEq, Debug, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 #[repr(u32)]
 pub enum PatternRepeat {
     NOREPEAT                = ffi::NVG_NOREPEAT,
@@ -92,7 +89,7 @@ bitflags!{
 
 // Color
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Color {
     nvg: NVGcolor
 }
@@ -116,14 +113,14 @@ impl Color {
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGB(r, g, b) })
     }
-    pub fn rgb_f(r: f32, g: f32, b: f32) -> Color {
-        Color::wrap(unsafe { ffi::nvgRGBf(r, g, b) })
+    pub const fn rgb_f(r: f32, g: f32, b: f32) -> Color {
+        Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: 1.0 } }
     }
     pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGBA(r, g, b, a) })
     }
-    pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
-        Color::wrap(unsafe { ffi::nvgRGBAf(r, g, b, a) })
+    pub const fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
+        Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: a } }
     }
     pub fn lerp_rgba(c0: Color, c1: Color, u: f32) -> Color {
         Color::wrap(unsafe { ffi::nvgLerpRGBA(c0.nvg, c1.nvg, u) })
@@ -185,7 +182,7 @@ impl fmt::Debug for Image {
 
 //impl Drop for Image {
 //    fn drop(&mut self) {
-//        Ctx::delete_image(nvg, self.handle);
+//        Context::delete_image(nvg, self.handle);
 //        self.handle = ffi::STB_IMAGE_INVALID;
 //    }
 //}
@@ -216,7 +213,7 @@ impl fmt::Debug for Font {
 
 // TextRow
 
-#[derive(PartialEq,Debug,Clone)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct TextRow {
     start_index: usize,
     end_index: usize,
@@ -235,11 +232,9 @@ impl TextRow {
     pub fn maxx(&self) -> f32 { self.maxx }
 }
 
-impl Copy for TextRow {}
-
 // GlyphPosition
 
-#[derive(PartialEq,Debug,Clone)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct GlyphPosition {
     byte_index: usize,   // start index of this glyph in string
     x: f32,             // glyph's x position
@@ -253,8 +248,6 @@ impl GlyphPosition {
     pub fn minx(&self) -> f32 { self.minx }
     pub fn maxx(&self) -> f32 { self.maxx }
 }
-
-impl Copy for GlyphPosition {}
 
 // Transform
 
@@ -443,39 +436,97 @@ impl Transform {
     }
 }
 
-// Ctx
+// Context
 
-pub struct Ctx {
+pub struct Context {
     ptr: *mut ffi::NVGcontext
 }
 
-impl !Send for Ctx {}
+impl !Send for Context {}
 
-impl !Sync for Ctx {}
+impl !Sync for Context {}
 
-impl fmt::Debug for Ctx {
+impl fmt::Debug for Context {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "NVGcontext @ {:?}", self.ptr)
     }
 }
 
-//#[unsafe_destructor]
-impl Drop for Ctx {
+#[cfg(any(feature = "gl2", feature = "gl3",
+          feature = "gles2", feature = "gles3"))]
+impl Drop for Context {
+    #[cfg(feature = "gl2")]
+    fn drop(&mut self) {
+        self.delete_gl2();
+        self.ptr = ptr::null_mut();
+    }
+
+    #[cfg(feature = "gl3")]
     fn drop(&mut self) {
         self.delete_gl3();
         self.ptr = ptr::null_mut();
     }
+
+    #[cfg(feature = "gles2")]
+    fn drop(&mut self) {
+        self.delete_gles2();
+        self.ptr = ptr::null_mut();
+    }
+
+    #[cfg(feature = "gles3")]
+    fn drop(&mut self) {
+        self.delete_gles3();
+        self.ptr = ptr::null_mut();
+    }
 }
 
-impl Ctx {
-    pub fn create_gl3(flags: CreationFlags) -> Ctx {
-        Ctx {
+impl Context {
+    #[cfg(feature = "gl2")]
+    pub fn create_gl2(flags: CreationFlags) -> Context {
+        Context {
+            ptr: unsafe { ffi::nvgCreateGL2(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gl2")]
+    fn delete_gl2(&self) {
+        unsafe { ffi::nvgDeleteGL2(self.ptr) }
+    }
+
+    #[cfg(feature = "gl3")]
+    pub fn create_gl3(flags: CreationFlags) -> Context {
+        Context {
             ptr: unsafe { ffi::nvgCreateGL3(flags.bits) }
         }
     }
 
+    #[cfg(feature = "gl3")]
     fn delete_gl3(&self) {
         unsafe { ffi::nvgDeleteGL3(self.ptr) }
+    }
+
+    #[cfg(feature = "gles2")]
+    pub fn create_gles2(flags: CreationFlags) -> Context {
+        Context {
+            ptr: unsafe { ffi::nvgCreateGLES2(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gles2")]
+    fn delete_gles2(&self) {
+        unsafe { ffi::nvgDeleteGLES2(self.ptr) }
+    }
+
+    #[cfg(feature = "gles3")]
+    pub fn create_gles3(flags: CreationFlags) -> Context {
+        Context {
+            ptr: unsafe { ffi::nvgCreateGLES3(flags.bits) }
+        }
+    }
+
+    #[cfg(feature = "gles3")]
+    fn delete_gles3(&self) {
+        unsafe { ffi::nvgDeleteGLES3(self.ptr) }
     }
 
     pub fn begin_frame(&self, window_width: i32, window_height: i32, device_pixel_ratio: f32) {
@@ -558,7 +609,7 @@ impl Ctx {
     pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
         let c_filename = match CString::new(filename.as_bytes()){
             Ok(e) => e,
-            Err(e) => return None,
+            Err(_) => return None,
         };
         let handle = unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(), flags.bits() as c_int) };
         // stb_image returns 0 for failure; unlike fontstash which returns -1
@@ -887,34 +938,9 @@ pub fn relative_index(text: &str, p: *const i8) -> usize {
     pix - stix
 }
 
-
 pub fn deg_to_rad(deg: f32) -> f32 {
     unsafe { ffi::nvgDegToRad(deg) }
 }
 pub fn rad_to_deg(rad: f32) -> f32 {
     unsafe { ffi::nvgRadToDeg(rad) }
-}
-
-// image-write functions from nanovg/examples/stb_image_write.h
-//
-pub fn write_png(filename: &str, w: u32, h: u32, comp: i32, data: *const u8, stride_in_bytes: u32) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_png(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void, stride_in_bytes as c_int) }
-}
-pub fn write_bmp(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_bmp(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
-}
-pub fn write_tga(filename: &str, w: u32, h: u32, comp: i32, data: *const u8) -> i32 {
-    let c_filename = match CString::new(filename.as_bytes()){
-        Ok(o) => o,
-        _ => return 0
-    };
-    unsafe { ffi::stbi_write_tga(c_filename.as_ptr(), w as c_int, h as c_int, comp, data as *const c_void) }
 }

@@ -1,21 +1,18 @@
-
-#![feature(core, std_misc, libc, collections)] // unstable features, should be able to remove this post-rust-1.0
+#![feature(collections, convert)] // unstable features, should be able to remove this post-rust-1.0
 #![allow(dead_code)]
 #![allow(unreachable_code)]
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
 
-extern crate num;
 extern crate libc;
 
 extern crate glfw;
 extern crate gl;
 extern crate nanovg;
 
-use glfw::Context;
+use glfw::Context as GlfwContext;
 use std::cell::Cell; // for glfw error count
-use nanovg::Ctx;
-
+use nanovg::Context;
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck {
@@ -66,9 +63,9 @@ fn main()
 
 
 	glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
- 	glfw.window_hint(glfw::WindowHint::OpenglForwardCompat(true));
- 	glfw.window_hint(glfw::WindowHint::OpenglProfile(glfw::OpenGlProfileHint::Core));
- 	glfw.window_hint(glfw::WindowHint::OpenglDebugContext(true));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlProfile(glfw::OpenGlProfileHint::Core));
+ 	glfw.window_hint(glfw::WindowHint::OpenGlDebugContext(true));
 
     let (mut window, events) = glfw.create_window(1100, 800, "NanoVG GL3 Rust demo", glfw::WindowMode::Windowed)
         .expect("Failed to create GLFW window.");
@@ -82,10 +79,10 @@ fn main()
     glcheck!(gl::load_with(|name| window.get_proc_address(name)));
     init_gl();
 
-   	let vg: nanovg::Ctx = nanovg::Ctx::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
+   	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
    	//assert!(!vg.ptr.is_null());
 
-    let data = demo::DemoData::load(&vg, "../../res");
+    let data = demo::DemoData::load(&vg, "res");
 
 //    return test_linebreaks(vg);
 
@@ -167,7 +164,7 @@ fn handle_window_event(window: &mut glfw::Window, event: glfw::WindowEvent) {
 }
 
 //// think linebreaks api needs some love
-//fn test_linebreaks(vg:Ctx) {
+//fn test_linebreaks(vg:Context) {
 //    let x=0.0; let y=0.0;
 //    let width = 120.0;
 //

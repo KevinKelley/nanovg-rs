@@ -1,8 +1,7 @@
-#![allow(non_snake_case)]
+#![allow(non_snake_case, non_camel_case_types)]
 
-use libc::{c_double, c_float, c_int, c_char};
-use libc::{c_uint, c_ushort, c_uchar, c_void};
-use std::marker;
+use libc::{c_float, c_int, c_char};
+use libc::{c_uint, c_uchar, c_void};
 
 pub const FONT_INVALID: c_int = -1;
 pub const STB_IMAGE_INVALID: c_int = 0;
@@ -38,7 +37,7 @@ pub const NVG_IMAGE_GENERATE_MIPMAPS: c_uint = 1;
 
 pub enum NVGcontext {}
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 #[repr(C)]
 pub struct NVGcolor {
     pub r: c_float,
@@ -46,8 +45,6 @@ pub struct NVGcolor {
     pub b: c_float,
     pub a: c_float
 }
-
-impl Copy for NVGcolor {}
 
 #[derive(Clone, Debug)]
 #[repr(C)]
@@ -120,22 +117,22 @@ pub struct NVGpath {
 pub struct NVGparams {
     pub userPtr: *mut c_void,
     pub edgeAntiAlias: c_int,
-    pub renderCreate: Option<extern "C" fn (arg1: *mut c_void) -> c_int>,
-    pub renderCreateTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: *const c_uchar) -> c_int>,
-    pub renderDeleteTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int) -> c_int>,
-    pub renderUpdateTexture: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: *const c_uchar) -> c_int>,
-    pub renderGetTextureSize: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: *mut c_int, arg4: *mut c_int) -> c_int>,
-    pub renderViewport: Option<extern "C" fn (arg1: *mut c_void, arg2: c_int, arg3: c_int)>,
-    pub renderFlush: Option<extern "C" fn (arg1: *mut c_void)>,
-    pub renderFill: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: *const c_float, arg6: *const NVGpath, arg7: c_int)>,
-    pub renderStroke: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: c_float, arg6: *const NVGpath, arg7: c_int)>,
-    pub renderTriangles: Option<extern "C" fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: *const NVGvertex, arg5: c_int)>,
-    pub renderDelete: Option<extern "C" fn (arg1: *mut c_void)>,
+    pub renderCreate: Option<extern fn (arg1: *mut c_void) -> c_int>,
+    pub renderCreateTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: *const c_uchar) -> c_int>,
+    pub renderDeleteTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int) -> c_int>,
+    pub renderUpdateTexture: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int, arg4: c_int, arg5: c_int, arg6: c_int, arg7: *const c_uchar) -> c_int>,
+    pub renderGetTextureSize: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: *mut c_int, arg4: *mut c_int) -> c_int>,
+    pub renderViewport: Option<extern fn (arg1: *mut c_void, arg2: c_int, arg3: c_int)>,
+    pub renderFlush: Option<extern fn (arg1: *mut c_void)>,
+    pub renderFill: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: *const c_float, arg6: *const NVGpath, arg7: c_int)>,
+    pub renderStroke: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: c_float, arg5: c_float, arg6: *const NVGpath, arg7: c_int)>,
+    pub renderTriangles: Option<extern fn (arg1: *mut c_void, arg2: *mut NVGpaint, arg3: *mut NVGscissor, arg4: *const NVGvertex, arg5: c_int)>,
+    pub renderDelete: Option<extern fn (arg1: *mut c_void)>,
 }
 
 
 #[link(name = "nanovg", kind = "static")]
-extern "C" {
+extern {
     pub fn nvgBeginFrame(ctx: *mut NVGcontext, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float);
     pub fn nvgEndFrame(ctx: *mut NVGcontext);
 
@@ -240,34 +237,28 @@ extern "C" {
     pub fn nvgInternalParams(ctx: *mut NVGcontext) -> *mut NVGparams;
     pub fn nvgDebugDumpPathCache(ctx: *mut NVGcontext);
 
+    #[cfg(feature = "gl2")]
+    pub fn nvgCreateGL2(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gl2")]
+    pub fn nvgDeleteGL2(ctx: *mut NVGcontext);
 
-    // GL version specific
-
-    //// Creates NanoVG contexts for different OpenGL (ES) versions.
-    //// Flags should be combination of the create flags above.
-
-    //#if defined NANOVG_GL2
-    //struct NVGcontext* nvgCreateGL2(isize flags);
-    //void nvgDeleteGL2(struct NVGcontext* ctx);
-
-    //#if defined NANOVG_GL3
+    #[cfg(feature = "gl3")]
     pub fn nvgCreateGL3(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gl3")]
     pub fn nvgDeleteGL3(ctx: *mut NVGcontext);
 
-    //#if defined NANOVG_GLES2
-    //struct NVGcontext* nvgCreateGLES2(isize flags);
-    //void nvgDeleteGLES2(struct NVGcontext* ctx);
+    #[cfg(feature = "gles2")]
+    pub fn nvgCreateGLES2(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gles2")]
+    pub fn nvgDeleteGLES2(ctx: *mut NVGcontext);
 
-    //#if defined NANOVG_GLES3
-    //pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
-    //pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
+    #[cfg(feature = "gles3")]
+    pub fn nvgCreateGLES3(flags: c_uint) -> *mut NVGcontext;
+    #[cfg(feature = "gles3")]
+    pub fn nvgDeleteGLES3(ctx: *mut NVGcontext);
 
-
-
+    /* TODO: these are part of example code, should we export them? */
     pub fn stbi_write_png(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void, stride_in_bytes: c_int) -> c_int;
     pub fn stbi_write_bmp(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
     pub fn stbi_write_tga(filename: *const c_char, w: c_int, h: c_int, comp: c_int, data: *const c_void) -> c_int;
 }
-
-#[link(name = "nanovg_shim", kind = "static")]
-extern "C" {}
