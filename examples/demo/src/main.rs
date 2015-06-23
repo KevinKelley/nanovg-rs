@@ -120,7 +120,7 @@ fn main()
         glcheck!(unsafe {gl::Enable(gl::CULL_FACE)});
         glcheck!(unsafe {gl::Disable(gl::DEPTH_TEST)});
 
-        vg.begin_frame(winWidth, winHeight, pxRatio as f32);
+        vg.begin_frame(winWidth as u32, winHeight as u32, pxRatio as f32);
 
         unsafe { demo::render_demo(&vg, mx as f32,my as f32, winWidth as f32,winHeight as f32, t as f32, blowup, &data); }
         fps.render(&vg, 5.0, 5.0);

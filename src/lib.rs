@@ -529,8 +529,9 @@ impl Context {
         unsafe { ffi::nvgDeleteGLES3(self.ptr) }
     }
 
-    pub fn begin_frame(&self, window_width: i32, window_height: i32, device_pixel_ratio: f32) {
-        unsafe { ffi::nvgBeginFrame(self.ptr, window_width, window_height, device_pixel_ratio) }
+    pub fn begin_frame(&self, window_width: u32, window_height: u32, device_pixel_ratio: f32) {
+        unsafe { ffi::nvgBeginFrame(self.ptr,
+                        window_width as i32, window_height as i32, device_pixel_ratio) }
     }
     pub fn end_frame(&self) {
         unsafe { ffi::nvgEndFrame(self.ptr) }
@@ -633,12 +634,14 @@ impl Context {
     }
 
     #[inline]
-    pub fn create_image_rgba(&self, w: i32, h: i32, data: &[u8]) -> Option<Image> {
+    pub fn create_image_rgba(&self, w: u32, h: u32, data: &[u8]) -> Option<Image> {
         self.create_image_rgba_flags(w, h, data, ImageFlags::empty())
     }
 
-    pub fn create_image_rgba_flags(&self, w: i32, h: i32, data: &[u8], flags: ImageFlags) -> Option<Image> {
-        let handle = unsafe { ffi::nvgCreateImageRGBA(self.ptr, w, h, flags.bits() as c_int, data.as_ptr()) };
+    pub fn create_image_rgba_flags(&self, w: u32, h: u32, data: &[u8], flags: ImageFlags) -> Option<Image> {
+        let handle = unsafe {
+            ffi::nvgCreateImageRGBA(self.ptr, w as i32, h as i32, flags.bits() as c_int, data.as_ptr())
+        };
         match handle {
             ffi::STB_IMAGE_INVALID => { None },
             _ => { Some(Image::wrap(handle)) }
@@ -649,10 +652,10 @@ impl Context {
         unsafe { ffi::nvgUpdateImage(self.ptr, image.handle, data.as_ptr()) }
     }
 
-    pub fn image_size(&self, image: &Image) -> (i32, i32) {
-        let (mut w, mut h) = (0i32, 0i32);
+    pub fn image_size(&self, image: &Image) -> (u32, u32) {
+        let (mut w, mut h) = (0, 0);
         unsafe { ffi::nvgImageSize(self.ptr, image.handle, &mut w, &mut h) };
-        (w, h)
+        (w as u32, h as u32)
     }
 
     pub fn delete_image(&self, image: Image) {
