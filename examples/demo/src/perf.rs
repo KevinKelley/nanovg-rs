@@ -29,7 +29,7 @@ impl PerfGraph
 	{
 		PerfGraph {
 			style: style,
-			name: String::from_str(name),
+			name: String::from(name),
 			values: [0.0; CAP],
 			head: 0,
 			count: 0,
