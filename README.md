@@ -29,7 +29,7 @@ Building
 
 Build using Cargo:
 
-    git clone https://github.com/KevinKelley/nanovg-rs
+    git clone --recursive https://github.com/KevinKelley/nanovg-rs
     cd nanovg-rs
     cargo build
 
