@@ -50,18 +50,18 @@ impl DemoData {
         let mut images: Vec<Image> = Vec::new();
         for i in 0..12 {
             let filename = format!{"{}/images/image{}.jpg", res_path, i+1};
-            let img = vg.create_image(filename.as_str())
-                .expect(format!{"Could not load {}.", filename}.as_str());
+            let img = vg.create_image(&filename)
+                .expect(&format!{"Could not load {}.", filename});
             images.push(img);
         }
 
-        let fontIcons = vg.create_font("icons", format!{"{}/entypo.ttf", res_path}.as_str())
+        let fontIcons = vg.create_font("icons", &format!{"{}/entypo.ttf", res_path})
             .expect("Could not add font 'icons'.");
 
-        let fontNormal = vg.create_font("sans", format!{"{}/Roboto-Regular.ttf", res_path}.as_str())
+        let fontNormal = vg.create_font("sans", &format!{"{}/Roboto-Regular.ttf", res_path})
             .expect("Could not add font 'sans'.");
 
-        let fontBold = vg.create_font("sans-bold", format!{"{}/Roboto-Bold.ttf", res_path}.as_str())
+        let fontBold = vg.create_font("sans-bold", &format!{"{}/Roboto-Bold.ttf", res_path})
             .expect("Could not add font 'sans-bold'.");
 
 
@@ -209,7 +209,7 @@ fn draw_searchbox(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,64));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+h*0.55, y+h*0.55, cp_to_utf8(ICON_SEARCH).as_str());
+    vg.text(x+h*0.55, y+h*0.55, &cp_to_utf8(ICON_SEARCH));
 
     vg.font_size(20.0);
     vg.font_face("sans");
@@ -222,7 +222,7 @@ fn draw_searchbox(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,32));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+w-h*0.55, y+h*0.55, cp_to_utf8(ICON_CIRCLED_CROSS).as_str());
+    vg.text(x+w-h*0.55, y+h*0.55, &cp_to_utf8(ICON_CIRCLED_CROSS));
 }
 
 fn draw_dropdown(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -250,7 +250,7 @@ fn draw_dropdown(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
     vg.font_face("icons");
     vg.fill_color(rgba(255,255,255,64));
     vg.text_align(CENTER|MIDDLE);
-    vg.text(x+w-h*0.5, y+h*0.5, cp_to_utf8(ICON_CHEVRON_RIGHT).as_str());
+    vg.text(x+w-h*0.5, y+h*0.5, &cp_to_utf8(ICON_CHEVRON_RIGHT));
 }
 
 fn draw_label(vg: &Context, text: &str, x: f32, y: f32, w: f32, h: f32)
@@ -366,7 +366,7 @@ fn draw_button(vg: &Context, preicon: char, text: &str, x: f32, y: f32, w: f32, 
     if preicon != NO_ICON {
         vg.font_size(h*1.3);
         vg.font_face("icons");
-        iw = vg.text_bounds(0.0,0.0, cp_to_utf8(preicon).as_str(), &mut bounds);
+        iw = vg.text_bounds(0.0,0.0, &cp_to_utf8(preicon), &mut bounds);
         iw += h*0.15;
     }
 
@@ -375,7 +375,7 @@ fn draw_button(vg: &Context, preicon: char, text: &str, x: f32, y: f32, w: f32, 
         vg.font_face("icons");
         vg.fill_color(rgba(255,255,255,96));
         vg.text_align(LEFT|MIDDLE);
-        vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, cp_to_utf8(preicon).as_str());
+        vg.text(x+w*0.5-tw*0.5-iw*0.75, y+h*0.5, &cp_to_utf8(preicon));
     }
 
     vg.font_size(20.0);
@@ -958,7 +958,7 @@ fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32
         vg.font_size(13.0);
         vg.text_align(RIGHT|MIDDLE);
 
-        vg.text_bounds(gx,gy, txt.as_str(), &mut bounds);
+        vg.text_bounds(gx,gy, &txt, &mut bounds);
 
         vg.begin_path();
         vg.fill_color(rgba(255,192,0,255));
@@ -971,7 +971,7 @@ fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32
         vg.fill();
 
         vg.fill_color(rgba(32,32,32,255));
-        vg.text(gx,gy, txt.as_str());
+        vg.text(gx,gy, &txt);
     }
 
     y += 20.0;
@@ -1063,7 +1063,7 @@ fn draw_caps(vg: &Context, x: f32,
 }
 
 
-fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
+fn unpremultiply_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
 {
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
 
@@ -1129,7 +1129,7 @@ fn unpremultiply_alpha(image: &mut [u8], w: u32, h: u32, stride: u32)
     }
 }
 
-fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
+fn set_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32, a: u8)
 {
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
     for y in (0..h) {
@@ -1140,7 +1140,7 @@ fn set_alpha(image: &mut [u8], w: u32, h: u32, stride: u32, a: u8)
     }
 }
 
-fn flip_image(image: &mut [u8], w: u32, h: u32, stride: u32)
+fn flip_image(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
 {
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
     let mut i: usize = 0;
@@ -1168,16 +1168,19 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
     let mut image: Vec<u8> = Vec::with_capacity(sz);
     unsafe {image.set_len(sz);}
     assert!(image.len() == sz);
-    let addr: *mut u8 = &mut image.as_mut_slice()[0];
-    let vptr: *mut c_void = addr as *mut c_void;
-    unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
-    if premult {
-        unpremultiply_alpha(image.as_mut_slice(), w, h, w*4);
+    
+    {
+        let addr: *mut u8 = image.as_mut_ptr();
+        let vptr: *mut c_void = addr as *mut c_void;
+        unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
+        if premult {
+            unpremultiply_alpha(&mut image, w, h, w*4);
+        }
+        else {
+            set_alpha(&mut image, w, h, w*4, 255);
+        }
+        flip_image(&mut image, w, h, w*4);
     }
-    else {
-        set_alpha(image.as_mut_slice(), w, h, w*4, 255);
-    }
-    flip_image(image.as_mut_slice(), w, h, w*4);
 
     let mut image = png::Image {
         width: w,
