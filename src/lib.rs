@@ -1,6 +1,5 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(optin_builtin_traits, slice_patterns, const_fn)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_qualifications)]
@@ -317,9 +316,11 @@ impl Transform {
     }
 
     pub fn new_from_slice(slice: &[f32]) -> Option<Transform> {
-        match slice {
-            [a, b, c, d, e, f, ..] => Some(Transform::new(a, b, c, d, e, f)),
-            _ => None
+        if slice.len() >= 6 {
+            Some(Transform::new(slice[0], slice[1], slice[2], slice[3], slice[4], slice[5]))
+        }
+        else {
+            None
         }
     }
 
