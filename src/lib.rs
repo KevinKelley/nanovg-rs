@@ -443,9 +443,11 @@ pub struct Context {
     ptr: *mut ffi::NVGcontext
 }
 
-impl !Send for Context {}
+// NoSend has been removed, NoCopy is unstable, and negative trait bounds are not implemented.
+// There is no 'clean' way to replace these two lines.
 
-impl !Sync for Context {}
+// impl !Send for Context {}
+// impl !Sync for Context {}
 
 impl fmt::Debug for Context {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
