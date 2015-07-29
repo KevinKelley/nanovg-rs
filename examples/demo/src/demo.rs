@@ -1169,18 +1169,16 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
     unsafe {image.set_len(sz);}
     assert!(image.len() == sz);
     
-    {
-        let addr: *mut u8 = image.as_mut_ptr();
-        let vptr: *mut c_void = addr as *mut c_void;
-        unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
-        if premult {
-            unpremultiply_alpha(&mut image, w, h, w*4);
-        }
-        else {
-            set_alpha(&mut image, w, h, w*4, 255);
-        }
-        flip_image(&mut image, w, h, w*4);
+    let addr: *mut u8 = image.as_mut_ptr();
+    let vptr: *mut c_void = addr as *mut c_void;
+    unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};
+    if premult {
+        unpremultiply_alpha(&mut image, w, h, w*4);
     }
+    else {
+        set_alpha(&mut image, w, h, w*4, 255);
+    }
+    flip_image(&mut image, w, h, w*4);
 
     let mut image = png::Image {
         width: w,
