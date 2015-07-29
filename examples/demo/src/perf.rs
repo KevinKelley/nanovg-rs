@@ -89,7 +89,7 @@ impl PerfGraph
 			vg.font_size(14.0);
 			vg.text_align(LEFT|TOP);
 			vg.fill_color(rgba(240,240,240,192));
-			vg.text(x+3.0,y+1.0, self.name.as_str());
+			vg.text(x+3.0,y+1.0, &self.name);
 		}
 
 		match self.style {
@@ -99,14 +99,14 @@ impl PerfGraph
     			vg.fill_color(rgba(240,240,240,255));
                 let num_str = format!("{:.*e}", 2, 1.0 / avg);
     			let txt = format!("{} FPS", num_str);
-    			vg.text(x+w-3.0,y+1.0, txt.as_str());
+    			vg.text(x+w-3.0,y+1.0, &txt);
 
     			vg.font_size(15.0);
     			vg.text_align(RIGHT|BOTTOM);
     			vg.fill_color(rgba(240,240,240,160));
                 let num_str = format!("{:.*e}", 3, avg * 1000.0);
     			let txt = format!("{} ms", num_str);
-    			vg.text(x+w-3.0,y+h-1.0, txt.as_str());
+    			vg.text(x+w-3.0,y+h-1.0, &txt);
             }
             _ => {
                 vg.font_size(18.0);
@@ -114,7 +114,7 @@ impl PerfGraph
                 vg.fill_color(rgba(240,240,240,255));
                 let num_str = format!("{:.*e}", 3, avg * 1000.0);
                 let txt = format!("{} ms", num_str);
-                vg.text(x+w-3.0,y+1.0, txt.as_str());
+                vg.text(x+w-3.0,y+1.0, &txt);
             }
 		}
 

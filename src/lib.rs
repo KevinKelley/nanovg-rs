@@ -1,6 +1,5 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(optin_builtin_traits, slice_patterns, const_fn)] // Until 1.0, when this feature stablizes
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_qualifications)]
@@ -113,13 +112,13 @@ impl Color {
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGB(r, g, b) })
     }
-    pub const fn rgb_f(r: f32, g: f32, b: f32) -> Color {
+    pub fn rgb_f(r: f32, g: f32, b: f32) -> Color {
         Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: 1.0 } }
     }
     pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGBA(r, g, b, a) })
     }
-    pub const fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
+    pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: a } }
     }
     pub fn lerp_rgba(c0: Color, c1: Color, u: f32) -> Color {
@@ -317,9 +316,11 @@ impl Transform {
     }
 
     pub fn new_from_slice(slice: &[f32]) -> Option<Transform> {
-        match slice {
-            [a, b, c, d, e, f, ..] => Some(Transform::new(a, b, c, d, e, f)),
-            _ => None
+        if slice.len() >= 6 {
+            Some(Transform::new(slice[0], slice[1], slice[2], slice[3], slice[4], slice[5]))
+        }
+        else {
+            None
         }
     }
 
@@ -442,9 +443,11 @@ pub struct Context {
     ptr: *mut ffi::NVGcontext
 }
 
-impl !Send for Context {}
+// NoSend has been removed, NoCopy is unstable, and negative trait bounds are not implemented.
+// There is no 'clean' way to replace these two lines.
 
-impl !Sync for Context {}
+// impl !Send for Context {}
+// impl !Sync for Context {}
 
 impl fmt::Debug for Context {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
