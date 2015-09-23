@@ -112,13 +112,13 @@ impl Color {
     pub fn rgb(r: u8, g: u8, b: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGB(r, g, b) })
     }
-    pub fn rgb_f(r: f32, g: f32, b: f32) -> Color {
+    pub const fn rgb_f(r: f32, g: f32, b: f32) -> Color {
         Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: 1.0 } }
     }
     pub fn rgba(r: u8, g: u8, b: u8, a: u8) -> Color {
         Color::wrap(unsafe { ffi::nvgRGBA(r, g, b, a) })
     }
-    pub fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
+    pub const fn rgba_f(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { nvg: ffi::NVGcolor { r: r, g: g, b: b, a: a } }
     }
     pub fn lerp_rgba(c0: Color, c1: Color, u: f32) -> Color {
