@@ -1,6 +1,6 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
-#![feature(const_fn, optin_builtin_traits)]
+#![feature(const_fn, optin_builtin_traits, convert)]
 
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
@@ -20,6 +20,7 @@ extern crate libc;
 use std::fmt;
 use std::ptr;
 use std::str;
+use std::path::Path;
 use std::ffi::CString;
 
 use libc::{c_char, c_int, c_void, c_float};
@@ -606,20 +607,22 @@ impl Context {
     }
 
     #[inline]
-    pub fn create_image(&self, filename: &str) -> Option<Image> {
+    pub fn create_image<P>(&self, filename: P) -> Option<Image>
+            where P: AsRef<Path> {
         self.create_image_flags(filename, ImageFlags::empty())
     }
 
-    pub fn create_image_flags(&self, filename: &str, flags: ImageFlags) -> Option<Image> {
-        let c_filename = match CString::new(filename.as_bytes()){
-            Ok(e) => e,
-            Err(_) => return None,
+    pub fn create_image_flags<P>(&self, filename: P, flags: ImageFlags) -> Option<Image>
+            where P: AsRef<Path> {
+        let c_filename = match filename.as_ref().as_os_str().to_cstring() {
+            Some(o) => o,
+            None => return None
         };
-        let handle = unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(), flags.bits() as c_int) };
         // stb_image returns 0 for failure; unlike fontstash which returns -1
-        match handle {
+        match unsafe { ffi::nvgCreateImage(self.ptr, c_filename.as_ptr(),
+                                           flags.bits() as c_int) } {
             ffi::STB_IMAGE_INVALID => { None },
-            _ => { Some(Image::wrap(handle)) }
+            handle => { Some(Image::wrap(handle)) }
         }
     }
 
@@ -732,19 +735,19 @@ impl Context {
         unsafe { ffi::nvgStroke(self.ptr) }
     }
 
-    pub fn create_font(&self, name: &str, filename: &str) -> Option<Font> {
+    pub fn create_font<P>(&self, name: &str, filename: P) -> Option<Font>
+            where P: AsRef<Path> {
         let c_name = match CString::new(name.as_bytes()){
             Ok(o) => o,
             Err(_) => return None
         };
-        let c_filename = match CString::new(filename.as_bytes()){
-            Ok(o) => o,
-            Err(_) => return None
+        let c_filename = match filename.as_ref().as_os_str().to_cstring() {
+            Some(o) => o,
+            None => return None
         };
-        let handle = unsafe { ffi::nvgCreateFont(self.ptr, c_name.as_ptr(), c_filename.as_ptr()) };
-        match handle {
+        match unsafe { ffi::nvgCreateFont(self.ptr, c_name.as_ptr(), c_filename.as_ptr()) } {
             ffi::FONT_INVALID => None,
-            _ => Some(Font::wrap(handle))
+            handle => Some(Font::wrap(handle))
         }
     }
 
