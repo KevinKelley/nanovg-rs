@@ -1,5 +1,7 @@
 #![doc(html_root_url = "https://github.com/KevinKelley/nanovg-rs")]
 
+#![feature(const_fn, optin_builtin_traits)]
+
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(unused_qualifications)]
