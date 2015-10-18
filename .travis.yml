@@ -1,4 +1,10 @@
 language: rust
+rust:
+  - stable
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
 
 before_install:
   #- sudo add-apt-repository --yes ppa:hansjorg/rust
