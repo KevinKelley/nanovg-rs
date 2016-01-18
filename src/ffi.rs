@@ -1,4 +1,4 @@
-#![allow(non_snake_case, non_camel_case_types, raw_pointer_derive)]
+#![allow(non_snake_case, non_camel_case_types)]
 
 use libc::{c_float, c_int, c_char};
 use libc::{c_uint, c_uchar, c_void};

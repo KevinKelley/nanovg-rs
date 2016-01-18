@@ -3,15 +3,13 @@
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
 
-extern crate libc;
-
 extern crate glfw;
 extern crate gl;
 extern crate nanovg;
 
 use glfw::Context as GlfwContext;
 use std::cell::Cell; // for glfw error count
-use nanovg::Context;
+use std::os::raw::c_void;
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck {
@@ -75,7 +73,7 @@ fn main()
     window.make_current();
 
     // use glfw to load GL function pointers
-    glcheck!(gl::load_with(|name| window.get_proc_address(name)));
+    glcheck!(gl::load_with(|name| window.get_proc_address(name) as *mut c_void));
     init_gl();
 
    	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
