@@ -872,7 +872,7 @@ impl Context {
 
         // convert pointers to indexes
         let mut ret_vec:Vec<GlyphPosition> = Vec::with_capacity(actual_n);
-        for i in (0..actual_n) {
+        for i in 0..actual_n {
             let nvg = positions[i];
             ret_vec.push(GlyphPosition {
                 byte_index: relative_index(text, nvg.byte_ptr),
@@ -889,7 +889,7 @@ impl Context {
         let st = text.as_ptr() as *const i8;
         let en = unsafe { st.offset(text.len() as isize) };
         let mut rows: Vec<NVGtextRow> = Vec::with_capacity(max_rows);
-        for _ in (0..max_rows) {
+        for _ in 0..max_rows {
             rows.push(NVGtextRow {
                 start: ptr::null(),
                 end:   ptr::null(),
@@ -908,7 +908,7 @@ impl Context {
 
         // convert pointers to indexes
         let mut ret_vec:Vec<TextRow> = Vec::with_capacity(actual_n);
-        for i in (0..actual_n) {
+        for i in 0..actual_n {
             let nvg = rows[i];
             ret_vec.push(TextRow {
                 start_index: relative_index(text, nvg.start),

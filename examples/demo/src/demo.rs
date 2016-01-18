@@ -1,12 +1,10 @@
-extern crate libc;
 extern crate gl;
 extern crate png;
 
 use std::vec::Vec;
 
 use nanovg::*;
-use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
-use libc::{c_void};
+use std::os::raw::c_void;
 
 /// use unicode characters for icons
 const NO_ICON:            char = '\0';
@@ -635,7 +633,7 @@ fn draw_thumbnails(vg: &Context, x: f32, y: f32, w: f32, h: f32,
 
     let dv = 1.0 / (nimages as f32 - 1.0);
 
-    for i in (0..nimages) {
+    for i in 0..nimages {
         let mut tx = x+10.0;
         let mut ty = y+10.0;
         tx += (i%2) as f32 * (thumb+10.0);
@@ -909,7 +907,7 @@ fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32
         let nrows = rows.len();
         if nrows == 0 { break 'chunks; }
 
-        for i in (0..nrows) {
+        for i in 0..nrows {
             let row = &rows[i];
             let hit: bool = mx > x && mx < (x+width) && my >= y && my < (y+lineh);
 
@@ -927,7 +925,7 @@ fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32
                 let mut px = x;
                 let glyphs = vg.text_glyph_positions(x, y, line);
                 let nglyphs = glyphs.len();
-                for j in (0..nglyphs) {
+                for j in 0..nglyphs {
                     let x0 = glyphs[j].x();
                     let x1 = if j+1 < nglyphs { glyphs[j+1].x() } else { x+row.width() };
                     let gx = x0 * 0.3 + x1 * 0.7;
@@ -1068,10 +1066,10 @@ fn unpremultiply_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
 
     // Unpremultiply
-    for y in (0..h) {
+    for y in 0..h {
         //unsigned char *row = &image[y*stride];
         let row = &mut image[y*stride..y*stride + w*4];
-        for x in (0..w) {
+        for x in 0..w {
             let pix = &mut row[x*4..x*4 + 4];
             let r = pix[0] as f32;
             let g = pix[1] as f32;
@@ -1086,8 +1084,8 @@ fn unpremultiply_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
     }
 
     // Defringe
-    for y in (0..h) {
-        for x in (0..w) {
+    for y in 0..h {
+        for x in 0..w {
             let ix = y*stride + x*4;
             let mut r = 0;
             let mut g = 0;
@@ -1132,9 +1130,9 @@ fn unpremultiply_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
 fn set_alpha(image: &mut Vec<u8>, w: u32, h: u32, stride: u32, a: u8)
 {
     let w: usize = w as usize; let h: usize = h as usize; let stride: usize = stride as usize;
-    for y in (0..h) {
+    for y in 0..h {
         let row = &mut image[y*stride..y*stride + w*4]; //&image[y*stride];
-        for x in (0..w) {
+        for x in 0..w {
             row[x*4+3] = a;
         }
     }
@@ -1151,7 +1149,7 @@ fn flip_image(image: &mut Vec<u8>, w: u32, h: u32, stride: u32)
         // error; can't borrow twice from the same source
         let ix: usize = i*stride;
         let jx: usize = j*stride;
-        for k in (0..w*4) {
+        for k in 0..w*4 {
             let t       = image[ix+k];  // let t = row_i[k];
             image[ix+k] = image[jx+k];  // row_i[k] = row_j[k];
             image[jx+k] = t;            // row_j[k] = t;
