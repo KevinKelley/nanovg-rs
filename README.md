@@ -79,4 +79,4 @@ Links
 - [NanoVG](https://github.com/memononen/nanovg)
 - [rust-bindgen](https://github.com/crabtw/rust-bindgen) (thanks!)
 - [gl-rs](https://github.com/bjz/gl-rs)
-- [glfw-rs](https://github.com/bjz/glfw-rs)
+- [glfw-rs](https://github.com/PistonDevelopers/glfw-rs)
