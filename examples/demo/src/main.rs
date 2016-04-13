@@ -75,7 +75,7 @@ fn main()
     window.make_current();
 
     // use glfw to load GL function pointers
-    glcheck!(gl::load_with(|name| window.get_proc_address(name)));
+    glcheck!(gl::load_with(|name| window.get_proc_address(name) as *const _));
     init_gl();
 
    	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
