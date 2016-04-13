@@ -61,7 +61,7 @@ impl PerfGraph
 		vg.move_to(x, y+h);
 		match self.style {
             Style::FPS => {
-    			for i in (0..CAP) { //(i = 0; i < CAP; i++) {
+    			for i in 0..CAP { //(i = 0; i < CAP; i++) {
     				let mut v = 1.0 / (0.00001 + self.values[(self.head+i) % CAP]);
     				if v > 80.0 {v = 80.0;}
     				let vx = x + (i as f32 / (CAP-1) as f32) * w;
@@ -70,7 +70,7 @@ impl PerfGraph
     			}
             }
             _ => {
-                for i in (0..CAP) {
+                for i in 0..CAP {
                     let mut v = self.values[(self.head+i) % CAP] * 1000.0;
                     if v > 20.0 {v = 20.0;}
                     let vx = x + (i as f32 / (CAP-1) as f32) * w;
