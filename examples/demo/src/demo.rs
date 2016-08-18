@@ -1,4 +1,3 @@
-extern crate libc;
 extern crate gl;
 extern crate png;
 
@@ -6,7 +5,7 @@ use std::vec::Vec;
 
 use nanovg::*;
 use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
-use libc::{c_void};
+use std::os::raw::{c_void};
 
 /// use unicode characters for icons
 const NO_ICON:            char = '\0';
@@ -1168,7 +1167,7 @@ pub fn save_screenshot(w: u32, h: u32, premult: bool, name: &str)
     let mut image: Vec<u8> = Vec::with_capacity(sz);
     unsafe {image.set_len(sz);}
     assert!(image.len() == sz);
-    
+
     let addr: *mut u8 = image.as_mut_ptr();
     let vptr: *mut c_void = addr as *mut c_void;
     unsafe {gl::ReadPixels(0, 0, w as i32, h as i32, gl::RGBA, gl::UNSIGNED_BYTE, addr as *mut c_void)};

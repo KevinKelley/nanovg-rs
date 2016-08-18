@@ -3,8 +3,6 @@
 #![allow(unused_variables)]
 #![allow(non_snake_case)]
 
-extern crate libc;
-
 extern crate glfw;
 extern crate gl;
 extern crate nanovg;
