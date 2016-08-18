@@ -3,6 +3,7 @@ extern crate gcc;
 use std::env;
 
 fn main() {
+    let target = env::var("TARGET").unwrap();
     let mut config = gcc::Config::new();
     config.include("nanovg/src");
     config.include("nanovg/example");
@@ -12,6 +13,9 @@ fn main() {
         if env::var(format!("CARGO_FEATURE_{}", feature)).is_ok() {
             config.define(&format!("NANOVG_{}_IMPLEMENTATION", feature), None);
         }
+    }
+    if target.contains("linux") {
+        println!("cargo:rustc-link-lib=GL");
     }
     config.compile("libnanovg.a")
 }
