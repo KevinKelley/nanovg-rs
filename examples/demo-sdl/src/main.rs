@@ -47,8 +47,9 @@ fn main()
 
     let gl_attr = video_subsystem.gl_attr();
     gl_attr.set_context_profile(GLProfile::Core);
-    gl_attr.set_context_flags().debug().set();
+    gl_attr.set_context_flags().debug().forward_compatible().set();
     gl_attr.set_context_version(3, 2);
+    gl_attr.set_stencil_size(8);
 
     let window = video_subsystem.window("NanoVG GL3 Rust-sdl2 Demo", 1100, 800)
         .position_centered()
@@ -62,12 +63,19 @@ fn main()
     init_gl();
 
     let gl_context = window.gl_create_context().unwrap();
-    window.gl_make_current(&gl_context);
-    video_subsystem.gl_set_swap_interval(0);
+    match window.gl_make_current(&gl_context) {
+        Err(val) => {
+            println!("make_current error: {}", val);
+            return;
+        },
+        _ => {}
+    }
 
-    let mut prevt: f64 = unsafe {sdl2_sys::sdl::SDL_GetTicks() as f64}/1000.0;
+
    	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
     let data = demo::DemoData::load(&vg, "res");
+
+    let mut prevt: f64 = unsafe {sdl2_sys::sdl::SDL_GetTicks() as f64}/1000.0;
     let mut fps = perf::PerfGraph::init(perf::Style::FPS, "Frame Time");
     let mut mx = 0;
     let mut my = 0;
@@ -129,7 +137,7 @@ fn main()
                 Event::KeyDown { keycode: Some(Keycode::Space), ..} => {
                     unsafe {blowup = !blowup;}
                 },
-                Event::MouseMotion {x: x, y: y, ..}  => {
+                Event::MouseMotion {x, y, ..}  => {
                     mx = x;
                     my = y;
                 }

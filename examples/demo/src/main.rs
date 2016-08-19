@@ -9,7 +9,6 @@ extern crate nanovg;
 
 use glfw::Context as GlfwContext;
 use std::cell::Cell; // for glfw error count
-use nanovg::Context;
 
 /// evaluate the expression, then check for GL error.
 macro_rules! glcheck {
@@ -57,7 +56,6 @@ fn main()
 	        data: Cell::new(0),
 	    }
 	));
-
 
 	glfw.window_hint(glfw::WindowHint::ContextVersion(3, 2));
  	glfw.window_hint(glfw::WindowHint::OpenGlForwardCompat(true));

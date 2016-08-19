@@ -1,11 +1,9 @@
-extern crate libc;
 extern crate gl;
 extern crate png;
 
 use std::vec::Vec;
 
 use nanovg::*;
-use gl::{ReadPixels, RGBA, UNSIGNED_BYTE};
 use std::os::raw::{c_void};
 
 /// use unicode characters for icons
