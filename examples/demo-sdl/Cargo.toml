@@ -11,11 +11,14 @@ path = "src/main.rs"
 path = "../.."
 features = ["gl3"]
 
-[dependencies.glfw]
-git = "https://github.com/bjz/glfw-rs"
-
 [dependencies.gl]
 git = "https://github.com/bjz/gl-rs"
+
+[dependencies.sdl2]
+git = "https://github.com/AngryLawyer/rust-sdl2"
+
+[dependencies.sdl2-sys]
+git = "https://github.com/AngryLawyer/rust-sdl2"
 
 [dependencies.png]
 git = "https://github.com/servo/rust-png"
