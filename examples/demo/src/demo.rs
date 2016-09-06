@@ -292,7 +292,7 @@ fn draw_editbox_num(vg: &Context, text: &str, units: &str, x: f32, y: f32, w: f3
     draw_editbox_base(vg, x,y, w,h);
 
     let mut bounds = [0.0; 4];
-    let uw = vg.text_bounds(0.0,0.0, units, &mut bounds);
+    let uw = vg.text_bounds(0.0,0.0, units, Some(&mut bounds));
 
     vg.font_size(18.0);
     vg.font_face("sans");
@@ -359,12 +359,12 @@ fn draw_button(vg: &Context, preicon: char, text: &str, x: f32, y: f32, w: f32, 
     vg.font_size(20.0);
     vg.font_face("sans-bold");
     let mut bounds = [0.0; 4];
-    let tw = vg.text_bounds(0.0,0.0, text, &mut bounds);
+    let tw = vg.text_bounds(0.0,0.0, text, Some(&mut bounds));
     let mut iw = 0.0;
     if preicon != NO_ICON {
         vg.font_size(h*1.3);
         vg.font_face("icons");
-        iw = vg.text_bounds(0.0,0.0, &cp_to_utf8(preicon), &mut bounds);
+        iw = vg.text_bounds(0.0,0.0, &cp_to_utf8(preicon), Some(&mut bounds));
         iw += h*0.15;
     }
 
@@ -956,7 +956,7 @@ fn draw_paragraph(vg: &Context, x: f32, y: f32, width: f32, height: f32, mx: f32
         vg.font_size(13.0);
         vg.text_align(RIGHT|MIDDLE);
 
-        vg.text_bounds(gx,gy, &txt, &mut bounds);
+        vg.text_bounds(gx,gy, &txt, Some(&mut bounds));
 
         vg.begin_path();
         vg.fill_color(rgba(255,192,0,255));

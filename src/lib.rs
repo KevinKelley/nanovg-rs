@@ -818,12 +818,15 @@ impl Context {
     // if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
     // Returns the horizontal advance of the measured text (i.e. where the next character should drawn).
     // Measured values are returned in local coordinate space.
-    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: &mut [f32; 4]) -> f32 {
+    pub fn text_bounds(&self, x: f32, y: f32, text: &str, bounds: Option<&mut [f32; 4]>) -> f32 {
         let c_text = match CString::new(text.as_bytes()){
             Ok(o) => o,
             _ => return 0.
         };
-        unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), bounds.as_mut_ptr()) }
+        match bounds {
+            Some(val) => unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), val.as_mut_ptr()) },
+            None => unsafe { ffi::nvgTextBounds(self.ptr, x, y, c_text.as_ptr(), ptr::null(), ptr::null_mut()) }
+        }
     }
     // Measures the needed advance for text, without computing complete bounds
     pub fn text_advance(&self, x:f32, y:f32, text: &str) -> f32 {
