@@ -81,7 +81,7 @@ fn main()
 
 //    return test_linebreaks(vg);
 
-	glfw.set_swap_interval(0);
+	glfw.set_swap_interval(glfw::SwapInterval::None);
 
 	glfw.set_time(0.0);
 	let mut prevt = glfw.get_time();
