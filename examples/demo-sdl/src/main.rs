@@ -59,8 +59,6 @@ fn main()
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
-    glcheck!(gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _));
-    init_gl();
 
     let gl_context = window.gl_create_context().unwrap();
     match window.gl_make_current(&gl_context) {
@@ -71,17 +69,22 @@ fn main()
         _ => {}
     }
 
+    glcheck!(gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _));
+    init_gl();
+
 
    	let vg: nanovg::Context = nanovg::Context::create_gl3(nanovg::ANTIALIAS | nanovg::STENCIL_STROKES);
     let data = demo::DemoData::load(&vg, "res");
 
-    let mut prevt: f64 = unsafe {sdl2_sys::sdl::SDL_GetTicks() as f64}/1000.0;
+    let mut timer = sdl_context.timer().unwrap();
+
+    let mut prevt: f64 = (timer.ticks() as f64)/1000.0;
     let mut fps = perf::PerfGraph::init(perf::Style::FPS, "Frame Time");
     let mut mx = 0;
     let mut my = 0;
 
     'running: loop {
-        let t: f64 = unsafe {sdl2_sys::sdl::SDL_GetTicks() as f64}/1000.0;
+        let t: f64 = (timer.ticks() as f64)/1000.0;
         let dt: f64 = t - prevt;
         prevt = t;
         fps.update(dt);
