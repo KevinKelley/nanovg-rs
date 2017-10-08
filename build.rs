@@ -17,5 +17,8 @@ fn main() {
     if target.contains("linux") {
         println!("cargo:rustc-link-lib=GL");
     }
+    else if target.contains("darwin") {
+        println!("cargo:rustc-link-lib=framework=OpenGL");
+    }
     config.compile("libnanovg.a")
 }
