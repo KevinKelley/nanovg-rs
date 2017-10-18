@@ -24,7 +24,6 @@ fn main() {
     }
     
     let context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
-    context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Lighter));
 
     let start_time = Instant::now();
     let mut running = true;
@@ -54,6 +53,7 @@ fn main() {
 
         let ratio = width as f32 / height as f32;
         context.frame((width, height), ratio, |frame| {
+            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
             context.global_alpha(1.0);
 
             // Draw red-filled rectangle.
@@ -72,6 +72,7 @@ fn main() {
                 });
             });
 
+            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Lighter));
             context.global_alpha(elapsed.cos() * 0.5 + 0.5);
 
             // Draw custom yellow/blue shape.
