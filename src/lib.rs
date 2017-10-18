@@ -96,6 +96,22 @@ impl Context {
         unsafe { ffi::nvgEndFrame(self.raw()); }
     }
 
+    pub fn global_composite_operation(&self, operation: CompositeOperation) {
+        let ctx = self.raw();
+        match operation {
+            CompositeOperation::Basic(basic) => unsafe {
+                ffi::nvgGlobalCompositeOperation(ctx, basic.into_raw() as c_int);
+            },
+            CompositeOperation::BlendFunc { source: src, destination: dst } => unsafe {
+                ffi::nvgGlobalCompositeBlendFunc(ctx, src.into_raw().bits(), dst.into_raw().bits());
+            },
+            CompositeOperation::BlendFuncSeparate { rgb_source: rs, rgb_destination: rd, alpha_source: als, alpha_destination: ald } => unsafe {
+                let (rs, rd, als, ald) = (rs.into_raw().bits(), rd.into_raw().bits(), als.into_raw().bits(), ald.into_raw().bits());
+                ffi::nvgGlobalCompositeBlendFuncSeparate(ctx, rs, rd, als, ald);
+            }
+        }
+    }
+
     pub fn global_alpha(&self, alpha: f32) {
         unsafe { ffi::nvgGlobalAlpha(self.raw(), alpha as c_float); }
     }
@@ -346,6 +362,90 @@ impl Direction {
         match self {
             Direction::Clockwise => ffi::NVGwinding::NVG_CW,
             Direction::CounterClockwise => ffi::NVGwinding::NVG_CCW,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum CompositeOperation {
+    Basic(BasicCompositeOperation),
+    BlendFunc {
+        source: BlendFactor,
+        destination: BlendFactor,
+    },
+    BlendFuncSeparate {
+        rgb_source: BlendFactor,
+        rgb_destination: BlendFactor,
+        alpha_source: BlendFactor,
+        alpha_destination: BlendFactor,
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum BasicCompositeOperation {
+    SourceOver,
+    SourceIn,
+    SourceOut,
+    Atop,
+    DestinationOver,
+    DestinationIn,
+    DestinationOut,
+    DestinationAtop,
+    Lighter,
+    Copy,
+    Xor,
+}
+
+impl BasicCompositeOperation {
+    fn into_raw(self) -> ffi::NVGcompositeOperation {
+        use BasicCompositeOperation::*;
+        use ffi::NVGcompositeOperation::*;
+        match self {
+            SourceOver => NVG_SOURCE_OVER,
+            SourceIn => NVG_SOURCE_IN,
+            SourceOut => NVG_SOURCE_OUT,
+            Atop => NVG_ATOP,
+            DestinationOver => NVG_DESTINATION_OVER,
+            DestinationIn => NVG_DESTINATION_IN,
+            DestinationOut => NVG_DESTINATION_OUT,
+            DestinationAtop => NVG_DESTINATION_ATOP,
+            Lighter => NVG_LIGHTER,
+            Copy => NVG_COPY,
+            Xor => NVG_XOR,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum BlendFactor {
+    Zero,
+    One,
+    SourceColor,
+    OneMinusSourceColor,
+    DestinationColor,
+    OneMinusDestinationColor,
+    SourceAlpha,
+    OneMinusSourceAlpha,
+    DestinationAlpha,
+    OneMinusDestinationAlpha,
+    SourceAlphaSaturate,
+}
+
+impl BlendFactor {
+    fn into_raw(self) -> ffi::NVGblendFactor {
+        use BlendFactor::*;
+        match self {
+            Zero => ffi::NVGblendFactor::NVG_ZERO,
+            One => ffi::NVGblendFactor::NVG_ONE,
+            SourceColor => ffi::NVGblendFactor::NVG_SRC_COLOR,
+            OneMinusSourceColor => ffi::NVGblendFactor::NVG_ONE_MINUS_SRC_COLOR,
+            DestinationColor => ffi::NVGblendFactor::NVG_DST_COLOR,
+            OneMinusDestinationColor => ffi::NVGblendFactor::NVG_ONE_MINUS_DST_COLOR,
+            SourceAlpha => ffi::NVGblendFactor::NVG_SRC_ALPHA,
+            OneMinusSourceAlpha => ffi::NVGblendFactor::NVG_ONE_MINUS_SRC_ALPHA,
+            DestinationAlpha => ffi::NVGblendFactor::NVG_DST_ALPHA,
+            OneMinusDestinationAlpha => ffi::NVGblendFactor::NVG_ONE_MINUS_DST_ALPHA,
+            SourceAlphaSaturate => ffi::NVGblendFactor::NVG_SRC_ALPHA_SATURATE,
         }
     }
 }

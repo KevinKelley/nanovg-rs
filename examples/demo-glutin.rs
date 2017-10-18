@@ -2,9 +2,9 @@ extern crate glutin;
 extern crate gl;
 extern crate nanovg;
 
+use std::time::Instant;
 use glutin::GlContext;
-
-use nanovg::{StrokeStyle, ColoringStyle, Color};
+use nanovg::{StrokeStyle, ColoringStyle, Color, CompositeOperation, BasicCompositeOperation};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -24,7 +24,9 @@ fn main() {
     }
     
     let context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
+    context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Lighter));
 
+    let start_time = Instant::now();
     let mut running = true;
 
     while running {
@@ -45,17 +47,24 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
+        let elapsed = {
+            let elapsed = start_time.elapsed();
+            elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
+        } as f32;
+
         let ratio = width as f32 / height as f32;
         context.frame((width, height), ratio, |frame| {
+            context.global_alpha(1.0);
+
             // Draw red-filled rectangle.
             frame.path(|path| {
-                path.rect((100.0, 100.0), (120.0, 30.0));
+                path.rect((100.0, 100.0), (300.0, 300.0));
                 path.fill(ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 1.0)));
             });
 
             // Draw blue-stroked rectangle.
             frame.path(|path| {
-                path.rect((100.0, 140.0), (120.0, 30.0));
+                path.rect((300.0, 310.0), (300.0, 300.0));
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::new(0.0, 0.6, 0.8, 1.0)),
                     width: 5.0,
@@ -63,14 +72,15 @@ fn main() {
                 });
             });
 
-            context.global_alpha(0.4);
+            context.global_alpha(elapsed.cos() * 0.5 + 0.5);
 
-            // Draw custom yellow shape.
+            // Draw custom yellow/blue shape.
             frame.path(|path| {
-                path.circle((300.0, 300.0), 64.0);
-                path.sub_path((300.0, 300.0), |sp| {
-                    sp.line_to((600.0, 300.0));
-                    sp.quad_bezier_to((800.0, 600.0), (100.0, 100.0));
+                let origin = (150.0, 140.0);
+                path.circle(origin, 64.0);
+                path.sub_path(origin, |sp| {
+                    sp.line_to((origin.0 + 300.0, origin.1 - 50.0));
+                    sp.quad_bezier_to((origin.0 + 500.0, origin.1 + 300.0), (300.0, 100.0));
                 });
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::new(1.0, 1.0, 0.0, 1.0)),
