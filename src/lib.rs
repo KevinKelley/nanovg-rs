@@ -384,7 +384,36 @@ impl Color {
 pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
+    pub fn with_linear_gradient(context: &Context, start: (f32, f32), end: (f32, f32), start_color: Color, end_color: Color) -> Self {
+        let ((sx, sy), (ex, ey)) = (start, end);
+        Paint(unsafe { ffi::nvgLinearGradient(context.raw(), sx, sy, ex, ey, start_color.into_raw(), end_color.into_raw()) })
+    }
+
+    pub fn with_box_gradient(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32, feather: f32, start_color: Color, end_color: Color) -> Self {
+        Paint(unsafe { ffi::nvgBoxGradient(context.raw(), x, y, w, h, radius, feather, start_color.into_raw(), end_color.into_raw()) })
+    }
+
+    pub fn with_radial_gradient(context: &Context, center: (f32, f32), inner_radius: f32, outer_radius: f32, start_color: Color, end_color: Color) -> Self {
+        let (cx, cy) = center;
+        Paint(unsafe { ffi::nvgRadialGradient(context.raw(), cx, cy, inner_radius, outer_radius, start_color.into_raw(), end_color.into_raw()) })
+    }
+
+    pub fn with_image_pattern(context: &Context, image: ImageHandle, origin: (f32, f32), size: (f32, f32), angle: f32, alpha: f32) -> Self {
+        let ((ox, oy), (ex, ey)) = (origin, size);
+        Paint(unsafe { ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.into_raw(), alpha) })
+    }
+
     fn into_raw(self) -> ffi::NVGpaint {
+        self.0
+    }
+}
+
+/// Handle to an image.
+#[derive(Copy, Clone)]
+pub struct ImageHandle(c_int);
+
+impl ImageHandle {
+    fn into_raw(self) -> c_int {
         self.0
     }
 }

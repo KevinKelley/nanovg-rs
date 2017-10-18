@@ -4,7 +4,7 @@ extern crate nanovg;
 
 use std::time::Instant;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, CompositeOperation, BasicCompositeOperation};
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -60,7 +60,7 @@ fn main() {
             frame.path(|path| {
                 path.rect((100.0, 100.0), (300.0, 300.0));
                 path.fill(FillStyle {
-                    coloring_style: ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 0.9)),
+                    coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(&context, (100.0, 100.0), (400.0, 400.0), Color::from_rgb(0xAA, 0x6C, 0x39), Color::from_rgb(0x88, 0x2D, 0x60))),
                     .. Default::default()
                 });
             });
