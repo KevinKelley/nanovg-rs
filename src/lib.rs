@@ -5,7 +5,7 @@ extern crate libc;
 pub mod ffi;
 
 use std::ops::Drop;
-use libc::{c_int, c_float};
+use libc::{c_int, c_float, c_uchar};
 
 #[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
 pub struct CreateFlags {
@@ -311,6 +311,26 @@ impl Color {
         })
     }
 
+    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+        Color(unsafe { ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar) })
+    }
+
+    pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Color(unsafe { ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar) })
+    }
+
+    pub fn from_hsl(h: f32, s: f32, l: f32) -> Self {
+        Color(unsafe { ffi::nvgHSL(h as c_float, s as c_float, l as c_float) })
+    }
+
+    pub fn from_hsla(h: f32, s: f32, l: f32, a: u8) -> Self {
+        Color(unsafe { ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar) })
+    }
+
+    fn into_raw(self) -> ffi::NVGcolor {
+        self.0
+    }
+
     pub fn red(&self) -> f32 {
         self.0.rgba[0]
     }
@@ -337,8 +357,8 @@ impl Color {
         self.0.rgba[3] = alpha;
     }
 
-    fn into_raw(self) -> ffi::NVGcolor {
-        self.0
+    pub fn lerp(a: Color, b: Color, t: f32) -> Color {
+        Color(unsafe { ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float) })
     }
 }
 

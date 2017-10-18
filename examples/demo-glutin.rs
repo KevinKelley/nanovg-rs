@@ -59,14 +59,16 @@ fn main() {
             // Draw red-filled rectangle.
             frame.path(|path| {
                 path.rect((100.0, 100.0), (300.0, 300.0));
-                path.fill(ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 1.0)));
+                path.fill(ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 0.9)));
             });
 
-            // Draw blue-stroked rectangle.
+            // Draw stroked rectangle.
             frame.path(|path| {
                 path.rect((300.0, 310.0), (300.0, 300.0));
+                let color = Color::lerp(Color::from_rgb(0x2e, 0x50, 0x77), Color::from_rgb(0xff, 0xca, 0x77), elapsed.sin() * 0.5 + 0.5);
+                path.fill(ColoringStyle::Color(Color::new(0.2, 0.2, 0.2, 0.5)));
                 path.stroke(StrokeStyle {
-                    coloring_style: ColoringStyle::Color(Color::new(0.0, 0.6, 0.8, 1.0)),
+                    coloring_style: ColoringStyle::Color(color),
                     width: 5.0,
                     .. Default::default()
                 });
@@ -81,7 +83,7 @@ fn main() {
                 path.circle(origin, 64.0);
                 path.sub_path(origin, |sp| {
                     sp.line_to((origin.0 + 300.0, origin.1 - 50.0));
-                    sp.quad_bezier_to((origin.0 + 500.0, origin.1 + 300.0), (300.0, 100.0));
+                    sp.quad_bezier_to((origin.0 + 500.0, origin.1 + 100.0), (300.0, 100.0));
                 });
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::new(1.0, 1.0, 0.0, 1.0)),
