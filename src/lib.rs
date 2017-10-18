@@ -5,7 +5,6 @@ extern crate libc;
 pub mod ffi;
 
 use std::ops::Drop;
-use std::default::Default;
 use libc::{c_int, c_float};
 
 #[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
@@ -44,7 +43,7 @@ impl CreateFlags {
 pub struct Context(*mut ffi::NVGcontext);
 
 impl Context {
-    pub fn raw(&mut self) -> *mut ffi::NVGcontext {
+    pub fn raw(&self) -> *mut ffi::NVGcontext {
         self.0
     }
 
@@ -88,8 +87,8 @@ impl Context {
         }
     }
 
-    pub fn frame<F: FnOnce(Frame)>(&mut self, (width, height): (i32, i32), pixel_ratio: f32, handler: F) {
-        unsafe { ffi::nvgBeginFrame(self.raw(), width as c_int, height as c_int, pixel_ratio as c_float);  }
+    pub fn frame<F: FnOnce(Frame)>(&self, (width, height): (i32, i32), device_pixel_ratio: f32, handler: F) {
+        unsafe { ffi::nvgBeginFrame(self.raw(), width as c_int, height as c_int, device_pixel_ratio as c_float);  }
         {
             let frame = Frame::new(self);
             handler(frame);
@@ -97,7 +96,7 @@ impl Context {
         unsafe { ffi::nvgEndFrame(self.raw()); }
     }
 
-    pub fn global_alpha(&mut self, alpha: f32) {
+    pub fn global_alpha(&self, alpha: f32) {
         unsafe { ffi::nvgGlobalAlpha(self.raw(), alpha as c_float); }
     }
 }
@@ -129,22 +128,22 @@ impl Drop for Context {
     }
 }
 
+pub struct FrameOptions {
+
+}
+
 pub struct Frame<'a> {
-    context: &'a mut Context,
+    context: &'a Context,
 }
 
 impl<'a> Frame<'a> {
-    fn new(context: &'a mut Context) -> Self {
+    fn new(context: &'a Context) -> Self {
         Self {
             context,
         }
     }
 
-    fn context(&mut self) -> &mut Context {
-        self.context
-    }
-
-    pub fn path<F: FnOnce(Path)>(&mut self, handler: F) {
+    pub fn path<F: FnOnce(Path)>(&self, handler: F) {
         unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));
     }
@@ -154,21 +153,21 @@ pub struct Path<'a, 'b>
 where
     'b: 'a
 {
-    frame: &'a mut Frame<'b>,
+    frame: &'a Frame<'b>,
 }
 
 impl<'a, 'b> Path<'a, 'b> {
-    fn new(frame: &'a mut Frame<'b>) -> Self {
+    fn new(frame: &'a Frame<'b>) -> Self {
         Self {
             frame,
         }
     }
 
-    fn ctx(&mut self) -> *mut ffi::NVGcontext {
-        self.frame.context().raw()
+    fn ctx(&self) -> *mut ffi::NVGcontext {
+        self.frame.context.raw()
     }
 
-    pub fn fill(&mut self, coloring_style: ColoringStyle) {
+    pub fn fill(&self, coloring_style: ColoringStyle) {
         let ctx = self.ctx();
         unsafe {
             match coloring_style {
@@ -179,7 +178,7 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
-    pub fn stroke(&mut self, style: StrokeStyle) {
+    pub fn stroke(&self, style: StrokeStyle) {
         let ctx = self.ctx();
         unsafe {
             match style.coloring_style {
@@ -192,32 +191,32 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
-    pub fn arc(&mut self, (cx, cy): (f32, f32), radius: f32, start_angle: f32, end_angle: f32, direction: Direction) {
+    pub fn arc(&self, (cx, cy): (f32, f32), radius: f32, start_angle: f32, end_angle: f32, direction: Direction) {
         unsafe { ffi::nvgArc(self.ctx(), cx, cy, radius, start_angle, end_angle, direction.into_raw().bits()); }
     }
 
-    pub fn rect(&mut self, (x, y): (f32, f32), (w, h): (f32, f32)) {
+    pub fn rect(&self, (x, y): (f32, f32), (w, h): (f32, f32)) {
         unsafe { ffi::nvgRect(self.ctx(), x as c_float, y as c_float, w as c_float, h as c_float); }
     }
 
-    pub fn rounded_rect(&mut self, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32) {
+    pub fn rounded_rect(&self, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32) {
         unsafe { ffi::nvgRoundedRect(self.ctx(), x, y, w, h, radius); }
     }
 
     /// `top_radii` and `bottom_radii` are both tuples in the form (left, right).
-    pub fn rounded_rect_varying(&mut self, (x, y): (f32, f32), (w, h): (f32, f32), top_radii: (f32, f32), bottom_radii: (f32, f32)) {
+    pub fn rounded_rect_varying(&self, (x, y): (f32, f32), (w, h): (f32, f32), top_radii: (f32, f32), bottom_radii: (f32, f32)) {
         unsafe { ffi::nvgRoundedRectVarying(self.ctx(), x, y, w, h, top_radii.0, top_radii.1, bottom_radii.1, bottom_radii.0); }
     }
 
-    pub fn ellipse(&mut self, (cx, cy): (f32, f32), radius_x: f32, radius_y: f32) {
+    pub fn ellipse(&self, (cx, cy): (f32, f32), radius_x: f32, radius_y: f32) {
         unsafe { ffi::nvgEllipse(self.ctx(), cx, cy, radius_x, radius_y); }
     }
 
-    pub fn circle(&mut self, (cx, cy): (f32, f32), radius: f32) {
+    pub fn circle(&self, (cx, cy): (f32, f32), radius: f32) {
         unsafe { ffi::nvgCircle(self.ctx(), cx, cy, radius); }
     }
 
-    pub fn sub_path<F: FnOnce(SubPath)>(&mut self, (x, y): (f32, f32), handler: F) {
+    pub fn sub_path<F: FnOnce(SubPath)>(&self, (x, y): (f32, f32), handler: F) {
         let ctx = self.ctx();
         unsafe { ffi::nvgMoveTo(ctx, x, y); }
         handler(SubPath::new(self));
@@ -230,37 +229,37 @@ where
     'b: 'a,
     'c: 'b,
 {
-    path: &'a mut Path<'b, 'c>,
+    path: &'a Path<'b, 'c>,
 }
 
 impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
-    fn new(path: &'a mut Path<'b, 'c>) -> Self {
+    fn new(path: &'a Path<'b, 'c>) -> Self {
         Self {
             path,
         }
     }
 
-    fn ctx(&mut self) -> *mut ffi::NVGcontext {
+    fn ctx(&self) -> *mut ffi::NVGcontext {
         self.path.ctx()
     }
 
-    pub fn line_to(&mut self, (x, y): (f32, f32)) {
+    pub fn line_to(&self, (x, y): (f32, f32)) {
         unsafe { ffi::nvgLineTo(self.ctx(), x, y); }
     }
 
-    pub fn cubic_bezier_to(&mut self, (x, y): (f32, f32), control1: (f32, f32), control2: (f32, f32)) {
+    pub fn cubic_bezier_to(&self, (x, y): (f32, f32), control1: (f32, f32), control2: (f32, f32)) {
         unsafe { ffi::nvgBezierTo(self.ctx(), control1.0, control1.1, control2.0, control2.1, x, y); }
     }
 
-    pub fn quad_bezier_to(&mut self, (x, y): (f32, f32), control: (f32, f32)) {
+    pub fn quad_bezier_to(&self, (x, y): (f32, f32), control: (f32, f32)) {
         unsafe { ffi::nvgQuadTo(self.ctx(), control.0, control.1, x, y); }
     }
 
-    pub fn arc_to(&mut self, p1: (f32, f32), p2: (f32, f32), radius: f32) {
+    pub fn arc_to(&self, p1: (f32, f32), p2: (f32, f32), radius: f32) {
         unsafe { ffi::nvgArcTo(self.ctx(), p1.0, p1.1, p2.0, p2.1, radius); }
     }
 
-    pub fn winding(&mut self, direction: Direction) {
+    pub fn winding(&self, direction: Direction) {
         unsafe { ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits()); }
     }
 }

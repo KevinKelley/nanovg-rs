@@ -4,7 +4,7 @@ extern crate nanovg;
 
 use glutin::GlContext;
 
-use nanovg::{StrokeStyle, ColoringStyle, Color, Direction};
+use nanovg::{StrokeStyle, ColoringStyle, Color};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -13,7 +13,8 @@ fn main() {
         .with_dimensions(1024, 720);
     let context = glutin::ContextBuilder::new()
         .with_vsync(true)
-        .with_multisampling(4);
+        .with_multisampling(4)
+        .with_srgb(true);
     let gl_window = glutin::GlWindow::new(window, context, &events_loop).unwrap();
 
     unsafe {
@@ -22,7 +23,7 @@ fn main() {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
     
-    let mut context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
+    let context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
 
     let mut running = true;
 
@@ -42,31 +43,18 @@ fn main() {
         unsafe {
             gl::Viewport(0, 0, width, height);
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
-            // nanovg::ffi::nvgBeginFrame(context.raw(), 1024, 720, 1024.0 / 720.0);
-
-            // nanovg::ffi::nvgBeginPath(context.raw());
-            // nanovg::ffi::nvgRect(context.raw(), 100.0,100.0, 120.0,30.0);
-            // nanovg::ffi::nvgFillColor(context.raw(), nanovg::ffi::nvgRGBA(255,192,0,255));
-            // nanovg::ffi::nvgFill(context.raw());
-
-            // nanovg::ffi::nvgBeginPath(context.raw());
-            // nanovg::ffi::nvgArc(context.raw(), 500.0, 500.0, 200.0, 0.0, 1.0 * std::f32::consts::PI, nanovg::ffi::NVGwinding::NVG_CCW.bits());
-            // nanovg::ffi::nvgFillColor(context.raw(), nanovg::ffi::nvgRGBA(0, 128, 128, 255));
-            // nanovg::ffi::nvgFill(context.raw());
-
-            // nanovg::ffi::nvgEndFrame(context.raw());
         }
 
         let ratio = width as f32 / height as f32;
-        context.frame((width, height), ratio, |mut frame| {
+        context.frame((width, height), ratio, |frame| {
             // Draw red-filled rectangle.
-            frame.path(|mut path| {
+            frame.path(|path| {
                 path.rect((100.0, 100.0), (120.0, 30.0));
                 path.fill(ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 1.0)));
             });
 
             // Draw blue-stroked rectangle.
-            frame.path(|mut path| {
+            frame.path(|path| {
                 path.rect((100.0, 140.0), (120.0, 30.0));
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::new(0.0, 0.6, 0.8, 1.0)),
@@ -75,10 +63,12 @@ fn main() {
                 });
             });
 
+            context.global_alpha(0.4);
+
             // Draw custom yellow shape.
-            frame.path(|mut path| {
+            frame.path(|path| {
                 path.circle((300.0, 300.0), 64.0);
-                path.sub_path((300.0, 300.0), |mut sp| {
+                path.sub_path((300.0, 300.0), |sp| {
                     sp.line_to((600.0, 300.0));
                     sp.quad_bezier_to((800.0, 600.0), (100.0, 100.0));
                 });
