@@ -4,7 +4,7 @@ extern crate nanovg;
 
 use std::time::Instant;
 use glutin::GlContext;
-use nanovg::{StrokeStyle, ColoringStyle, Color, CompositeOperation, BasicCompositeOperation};
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, CompositeOperation, BasicCompositeOperation};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -59,14 +59,20 @@ fn main() {
             // Draw red-filled rectangle.
             frame.path(|path| {
                 path.rect((100.0, 100.0), (300.0, 300.0));
-                path.fill(ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 0.9)));
+                path.fill(FillStyle {
+                    coloring_style: ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 0.9)),
+                    .. Default::default()
+                });
             });
 
             // Draw stroked rectangle.
             frame.path(|path| {
                 path.rect((300.0, 310.0), (300.0, 300.0));
                 let color = Color::lerp(Color::from_rgb(0x2e, 0x50, 0x77), Color::from_rgb(0xff, 0xca, 0x77), elapsed.sin() * 0.5 + 0.5);
-                path.fill(ColoringStyle::Color(Color::new(0.2, 0.2, 0.2, 0.5)));
+                path.fill(FillStyle {
+                    coloring_style: ColoringStyle::Color(Color::new(0.2, 0.2, 0.2, 0.5)),
+                    .. Default::default()
+                });
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(color),
                     width: 5.0,
@@ -90,7 +96,10 @@ fn main() {
                     width: 3.0,
                     .. Default::default()
                 });
-                path.fill(ColoringStyle::Color(Color::new(0.2, 0.0, 0.8, 1.0)));
+                path.fill(FillStyle {
+                    coloring_style: ColoringStyle::Color(Color::new(0.2, 0.0, 0.8, 1.0)),
+                    .. Default::default()
+                });
             });
         });
 

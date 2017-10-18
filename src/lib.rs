@@ -183,10 +183,11 @@ impl<'a, 'b> Path<'a, 'b> {
         self.frame.context.raw()
     }
 
-    pub fn fill(&self, coloring_style: ColoringStyle) {
+    pub fn fill(&self, style: FillStyle) {
         let ctx = self.ctx();
         unsafe {
-            match coloring_style {
+            ffi::nvgShapeAntiAlias(ctx, style.antialias as c_int);
+            match style.coloring_style {
                 ColoringStyle::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
                 ColoringStyle::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
             }
@@ -197,6 +198,7 @@ impl<'a, 'b> Path<'a, 'b> {
     pub fn stroke(&self, style: StrokeStyle) {
         let ctx = self.ctx();
         unsafe {
+            ffi::nvgShapeAntiAlias(ctx, style.antialias as c_int);
             match style.coloring_style {
                 ColoringStyle::Color(color) => ffi::nvgStrokeColor(ctx, color.into_raw()),
                 ColoringStyle::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
@@ -280,18 +282,34 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     }
 }
 
+pub struct FillStyle {
+    pub coloring_style: ColoringStyle,
+    pub antialias: bool,
+}
+
+impl Default for FillStyle {
+    fn default() -> Self {
+        Self {
+            coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
+            antialias: true,
+        }
+    }
+}
+
 pub struct StrokeStyle {
     pub coloring_style: ColoringStyle,
     pub width: f32,
     pub miter_limit: f32,
+    pub antialias: bool,
 }
 
 impl Default for StrokeStyle {
     fn default() -> Self {
         Self {
-            coloring_style: ColoringStyle::Color(Color::new(1.0, 0.0, 0.0, 1.0)),
+            coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
             width: 1.0,
             miter_limit: 10.0,
+            antialias: true,
         }
     }
 }
