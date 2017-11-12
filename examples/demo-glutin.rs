@@ -3,6 +3,7 @@ extern crate gl;
 extern crate nanovg;
 
 use std::time::Instant;
+use std::f32::consts::PI;
 use glutin::GlContext;
 use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation};
 
@@ -24,6 +25,11 @@ fn main() {
     }
     
     let context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
+    let img = nanovg::Image::new(&context)
+        .repeat_y()
+        .repeat_x()
+        .build_from_file("resources/lenna.png")
+        .expect("Couldn't load image");
 
     let start_time = Instant::now();
     let mut running = true;
@@ -52,6 +58,9 @@ fn main() {
         } as f32;
 
         let ratio = width as f32 / height as f32;
+
+        // Let's draw a frame!
+
         context.frame((width, height), ratio, |frame| {
             context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
             context.global_alpha(1.0);
@@ -61,21 +70,6 @@ fn main() {
                 path.rect((100.0, 100.0), (300.0, 300.0));
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(&context, (100.0, 100.0), (400.0, 400.0), Color::from_rgb(0xAA, 0x6C, 0x39), Color::from_rgb(0x88, 0x2D, 0x60))),
-                    .. Default::default()
-                });
-            });
-
-            // Draw stroked rectangle.
-            frame.path(|path| {
-                path.rect((300.0, 310.0), (300.0, 300.0));
-                let color = Color::lerp(Color::from_rgb(0x2e, 0x50, 0x77), Color::from_rgb(0xff, 0xca, 0x77), elapsed.sin() * 0.5 + 0.5);
-                path.fill(FillStyle {
-                    coloring_style: ColoringStyle::Color(Color::new(0.2, 0.2, 0.2, 0.5)),
-                    .. Default::default()
-                });
-                path.stroke(StrokeStyle {
-                    coloring_style: ColoringStyle::Color(color),
-                    width: 5.0,
                     .. Default::default()
                 });
             });
@@ -98,6 +92,38 @@ fn main() {
                 });
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Color(Color::new(0.2, 0.0, 0.8, 1.0)),
+                    .. Default::default()
+                });
+            });
+
+            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
+            context.global_alpha(1.0);
+
+            // Draw rolling image
+            frame.path(|path| {
+                let radius = 100.0;
+                let distance = 500.0; // Distance to roll
+                let rolled = ((elapsed / 5.0).sin() * 0.5 + 0.5) * distance; // Distance currently rolled
+                let origin = (rolled + 100.0, 600.0);
+                let paint = Paint::with_image_pattern(&context, &img, origin, (100.0, 100.0), rolled / (2.0 * PI * radius) * 2.0 * PI, 1.0);
+                path.circle(origin, radius);
+                path.fill(FillStyle {
+                    coloring_style: ColoringStyle::Paint(paint),
+                    .. Default::default()
+                })
+            });
+
+            // Draw stroked rectangle.
+            frame.path(|path| {
+                path.rect((300.0, 310.0), (300.0, 300.0));
+                let color = Color::lerp(Color::from_rgb(0x2e, 0x50, 0x77), Color::from_rgb(0xff, 0xca, 0x77), elapsed.sin() * 0.5 + 0.5);
+                path.fill(FillStyle {
+                    coloring_style: ColoringStyle::Color(Color::new(0.2, 0.2, 0.2, 0.7)),
+                    .. Default::default()
+                });
+                path.stroke(StrokeStyle {
+                    coloring_style: ColoringStyle::Color(color),
+                    width: 5.0,
                     .. Default::default()
                 });
             });

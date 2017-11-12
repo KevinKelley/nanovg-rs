@@ -10,3 +10,4 @@ target/
 *.orig
 Cargo.lock
 examples/demo/dump.png
+*.DS_Store

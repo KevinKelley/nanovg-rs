@@ -5,6 +5,8 @@ extern crate libc;
 pub mod ffi;
 
 use std::ops::Drop;
+use std::path::Path as IoPath;
+use std::ffi::{NulError, CString};
 use libc::{c_int, c_float, c_uchar};
 
 #[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
@@ -398,9 +400,9 @@ impl Paint {
         Paint(unsafe { ffi::nvgRadialGradient(context.raw(), cx, cy, inner_radius, outer_radius, start_color.into_raw(), end_color.into_raw()) })
     }
 
-    pub fn with_image_pattern(context: &Context, image: ImageHandle, origin: (f32, f32), size: (f32, f32), angle: f32, alpha: f32) -> Self {
+    pub fn with_image_pattern(context: &Context, image: &Image, origin: (f32, f32), size: (f32, f32), angle: f32, alpha: f32) -> Self {
         let ((ox, oy), (ex, ey)) = (origin, size);
-        Paint(unsafe { ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.into_raw(), alpha) })
+        Paint(unsafe { ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.raw(), alpha) })
     }
 
     fn into_raw(self) -> ffi::NVGpaint {
@@ -408,13 +410,134 @@ impl Paint {
     }
 }
 
-/// Handle to an image.
-#[derive(Copy, Clone)]
-pub struct ImageHandle(c_int);
+pub struct ImageBuilder<'a> {
+    context: &'a Context,
+    flags: ffi::NVGimageFlags,
+}
 
-impl ImageHandle {
-    fn into_raw(self) -> c_int {
+impl<'a> ImageBuilder<'a> {
+    fn new(context: &'a Context) -> Self {
+        Self {
+            context,
+            flags: ffi::NVGimageFlags::empty(),
+        }
+    }
+
+    /// Create mipmaps during the creation of the image.
+    pub fn mipmaps(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_GENERATE_MIPMAPS;
+        self
+    }
+
+    /// Repeat the image on the X axis.
+    pub fn repeat_x(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_REPEATX;
+        self
+    }
+
+    /// Repeat the image on the Y axis.
+    pub fn repeat_y(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_REPEATY;
+        self
+    }
+
+    /// Flip (invert) the image in the Y direction during rendering.
+    pub fn flipy(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_FLIPY;
+        self
+    }
+
+    /// The image data contains premultiplied alpha.
+    pub fn premultiplied(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_PREMULTIPLIED;
+        self
+    }
+
+    /// Use nearest interpolation instead of linear.
+    pub fn nearest(mut self) -> Self {
+        self.flags |= ffi::NVGimageFlags::NVG_IMAGE_NEAREST;
+        self
+    }
+
+    /// Construct the image by loading it from an image file on the file system.
+    pub fn build_from_file<P: AsRef<IoPath>>(self, file: P) -> ImageBuilderResult<'a> {
+        let path = match file.as_ref().to_str() {
+            Some(p) => CString::new(p.to_owned())?,
+            None => return Err(ImageBuilderError::PathNotCString),
+        };
+
+        let handle = unsafe { ffi::nvgCreateImage(self.context.raw(), (*path).as_ptr(), self.flags.bits()) };
+        if handle > 0 {
+            Ok(Image(self.context, handle))
+        } else {
+            Err(ImageBuilderError::CreateImageFailed)
+        }
+    }
+
+    /// Construct the image by loading it from an image file in memory.
+    pub fn build_from_memory(self, data: &[u8]) -> ImageBuilderResult<'a> {
+        let handle = unsafe { ffi::nvgCreateImageMem(self.context.raw(), self.flags.bits(), data.as_ptr() as *mut _, data.len() as c_int) };
+        if handle > 0 {
+            Ok(Image(self.context, handle))
+        } else {
+            Err(ImageBuilderError::CreateImageFailed)
+        }
+    }
+
+    /// Construct the image by filling it with pixel data from memory (always 32bit RGBA).
+    pub fn build_from_rgba(self, width: usize, height: usize, data: &[u32]) -> ImageBuilderResult<'a> {
+        if data.len() < width * height {
+            return Err(ImageBuilderError::NotEnoughData);
+        }
+
+        let handle = unsafe { ffi::nvgCreateImageRGBA(self.context.raw(), width as c_int, height as c_int, self.flags.bits(), data.as_ptr() as *const _) };
+        if handle > 0 {
+            Ok(Image(self.context, handle))
+        } else {
+            Err(ImageBuilderError::CreateImageFailed)
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ImageBuilderError {
+    /// The path for `build_from_file` could not be converted to a c-string.
+    PathNotCString,
+    /// The call to `nvgCreateImage`, or similar functions, failed.
+    CreateImageFailed,
+    /// For `from_rgba`, the passed data slice does not contain enough data for the specified image size.
+    NotEnoughData,
+}
+
+impl From<NulError> for ImageBuilderError {
+    fn from(_: NulError) -> Self {
+        ImageBuilderError::PathNotCString
+    }
+}
+
+pub type ImageBuilderResult<'a> = Result<Image<'a>, ImageBuilderError>;
+
+/// Handle to an image.
+pub struct Image<'a>(&'a Context, c_int);
+
+impl<'a> Image<'a> {
+    pub fn new(context: &'a Context) -> ImageBuilder {
+        ImageBuilder::new(context)
+    }
+
+    fn ctx(&self) -> &Context {
         self.0
+    }
+
+    fn raw(&self) -> c_int {
+        self.1
+    }
+}
+
+impl<'a> Drop for Image<'a> {
+    fn drop(&mut self) {
+        unsafe { ffi::nvgDeleteImage(self.ctx().raw(), self.raw()); }
+        self.1 = 0;
     }
 }
 
