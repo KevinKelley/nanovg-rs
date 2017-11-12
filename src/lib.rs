@@ -98,7 +98,7 @@ impl Context {
         unsafe { ffi::nvgEndFrame(self.raw()); }
     }
 
-    pub fn global_composite_operation(&self, operation: CompositeOperation) {
+    fn global_composite_operation(&self, operation: CompositeOperation) {
         let ctx = self.raw();
         match operation {
             CompositeOperation::Basic(basic) => unsafe {
@@ -114,8 +114,23 @@ impl Context {
         }
     }
 
-    pub fn global_alpha(&self, alpha: f32) {
+    fn global_alpha(&self, alpha: f32) {
         unsafe { ffi::nvgGlobalAlpha(self.raw(), alpha as c_float); }
+    }
+
+    fn scissor(&self, scissor: Option<Scissor>) {
+        if let Some(scissor) = scissor {
+            match scissor {
+                Scissor::Rect { x, y, width, height } => unsafe {
+                    ffi::nvgScissor(self.raw(), x, y, width, height);
+                },
+                Scissor::Intersect { x, y, width, height } => unsafe {
+                    ffi::nvgIntersectScissor(self.raw(), x, y, width, height);
+                }
+            }
+        } else {
+            unsafe { ffi::nvgResetScissor(self.raw()); }
+        }
     }
 }
 
@@ -169,12 +184,18 @@ pub enum Scissor {
 pub struct PathOptions {
     /// The scissor defines the rectangular boundary in which the frame is clipped into.
     pub scissor: Option<Scissor>,
+    /// Defines how overlapping paths are composited together.
+    pub composite_operation: CompositeOperation,
+    /// The alpha component of the path.
+    pub alpha: f32,
 }
 
 impl Default for PathOptions {
     fn default() -> Self {
         Self {
             scissor: None,
+            composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Atop),
+            alpha: 1.0,
         }
     }
 }
@@ -191,18 +212,9 @@ impl<'a> Frame<'a> {
     }
 
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
-        if let Some(scissor) = options.scissor {
-            match scissor {
-                Scissor::Rect { x, y, width, height } => unsafe {
-                    ffi::nvgScissor(self.context.raw(), x, y, width, height);
-                },
-                Scissor::Intersect { x, y, width, height } => unsafe {
-                    ffi::nvgIntersectScissor(self.context.raw(), x, y, width, height);
-                }
-            }
-        } else {
-            unsafe { ffi::nvgResetScissor(self.context.raw()); }
-        }
+        self.context.global_composite_operation(options.composite_operation);
+        self.context.global_alpha(options.alpha);
+        self.context.scissor(options.scissor);
 
         unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));

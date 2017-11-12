@@ -62,9 +62,6 @@ fn main() {
         // Let's draw a frame!
 
         context.frame((width, height), ratio, |frame| {
-            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
-            context.global_alpha(1.0);
-
             // Draw red-filled rectangle.
             frame.path(|path| {
                 path.rect((100.0, 100.0), (300.0, 300.0));
@@ -73,9 +70,6 @@ fn main() {
                     .. Default::default()
                 });
             }, Default::default());
-
-            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Lighter));
-            context.global_alpha(elapsed.cos() * 0.5 + 0.5);
 
             // Draw custom yellow/blue shape.
             frame.path(|path| {
@@ -94,10 +88,11 @@ fn main() {
                     coloring_style: ColoringStyle::Color(Color::new(0.2, 0.0, 0.8, 1.0)),
                     .. Default::default()
                 });
-            }, Default::default());
-
-            context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
-            context.global_alpha(1.0);
+            }, PathOptions {
+                composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
+                alpha: elapsed.cos() * 0.5 + 0.5,
+                .. Default::default()
+            });
 
             // Draw rolling image
             frame.path(|path| {
