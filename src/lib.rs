@@ -525,6 +525,16 @@ impl<'a> Image<'a> {
         ImageBuilder::new(context)
     }
 
+    pub fn size(&self) -> (usize, usize) {
+        let (mut w, mut h): (c_int, c_int) = (0, 0);
+        unsafe { ffi::nvgImageSize(self.ctx(), self.raw(), &w as *mut _, &h as *mut _); }
+        (w as usize, h as usize)
+    }
+
+    pub fn update(&mut self, data: &[u32]) {
+        unsafe { ffi::nvgUpdateImage(self.ctx(), self.raw(), data as *const _); }
+    }
+
     fn ctx(&self) -> &Context {
         self.0
     }
