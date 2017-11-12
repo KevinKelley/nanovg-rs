@@ -5,7 +5,7 @@ extern crate nanovg;
 use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation};
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation, PathOptions, Scissor};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -72,7 +72,7 @@ fn main() {
                     coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(&context, (100.0, 100.0), (400.0, 400.0), Color::from_rgb(0xAA, 0x6C, 0x39), Color::from_rgb(0x88, 0x2D, 0x60))),
                     .. Default::default()
                 });
-            });
+            }, Default::default());
 
             context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Lighter));
             context.global_alpha(elapsed.cos() * 0.5 + 0.5);
@@ -94,7 +94,7 @@ fn main() {
                     coloring_style: ColoringStyle::Color(Color::new(0.2, 0.0, 0.8, 1.0)),
                     .. Default::default()
                 });
-            });
+            }, Default::default());
 
             context.global_composite_operation(CompositeOperation::Basic(BasicCompositeOperation::Atop));
             context.global_alpha(1.0);
@@ -111,6 +111,9 @@ fn main() {
                     coloring_style: ColoringStyle::Paint(paint),
                     .. Default::default()
                 })
+            }, PathOptions {
+                scissor: Some(Scissor::Rect { x: 150.0, y: 600.0, width: 1000.0, height: 200.0 }),
+                .. Default::default()
             });
 
             // Draw stroked rectangle.
@@ -126,7 +129,7 @@ fn main() {
                     width: 5.0,
                     .. Default::default()
                 });
-            });
+            }, Default::default());
         });
 
         gl_window.swap_buffers().unwrap();

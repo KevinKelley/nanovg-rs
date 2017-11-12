@@ -146,8 +146,37 @@ impl Drop for Context {
     }
 }
 
-pub struct FrameOptions {
+pub enum Scissor {
+    /// Defines a rectangular scissor.
+    Rect {
+        x: f32,
+        y: f32,
+        width: f32,
+        height: f32,
+    },
+    /// Define the scissor to be the intersection between the current scissor rectangle
+    /// and the specified rectangle.
+    /// The current and specified rectangles are always transformed to be in the current transform space.
+    Intersect {
+        x: f32,
+        y: f32,
+        width: f32,
+        height: f32,
+    }
+}
 
+/// Provides options to change how a frame renders.
+pub struct PathOptions {
+    /// The scissor defines the rectangular boundary in which the frame is clipped into.
+    pub scissor: Option<Scissor>,
+}
+
+impl Default for PathOptions {
+    fn default() -> Self {
+        Self {
+            scissor: None,
+        }
+    }
 }
 
 pub struct Frame<'a> {
@@ -161,7 +190,20 @@ impl<'a> Frame<'a> {
         }
     }
 
-    pub fn path<F: FnOnce(Path)>(&self, handler: F) {
+    pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
+        if let Some(scissor) = options.scissor {
+            match scissor {
+                Scissor::Rect { x, y, width, height } => unsafe {
+                    ffi::nvgScissor(self.context.raw(), x, y, width, height);
+                },
+                Scissor::Intersect { x, y, width, height } => unsafe {
+                    ffi::nvgIntersectScissor(self.context.raw(), x, y, width, height);
+                }
+            }
+        } else {
+            unsafe { ffi::nvgResetScissor(self.context.raw()); }
+        }
+
         unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));
     }
