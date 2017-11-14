@@ -139,6 +139,7 @@ pub struct NVGtextRow {
 
 #[link(name = "nanovg", kind = "static")]
 extern {
+	pub fn gladLoadGL() -> i32;
 	pub fn nvgBeginFrame(ctx: *mut NVGcontext, windowWidth: c_int, windowHeight: c_int, devicePixelRatio: c_float);
 	pub fn nvgCancelFrame(ctx: *mut NVGcontext);
 	pub fn nvgEndFrame(ctx: *mut NVGcontext);
