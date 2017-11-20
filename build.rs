@@ -14,6 +14,9 @@ fn build_library(backend_macro: &str) {
         println!("cargo:rustc-link-lib=GL");
     } else if target.contains("darwin") {
         println!("cargo:rustc-link-lib=framework=OpenGL");
+    } else if target.contains("windows") {
+        config.file("glad/glad.c");
+        config.include("glad");
     }
     config.compile("libnanovg.a")
 }
