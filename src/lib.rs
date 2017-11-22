@@ -43,13 +43,17 @@ impl CreateFlags {
 }
 
 #[cfg(target_os = "windows")]
-fn init_gl() -> bool {
-    return unsafe { ffi::gladLoadGL() } == 1;
+fn init_gl() -> Result<(), ()> {
+    if unsafe { ffi::gladLoadGL() } == 1 {
+        Ok(())
+    } else {
+        Err(())
+    }
 }
 
 #[cfg(not(target_os = "windows"))]
-fn init_gl() -> bool {
-    true
+fn init_gl() -> Result<(), ()> {
+    Ok(())
 }
 
 pub struct Context(*mut ffi::NVGcontext);
@@ -61,9 +65,7 @@ impl Context {
 
     #[cfg(feature = "gl3")]
     pub fn with_gl3(flags: CreateFlags) -> Result<Self, ()> {
-        if init_gl() == false {
-            return Err(());
-        }
+        init_gl()?;
         let raw = unsafe { ffi::nvgCreateGL3(flags.bits()) };
         if !raw.is_null() {
             Ok(Context(raw))
@@ -74,9 +76,7 @@ impl Context {
 
     #[cfg(feature = "gl2")]
     pub fn with_gl2(flags: CreateFlags) -> Result<Self, ()> {
-        if init_gl() == false {
-            return Err(());
-        }
+        init_gl()?;
         let raw = unsafe { ffi::nvgCreateGL2(flags.bits()) };
         if !raw.is_null() {
             Ok(Context(raw))
