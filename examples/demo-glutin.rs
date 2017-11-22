@@ -94,7 +94,7 @@ fn main() {
                 .. Default::default()
             });
 
-            // Draw rolling image
+            // Draw rolling image (with scissors)
             frame.path(|path| {
                 let radius = 100.0;
                 let distance = 500.0; // Distance to roll
