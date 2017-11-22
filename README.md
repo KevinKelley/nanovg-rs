@@ -1,82 +1,55 @@
-NanoVG Rust wrapper
-===================
+# NanoVG - Rust Wrapper
 
-**Now with Cargo!**
+NanoVG-RS is a wrapper around the [NanoVG vector graphics library](https://github.com/memononen/nanovg) for the Rust programming language.
 
-This is a Rust-language wrapper for the NanoVG vector graphics library.
+> NanoVG is small antialiased vector graphics rendering library for OpenGL. It has lean API modeled after HTML5 canvas API. It is aimed to be a practical and fun toolset for building scalable user interfaces and visualizations.
 
-NanoVG is written in C, and it supports several back-ends: GL2, GL3, GLES...
+NanoVG-RS provides a fully featured, functional, high-level and Rust-idiomatic API on top of the NanoVG C-API.
 
-NanoVG is not an extremely complete or extensive implementation of vector graphics.
-It is however small and hardware-accelerated, which is what I want.
+# Building
 
-## Screenshot
+We recommend grabbing the latest release from [crates.io](https://crates.io/crates/nanovg).
 
-![yay! screenshot works in rust demo!](/screenshot.png)
-
-Prerequisites
-=============
-
-This build process will produce a Rust library, which includes the Rust wrapper
-for nanovg functions, and which statically links in those functions.
-NanoVG only does the graphics drawing, though; you'll need to be
-getting a GL context from somewhere.  The examples use GLFW.
-
-Examples require GLFW3 to be installed.
-
-Building
-========
-
-Build using Cargo:
+Alternatively, you can clone and build the library yourself:
 
     git clone --recursive https://github.com/KevinKelley/nanovg-rs
     cd nanovg-rs
     cargo build
 
-To build the demo, then:
+This library comes with a very useful example called `demo-glutin`. If you want to make sure that nanovg is working on your system, clone and build this crate as shown above and run the command `cargo run --example demo-glutin --features="gl3"`. This should produce a window similar to that below.
 
-    cd examples/demo
-    cargo build
-    ./target/debug/example
-
-Note that font and image resources won't be found if you run from
-inside the target directory.
-
-In the demo,
-- 'p' switches between pre- and un-premultiplied alpha;
-- 's' saves a screenshot;
-- and 'space' toggles scale/rotate of the pseudo-window stuff.
+**Note** that when running the examples, the needed resources might not be found if you run it without a `cargo run --example` command. Thist is just a working-directory path issue.
 
 Usage
 =====
 
-Add the following to `Cargo.toml`:
+Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies.nanovg]
-version = "*"
+version = "Use the latest version from crates.io"
 features = ["glX"]
 ```
 
-where `glX` should be exactly one of `gl2`, `gl3`, `gles2` or `gles3`,
-to specify the version of OpenGL for which NanoVG should be built.
+`glX` can be exactly one of `gl2`, `gl3`, `gles2` or `gles3`,
+to specify the version of OpenGL to use. Use `gl3` or `gl2` for computers and `gles3` or `gles2` for mobile devices.
 
-Used By
-=======
+**TODO: SIMPLE API GUIDE**
 
-- [Blendish-rs](https://github.com/KevinKelley/blendish-rs) (Blender-themed widgets)
+# Screenshots
 
-License
-=======
+![demo-glutin](/screenshot.png)
+Output of the `demo-glutin` example.
 
-The binding is licensed under [the MIT license](LICENSE.txt).
-NanoVG is released under the zlib license.
-
-Links
-=====
+# Interesting Links
 
 - [Blendish](https://bitbucket.org/duangle/blendish)
 - [NanoVG](https://github.com/memononen/nanovg)
-- [rust-bindgen](https://github.com/crabtw/rust-bindgen) (thanks!)
 - [gl-rs](https://github.com/bjz/gl-rs)
+- [Glutin](https://github.com/tomaka/glutin)
 - [glfw-rs](https://github.com/PistonDevelopers/glfw-rs)
+
+# License
+
+The binding is licensed under [the MIT license](LICENSE.txt).
+NanoVG is released under the zlib license.
