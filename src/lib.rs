@@ -310,7 +310,6 @@ impl<'a, 'b> Path<'a, 'b> {
         let ctx = self.ctx();
         unsafe { ffi::nvgMoveTo(ctx, x, y); }
         handler(SubPath::new(self));
-        unsafe { ffi::nvgClosePath(ctx); }
     }
 }
 
@@ -351,6 +350,10 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
 
     pub fn winding(&self, direction: Direction) {
         unsafe { ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits()); }
+    }
+
+    pub fn close(&self) {
+        unsafe { ffi::nvgClosePath(self.ctx()); }
     }
 }
 
