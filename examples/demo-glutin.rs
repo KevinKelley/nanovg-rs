@@ -30,7 +30,7 @@ fn main() {
         .repeat_x()
         .build_from_file("resources/lenna.png")
         .expect("Couldn't load image");
-    let mechanic_font = nanovg::Font::from_file(&context, "Hermit", "resources/Mechanic of the Heart.ttf").expect("Failed to load font 'Mechanic of the Heart.ttf'");
+    let mechanic_font = nanovg::Font::from_file(&context, "Mechanic", "resources/Mechanic of the Heart.ttf").expect("Failed to load font 'Mechanic of the Heart.ttf'");
 
     let start_time = Instant::now();
     let mut running = true;
@@ -129,7 +129,7 @@ fn main() {
             }, Default::default());
         });
 
-        context.text(mechanic_font, "Hello world", TextOptions {
+        context.text(mechanic_font, (50.0, 50.0), "Hello world", TextOptions {
             color: Color::new(1.0, 1.0, 1.0, 1.0),
             size: 24.0,
             letter_spacing: (elapsed.sin() * 0.5 + 0.5) * 30.0,

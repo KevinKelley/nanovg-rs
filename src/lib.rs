@@ -149,8 +149,13 @@ impl Context {
         }
     }
 
-    pub fn text(&self, font: Font, text: &str, options: TextOptions) {
-        let text = CString::new(text).unwrap();
+    /// Draw a string on the screen.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
+        let text = CString::new(text.as_ref()).unwrap();
         unsafe {
             ffi::nvgFontFaceId(self.raw(), font.id());
             ffi::nvgFillColor(self.raw(), options.color.into_raw());
@@ -158,7 +163,7 @@ impl Context {
             ffi::nvgFontBlur(self.raw(), options.blur);
             ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
             ffi::nvgTextLineHeight(self.raw(), options.line_height);
-            ffi::nvgText(self.raw(), 50.0, 50.0, text.into_raw(), 0 as *const _);
+            ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
         }
     }
 }
