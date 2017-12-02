@@ -148,6 +148,19 @@ impl Context {
             unsafe { ffi::nvgResetScissor(self.raw()); }
         }
     }
+
+    pub fn text(&self, font: Font, text: &str, options: TextOptions) {
+        let text = CString::new(text).unwrap();
+        unsafe {
+            ffi::nvgFontFaceId(self.raw(), font.id());
+            ffi::nvgFillColor(self.raw(), options.color.into_raw());
+            ffi::nvgFontSize(self.raw(), options.size);
+            ffi::nvgFontBlur(self.raw(), options.blur);
+            ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
+            ffi::nvgTextLineHeight(self.raw(), options.line_height);
+            ffi::nvgText(self.raw(), 50.0, 50.0, text.into_raw(), 0 as *const _);
+        }
+    }
 }
 
 impl Drop for Context {
@@ -720,5 +733,126 @@ impl BlendFactor {
             OneMinusDestinationAlpha => ffi::NVGblendFactor::NVG_ONE_MINUS_DST_ALPHA,
             SourceAlphaSaturate => ffi::NVGblendFactor::NVG_SRC_ALPHA_SATURATE,
         }
+    }
+}
+
+#[derive(Clone, Copy)]
+/// A handle to a font.
+/// Fonts are handled by the NanoVG context itself. View this type only as a 'reference' to a font.
+pub struct Font<'a>(&'a Context, c_int);
+
+#[derive(Debug)]
+pub enum CreateFontError {
+    /// Conversion from a Rust-utf8-string to a CString failed.
+    CStringError,
+    /// A specified path is invalid somehow.
+    InvalidPath,
+    /// The font handle returned by the ffi functions is invalid.
+    InvalidHandle,
+}
+
+impl From<NulError> for CreateFontError {
+    fn from(_: NulError) -> Self {
+        CreateFontError::CStringError
+    }
+}
+
+pub type CreateFontResult<'a> = Result<Font<'a>, CreateFontError>;
+
+impl<'a> Font<'a> {
+    fn id(&self) -> c_int {
+        self.1
+    }
+
+    /// Attempt to load a font from the file at `path`.
+    /// Fonts are always named (specified with `name`).
+    pub fn from_file<S: AsRef<str>, P: AsRef<IoPath>>(context: &'a Context, name: S, path: P) -> CreateFontResult {
+        let name = CString::new(name.as_ref())?;
+        let path = CString::new(path.as_ref().to_str().ok_or(CreateFontError::InvalidPath)?)?;
+        let handle = unsafe { ffi::nvgCreateFont(context.raw(), name.into_raw(), path.into_raw()) };
+        if handle > ffi::FONS_INVALID {
+            Ok(Font(context, handle))
+        } else {
+            Err(CreateFontError::InvalidHandle)
+        }
+    }
+}
+
+/// Options which control the visual appearance of a text.
+pub struct TextOptions {
+    /// The size of the text in points.
+    pub size: f32,
+    /// The radial blur of the text, in pixels.
+    pub blur: f32,
+    /// How much each individual letter of the text should be apart.
+    pub letter_spacing: f32,
+    /// The height for each line. Specified in multiplies of the font height.
+    /// Ex.: a `line_height` of 3.0 means each line is font height * 3 apart.
+    pub line_height: f32,
+    /// How to align the text.
+    pub align: Alignment,
+    /// The fill color of the text.
+    pub color: Color,
+}
+
+impl Default for TextOptions {
+    fn default() -> Self {
+        Self {
+            size: 12.0,
+            blur: 0.0,
+            letter_spacing: 0.0,
+            line_height: 1.0,
+            align: Alignment::new(),
+            color: Color::new(0.0, 0.0, 0.0, 0.0),
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Alignment(ffi::NVGalign);
+
+impl Alignment {
+    fn into_raw(self) -> ffi::NVGalign {
+        self.0
+    }
+
+    /// Creates a new, empty / unspecified alignment.
+    pub fn new() -> Self {
+        Alignment(ffi::NVGalign::empty())
+    }
+
+    pub fn left(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_LEFT;
+        self
+    }
+
+    pub fn center(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_CENTER;
+        self
+    }
+
+    pub fn right(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_RIGHT;
+        self
+    }
+
+    pub fn top(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_TOP;
+        self
+    }
+
+    pub fn middle(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_MIDDLE;
+        self
+    }
+
+    pub fn bottom(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_BOTTOM;
+        self
+    }
+
+    pub fn baseline(mut self) -> Self {
+        self.0 |= ffi::NVGalign::NVG_ALIGN_BASELINE;
+        self
     }
 }

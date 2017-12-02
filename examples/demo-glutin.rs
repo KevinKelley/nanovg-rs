@@ -5,7 +5,7 @@ extern crate nanovg;
 use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation, PathOptions, Scissor};
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation, PathOptions, Scissor, TextOptions};
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
@@ -30,6 +30,7 @@ fn main() {
         .repeat_x()
         .build_from_file("resources/lenna.png")
         .expect("Couldn't load image");
+    let mechanic_font = nanovg::Font::from_file(&context, "Hermit", "resources/Mechanic of the Heart.ttf").expect("Failed to load font 'Mechanic of the Heart.ttf'");
 
     let start_time = Instant::now();
     let mut running = true;
@@ -126,6 +127,13 @@ fn main() {
                     .. Default::default()
                 });
             }, Default::default());
+        });
+
+        context.text(mechanic_font, "Hello world", TextOptions {
+            color: Color::new(1.0, 1.0, 1.0, 1.0),
+            size: 24.0,
+            letter_spacing: (elapsed.sin() * 0.5 + 0.5) * 30.0,
+            .. Default::default()
         });
 
         gl_window.swap_buffers().unwrap();

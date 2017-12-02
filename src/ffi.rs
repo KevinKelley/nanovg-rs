@@ -3,6 +3,8 @@
 
 use libc::{c_char, c_uchar, c_int, c_float, c_void};
 
+pub const FONS_INVALID: c_int = -1;
+
 pub type NVGcontext = c_void;
 
 // No reason to use a union here, since the nanovg guys
