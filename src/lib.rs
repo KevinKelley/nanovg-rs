@@ -151,7 +151,7 @@ impl Context {
 
     /// Draw a string on the screen.
     /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
     /// `text` the string to draw.
     /// `options` optional (`Default::default`) options that control the visual appearance of the text.
     pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
@@ -163,6 +163,7 @@ impl Context {
             ffi::nvgFontBlur(self.raw(), options.blur);
             ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
             ffi::nvgTextLineHeight(self.raw(), options.line_height);
+            ffi::nvgTextAlign(self.raw(), options.align.into_raw().bits());
             ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
         }
     }
