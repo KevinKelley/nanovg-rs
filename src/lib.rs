@@ -777,7 +777,7 @@ impl<'a> ImageBuilder<'a> {
     pub fn build_from_file<P: AsRef<IoPath>>(self, file: P) -> ImageBuilderResult<'a> {
         let path = match file.as_ref().to_str() {
             Some(p) => CString::new(p.to_owned())?,
-            None => return Err(ImageBuilderError::PathNotCString),
+            None => return Err(ImageBuilderError::CStringError),
         };
 
         let handle =
@@ -837,7 +837,7 @@ impl<'a> ImageBuilder<'a> {
 #[derive(Clone, Copy, Debug)]
 pub enum ImageBuilderError {
     /// The path for `build_from_file` could not be converted to a c-string.
-    PathNotCString,
+    CStringError,
     /// The call to `nvgCreateImage`, or similar functions, failed.
     CreateImageFailed,
     /// For `from_rgba`, the passed data slice does not contain enough data for the specified image size.
@@ -846,7 +846,7 @@ pub enum ImageBuilderError {
 
 impl From<NulError> for ImageBuilderError {
     fn from(_: NulError) -> Self {
-        ImageBuilderError::PathNotCString
+        ImageBuilderError::CStringError
     }
 }
 
