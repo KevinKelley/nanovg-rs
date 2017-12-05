@@ -149,13 +149,7 @@ impl Context {
         }
     }
 
-    /// Draw a string on the screen.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
-    /// `text` the string to draw.
-    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
-        let text = CString::new(text.as_ref()).unwrap();
+    fn text_prepare(&self, font: Font, options: TextOptions) {
         unsafe {
             ffi::nvgFontFaceId(self.raw(), font.id());
             ffi::nvgFillColor(self.raw(), options.color.into_raw());
@@ -164,8 +158,29 @@ impl Context {
             ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
             ffi::nvgTextLineHeight(self.raw(), options.line_height);
             ffi::nvgTextAlign(self.raw(), options.align.into_raw().bits());
-            ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
         }
+    }
+
+    /// Draw a single line on the screen. Newline characters are ignored.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe { ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _); }
+    }
+
+    /// Draw multiline text on the screen.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text_box<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe { ffi::nvgTextBox(self.raw(), x, y, options.line_max_width, text.into_raw(), 0 as *const _); }
     }
 }
 
@@ -766,6 +781,10 @@ impl From<NulError> for CreateFontError {
 pub type CreateFontResult<'a> = Result<Font<'a>, CreateFontError>;
 
 impl<'a> Font<'a> {
+    fn ctx(&self) -> *mut ffi::NVGcontext {
+        self.0.raw()
+    }
+
     fn id(&self) -> c_int {
         self.1
     }
@@ -782,9 +801,41 @@ impl<'a> Font<'a> {
             Err(CreateFontError::InvalidHandle)
         }
     }
+
+    /// Attempt to load a font from memory.
+    /// Fonts are always named (specified with `name`).
+    pub fn from_memory<'b, S: AsRef<str>>(context: &'a Context, name: S, memory: &'b [u8]) -> CreateFontResult<'a> {
+        let name = CString::new(name.as_ref())?;
+        let handle = unsafe { ffi::nvgCreateFontMem(context.raw(), name.into_raw(), memory.as_ptr() as *mut _, memory.len() as c_int, 0) };
+        if handle > ffi::FONS_INVALID {
+            Ok(Font(context, handle))
+        } else {
+            Err(CreateFontError::InvalidHandle)
+        }
+    }
+
+    /// Try to find a already loaded font with the given `name`.
+    pub fn find<S: AsRef<str>>(context: &'a Context, name: S) -> CreateFontResult {
+        let handle = unsafe { ffi::nvgFindFont(context.raw(), CString::new(name.as_ref())?.into_raw()) };
+        if handle > ffi::FONS_INVALID {
+            Ok(Font(context, handle))
+        } else {
+            Err(CreateFontError::InvalidHandle)
+        }
+    }
+
+    /// Add `fallback` as a fallback for the current font.
+    /// If the font renderer fails to rasterize a glyph with the main font, it will automatically
+    /// attempt to rasterize the same glyph with the fallback font.
+    /// This process continues until no working font is found, then the glyph is skipped.
+    pub fn add_fallback(&self, fallback: Font) -> bool {
+        let res = unsafe { ffi::nvgAddFallbackFontId(self.ctx(), self.id(), fallback.id()) };
+        res != 0
+    }
 }
 
 /// Options which control the visual appearance of a text.
+#[derive(Clone, Copy)]
 pub struct TextOptions {
     /// The size of the text in points.
     pub size: f32,
@@ -795,6 +846,8 @@ pub struct TextOptions {
     /// The height for each line. Specified in multiplies of the font height.
     /// Ex.: a `line_height` of 3.0 means each line is font height * 3 apart.
     pub line_height: f32,
+    /// The width at which multiline text is automatically wrapped.
+    pub line_max_width: f32,
     /// How to align the text.
     pub align: Alignment,
     /// The fill color of the text.
@@ -808,6 +861,7 @@ impl Default for TextOptions {
             blur: 0.0,
             letter_spacing: 0.0,
             line_height: 1.0,
+            line_max_width: std::f32::MAX,
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
         }
@@ -822,43 +876,68 @@ impl Alignment {
         self.0
     }
 
-    /// Creates a new, empty / unspecified alignment.
+    /// Create a new top-left alignment.
     pub fn new() -> Self {
-        Alignment(ffi::NVGalign::empty())
+        Alignment(ffi::NVGalign::empty()).top().left()
     }
 
+    /// Set the horizontal alignment to left.
     pub fn left(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_LEFT;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_RIGHT);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_CENTER);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_LEFT);
         self
     }
 
+    /// Set the horizontal alignment to center.
     pub fn center(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_CENTER;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_LEFT);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_RIGHT);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_CENTER);
         self
     }
 
+    /// Set the horizontal alignment to right.
     pub fn right(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_RIGHT;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_LEFT);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_CENTER);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_RIGHT);
         self
     }
 
+    /// Set the vertical alignment to top.
     pub fn top(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_TOP;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BOTTOM);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_MIDDLE);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BASELINE);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_TOP);
         self
     }
 
+    /// Set the vertical alignment to middle.
     pub fn middle(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_MIDDLE;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_TOP);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BOTTOM);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BASELINE);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_MIDDLE);
         self
     }
 
+    /// Set the vertical alignment to bottom.
     pub fn bottom(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_BOTTOM;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_TOP);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_MIDDLE);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BASELINE);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_BOTTOM);
         self
     }
 
+    /// Set the vertical alignment to baseline.
     pub fn baseline(mut self) -> Self {
-        self.0 |= ffi::NVGalign::NVG_ALIGN_BASELINE;
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_TOP);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_MIDDLE);
+        self.0.remove(ffi::NVGalign::NVG_ALIGN_BOTTOM);
+        self.0.insert(ffi::NVGalign::NVG_ALIGN_BASELINE);
         self
     }
 }
