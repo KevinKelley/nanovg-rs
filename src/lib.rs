@@ -17,9 +17,7 @@ pub struct CreateFlags {
 #[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
 impl CreateFlags {
     pub fn new() -> Self {
-        CreateFlags {
-            flags: ffi::NVGcreateFlags::empty(),
-        }
+        CreateFlags { flags: ffi::NVGcreateFlags::empty() }
     }
 
     pub fn antialias(mut self) -> Self {
@@ -105,13 +103,27 @@ impl Context {
         }
     }
 
-    pub fn frame<F: FnOnce(Frame)>(&self, (width, height): (i32, i32), device_pixel_ratio: f32, handler: F) {
-        unsafe { ffi::nvgBeginFrame(self.raw(), width as c_int, height as c_int, device_pixel_ratio as c_float);  }
+    pub fn frame<F: FnOnce(Frame)>(
+        &self,
+        (width, height): (i32, i32),
+        device_pixel_ratio: f32,
+        handler: F,
+    ) {
+        unsafe {
+            ffi::nvgBeginFrame(
+                self.raw(),
+                width as c_int,
+                height as c_int,
+                device_pixel_ratio as c_float,
+            );
+        }
         {
             let frame = Frame::new(self);
             handler(frame);
         }
-        unsafe { ffi::nvgEndFrame(self.raw()); }
+        unsafe {
+            ffi::nvgEndFrame(self.raw());
+        }
     }
 
     fn global_composite_operation(&self, operation: CompositeOperation) {
@@ -120,32 +132,59 @@ impl Context {
             CompositeOperation::Basic(basic) => unsafe {
                 ffi::nvgGlobalCompositeOperation(ctx, basic.into_raw() as c_int);
             },
-            CompositeOperation::BlendFunc { source: src, destination: dst } => unsafe {
+            CompositeOperation::BlendFunc {
+                source: src,
+                destination: dst,
+            } => unsafe {
                 ffi::nvgGlobalCompositeBlendFunc(ctx, src.into_raw().bits(), dst.into_raw().bits());
             },
-            CompositeOperation::BlendFuncSeparate { rgb_source: rs, rgb_destination: rd, alpha_source: als, alpha_destination: ald } => unsafe {
-                let (rs, rd, als, ald) = (rs.into_raw().bits(), rd.into_raw().bits(), als.into_raw().bits(), ald.into_raw().bits());
+            CompositeOperation::BlendFuncSeparate {
+                rgb_source: rs,
+                rgb_destination: rd,
+                alpha_source: als,
+                alpha_destination: ald,
+            } => unsafe {
+                let (rs, rd, als, ald) = (
+                    rs.into_raw().bits(),
+                    rd.into_raw().bits(),
+                    als.into_raw().bits(),
+                    ald.into_raw().bits(),
+                );
                 ffi::nvgGlobalCompositeBlendFuncSeparate(ctx, rs, rd, als, ald);
-            }
+            },
         }
     }
 
     fn global_alpha(&self, alpha: f32) {
-        unsafe { ffi::nvgGlobalAlpha(self.raw(), alpha as c_float); }
+        unsafe {
+            ffi::nvgGlobalAlpha(self.raw(), alpha as c_float);
+        }
     }
 
     fn scissor(&self, scissor: Option<Scissor>) {
         if let Some(scissor) = scissor {
             match scissor {
-                Scissor::Rect { x, y, width, height } => unsafe {
+                Scissor::Rect {
+                    x,
+                    y,
+                    width,
+                    height,
+                } => unsafe {
                     ffi::nvgScissor(self.raw(), x, y, width, height);
                 },
-                Scissor::Intersect { x, y, width, height } => unsafe {
+                Scissor::Intersect {
+                    x,
+                    y,
+                    width,
+                    height,
+                } => unsafe {
                     ffi::nvgIntersectScissor(self.raw(), x, y, width, height);
-                }
+                },
             }
         } else {
-            unsafe { ffi::nvgResetScissor(self.raw()); }
+            unsafe {
+                ffi::nvgResetScissor(self.raw());
+            }
         }
     }
 
@@ -166,10 +205,18 @@ impl Context {
     /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
     /// `text` the string to draw.
     /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
+    pub fn text<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
-        unsafe { ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _); }
+        unsafe {
+            ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
+        }
     }
 
     /// Draw multiline text on the screen.
@@ -177,38 +224,59 @@ impl Context {
     /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
     /// `text` the string to draw.
     /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text_box<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
+    pub fn text_box<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
-        unsafe { ffi::nvgTextBox(self.raw(), x, y, options.line_max_width, text.into_raw(), 0 as *const _); }
+        unsafe {
+            ffi::nvgTextBox(
+                self.raw(),
+                x,
+                y,
+                options.line_max_width,
+                text.into_raw(),
+                0 as *const _,
+            );
+        }
     }
 }
 
 impl Drop for Context {
     #[cfg(feature = "gl3")]
     fn drop(&mut self) {
-        unsafe { ffi::nvgDeleteGL3(self.0); }
+        unsafe {
+            ffi::nvgDeleteGL3(self.0);
+        }
     }
 
     #[cfg(feature = "gl2")]
     fn drop(&mut self) {
-        unsafe { ffi::nvgDeleteGL2(self.0); }
+        unsafe {
+            ffi::nvgDeleteGL2(self.0);
+        }
     }
 
     #[cfg(feature = "gles3")]
     fn drop(&mut self) {
-        unsafe { ffi::nvgDeleteGLES3(self.0); }
+        unsafe {
+            ffi::nvgDeleteGLES3(self.0);
+        }
     }
 
     #[cfg(feature = "gles2")]
     fn drop(&mut self) {
-        unsafe { ffi::nvgDeleteGLES2(self.0); }
+        unsafe {
+            ffi::nvgDeleteGLES2(self.0);
+        }
     }
 
     #[cfg(not(any(feature = "gl3", feature = "gl2", feature = "gles3", feature = "gles2")))]
-    fn drop(&mut self) {
-
-    }
+    fn drop(&mut self) {}
 }
 
 pub enum Scissor {
@@ -227,7 +295,7 @@ pub enum Scissor {
         y: f32,
         width: f32,
         height: f32,
-    }
+    },
 }
 
 /// Provides options to change how a frame renders.
@@ -256,33 +324,33 @@ pub struct Frame<'a> {
 
 impl<'a> Frame<'a> {
     fn new(context: &'a Context) -> Self {
-        Self {
-            context,
-        }
+        Self { context }
     }
 
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
-        self.context.global_composite_operation(options.composite_operation);
+        self.context.global_composite_operation(
+            options.composite_operation,
+        );
         self.context.global_alpha(options.alpha);
         self.context.scissor(options.scissor);
 
-        unsafe { ffi::nvgBeginPath(self.context.raw()); }
+        unsafe {
+            ffi::nvgBeginPath(self.context.raw());
+        }
         handler(Path::new(self));
     }
 }
 
 pub struct Path<'a, 'b>
 where
-    'b: 'a
+    'b: 'a,
 {
     frame: &'a Frame<'b>,
 }
 
 impl<'a, 'b> Path<'a, 'b> {
     fn new(frame: &'a Frame<'b>) -> Self {
-        Self {
-            frame,
-        }
+        Self { frame }
     }
 
     fn ctx(&self) -> *mut ffi::NVGcontext {
@@ -315,34 +383,85 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
-    pub fn arc(&self, (cx, cy): (f32, f32), radius: f32, start_angle: f32, end_angle: f32, direction: Direction) {
-        unsafe { ffi::nvgArc(self.ctx(), cx, cy, radius, start_angle, end_angle, direction.into_raw().bits()); }
+    pub fn arc(
+        &self,
+        (cx, cy): (f32, f32),
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        direction: Direction,
+    ) {
+        unsafe {
+            ffi::nvgArc(
+                self.ctx(),
+                cx,
+                cy,
+                radius,
+                start_angle,
+                end_angle,
+                direction.into_raw().bits(),
+            );
+        }
     }
 
     pub fn rect(&self, (x, y): (f32, f32), (w, h): (f32, f32)) {
-        unsafe { ffi::nvgRect(self.ctx(), x as c_float, y as c_float, w as c_float, h as c_float); }
+        unsafe {
+            ffi::nvgRect(
+                self.ctx(),
+                x as c_float,
+                y as c_float,
+                w as c_float,
+                h as c_float,
+            );
+        }
     }
 
     pub fn rounded_rect(&self, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32) {
-        unsafe { ffi::nvgRoundedRect(self.ctx(), x, y, w, h, radius); }
+        unsafe {
+            ffi::nvgRoundedRect(self.ctx(), x, y, w, h, radius);
+        }
     }
 
     /// `top_radii` and `bottom_radii` are both tuples in the form (left, right).
-    pub fn rounded_rect_varying(&self, (x, y): (f32, f32), (w, h): (f32, f32), top_radii: (f32, f32), bottom_radii: (f32, f32)) {
-        unsafe { ffi::nvgRoundedRectVarying(self.ctx(), x, y, w, h, top_radii.0, top_radii.1, bottom_radii.1, bottom_radii.0); }
+    pub fn rounded_rect_varying(
+        &self,
+        (x, y): (f32, f32),
+        (w, h): (f32, f32),
+        top_radii: (f32, f32),
+        bottom_radii: (f32, f32),
+    ) {
+        unsafe {
+            ffi::nvgRoundedRectVarying(
+                self.ctx(),
+                x,
+                y,
+                w,
+                h,
+                top_radii.0,
+                top_radii.1,
+                bottom_radii.1,
+                bottom_radii.0,
+            );
+        }
     }
 
     pub fn ellipse(&self, (cx, cy): (f32, f32), radius_x: f32, radius_y: f32) {
-        unsafe { ffi::nvgEllipse(self.ctx(), cx, cy, radius_x, radius_y); }
+        unsafe {
+            ffi::nvgEllipse(self.ctx(), cx, cy, radius_x, radius_y);
+        }
     }
 
     pub fn circle(&self, (cx, cy): (f32, f32), radius: f32) {
-        unsafe { ffi::nvgCircle(self.ctx(), cx, cy, radius); }
+        unsafe {
+            ffi::nvgCircle(self.ctx(), cx, cy, radius);
+        }
     }
 
     pub fn sub_path<F: FnOnce(SubPath)>(&self, (x, y): (f32, f32), handler: F) {
         let ctx = self.ctx();
-        unsafe { ffi::nvgMoveTo(ctx, x, y); }
+        unsafe {
+            ffi::nvgMoveTo(ctx, x, y);
+        }
         handler(SubPath::new(self));
     }
 }
@@ -357,9 +476,7 @@ where
 
 impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     fn new(path: &'a Path<'b, 'c>) -> Self {
-        Self {
-            path,
-        }
+        Self { path }
     }
 
     fn ctx(&self) -> *mut ffi::NVGcontext {
@@ -367,27 +484,47 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     }
 
     pub fn line_to(&self, (x, y): (f32, f32)) {
-        unsafe { ffi::nvgLineTo(self.ctx(), x, y); }
+        unsafe {
+            ffi::nvgLineTo(self.ctx(), x, y);
+        }
     }
 
     pub fn cubic_bezier_to(&self, (x, y): (f32, f32), control1: (f32, f32), control2: (f32, f32)) {
-        unsafe { ffi::nvgBezierTo(self.ctx(), control1.0, control1.1, control2.0, control2.1, x, y); }
+        unsafe {
+            ffi::nvgBezierTo(
+                self.ctx(),
+                control1.0,
+                control1.1,
+                control2.0,
+                control2.1,
+                x,
+                y,
+            );
+        }
     }
 
     pub fn quad_bezier_to(&self, (x, y): (f32, f32), control: (f32, f32)) {
-        unsafe { ffi::nvgQuadTo(self.ctx(), control.0, control.1, x, y); }
+        unsafe {
+            ffi::nvgQuadTo(self.ctx(), control.0, control.1, x, y);
+        }
     }
 
     pub fn arc_to(&self, p1: (f32, f32), p2: (f32, f32), radius: f32) {
-        unsafe { ffi::nvgArcTo(self.ctx(), p1.0, p1.1, p2.0, p2.1, radius); }
+        unsafe {
+            ffi::nvgArcTo(self.ctx(), p1.0, p1.1, p2.0, p2.1, radius);
+        }
     }
 
     pub fn winding(&self, direction: Direction) {
-        unsafe { ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits()); }
+        unsafe {
+            ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits());
+        }
     }
 
     pub fn close(&self) {
-        unsafe { ffi::nvgClosePath(self.ctx()); }
+        unsafe {
+            ffi::nvgClosePath(self.ctx());
+        }
     }
 }
 
@@ -433,25 +570,31 @@ pub struct Color(ffi::NVGcolor);
 
 impl Color {
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
-        Color(ffi::NVGcolor {
-            rgba: [r, g, b, a],
-        })
+        Color(ffi::NVGcolor { rgba: [r, g, b, a] })
     }
 
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Color(unsafe { ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar) })
+        Color(unsafe {
+            ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar)
+        })
     }
 
     pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
-        Color(unsafe { ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar) })
+        Color(unsafe {
+            ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar)
+        })
     }
 
     pub fn from_hsl(h: f32, s: f32, l: f32) -> Self {
-        Color(unsafe { ffi::nvgHSL(h as c_float, s as c_float, l as c_float) })
+        Color(unsafe {
+            ffi::nvgHSL(h as c_float, s as c_float, l as c_float)
+        })
     }
 
     pub fn from_hsla(h: f32, s: f32, l: f32, a: u8) -> Self {
-        Color(unsafe { ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar) })
+        Color(unsafe {
+            ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar)
+        })
     }
 
     fn into_raw(self) -> ffi::NVGcolor {
@@ -485,7 +628,9 @@ impl Color {
     }
 
     pub fn lerp(a: Color, b: Color, t: f32) -> Color {
-        Color(unsafe { ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float) })
+        Color(unsafe {
+            ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float)
+        })
     }
 }
 
@@ -493,23 +638,85 @@ impl Color {
 pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
-    pub fn with_linear_gradient(context: &Context, start: (f32, f32), end: (f32, f32), start_color: Color, end_color: Color) -> Self {
+    pub fn with_linear_gradient(
+        context: &Context,
+        start: (f32, f32),
+        end: (f32, f32),
+        start_color: Color,
+        end_color: Color,
+    ) -> Self {
         let ((sx, sy), (ex, ey)) = (start, end);
-        Paint(unsafe { ffi::nvgLinearGradient(context.raw(), sx, sy, ex, ey, start_color.into_raw(), end_color.into_raw()) })
+        Paint(unsafe {
+            ffi::nvgLinearGradient(
+                context.raw(),
+                sx,
+                sy,
+                ex,
+                ey,
+                start_color.into_raw(),
+                end_color.into_raw(),
+            )
+        })
     }
 
-    pub fn with_box_gradient(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32, feather: f32, start_color: Color, end_color: Color) -> Self {
-        Paint(unsafe { ffi::nvgBoxGradient(context.raw(), x, y, w, h, radius, feather, start_color.into_raw(), end_color.into_raw()) })
+    pub fn with_box_gradient(
+        context: &Context,
+        (x, y): (f32, f32),
+        (w, h): (f32, f32),
+        radius: f32,
+        feather: f32,
+        start_color: Color,
+        end_color: Color,
+    ) -> Self {
+        Paint(unsafe {
+            ffi::nvgBoxGradient(
+                context.raw(),
+                x,
+                y,
+                w,
+                h,
+                radius,
+                feather,
+                start_color.into_raw(),
+                end_color.into_raw(),
+            )
+        })
     }
 
-    pub fn with_radial_gradient(context: &Context, center: (f32, f32), inner_radius: f32, outer_radius: f32, start_color: Color, end_color: Color) -> Self {
+    pub fn with_radial_gradient(
+        context: &Context,
+        center: (f32, f32),
+        inner_radius: f32,
+        outer_radius: f32,
+        start_color: Color,
+        end_color: Color,
+    ) -> Self {
         let (cx, cy) = center;
-        Paint(unsafe { ffi::nvgRadialGradient(context.raw(), cx, cy, inner_radius, outer_radius, start_color.into_raw(), end_color.into_raw()) })
+        Paint(unsafe {
+            ffi::nvgRadialGradient(
+                context.raw(),
+                cx,
+                cy,
+                inner_radius,
+                outer_radius,
+                start_color.into_raw(),
+                end_color.into_raw(),
+            )
+        })
     }
 
-    pub fn with_image_pattern(context: &Context, image: &Image, origin: (f32, f32), size: (f32, f32), angle: f32, alpha: f32) -> Self {
+    pub fn with_image_pattern(
+        context: &Context,
+        image: &Image,
+        origin: (f32, f32),
+        size: (f32, f32),
+        angle: f32,
+        alpha: f32,
+    ) -> Self {
         let ((ox, oy), (ex, ey)) = (origin, size);
-        Paint(unsafe { ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.raw(), alpha) })
+        Paint(unsafe {
+            ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.raw(), alpha)
+        })
     }
 
     fn into_raw(self) -> ffi::NVGpaint {
@@ -573,7 +780,8 @@ impl<'a> ImageBuilder<'a> {
             None => return Err(ImageBuilderError::PathNotCString),
         };
 
-        let handle = unsafe { ffi::nvgCreateImage(self.context.raw(), (*path).as_ptr(), self.flags.bits()) };
+        let handle =
+            unsafe { ffi::nvgCreateImage(self.context.raw(), (*path).as_ptr(), self.flags.bits()) };
         if handle > 0 {
             Ok(Image(self.context, handle))
         } else {
@@ -583,7 +791,14 @@ impl<'a> ImageBuilder<'a> {
 
     /// Construct the image by loading it from an image file in memory.
     pub fn build_from_memory(self, data: &[u8]) -> ImageBuilderResult<'a> {
-        let handle = unsafe { ffi::nvgCreateImageMem(self.context.raw(), self.flags.bits(), data.as_ptr() as *mut _, data.len() as c_int) };
+        let handle = unsafe {
+            ffi::nvgCreateImageMem(
+                self.context.raw(),
+                self.flags.bits(),
+                data.as_ptr() as *mut _,
+                data.len() as c_int,
+            )
+        };
         if handle > 0 {
             Ok(Image(self.context, handle))
         } else {
@@ -592,12 +807,25 @@ impl<'a> ImageBuilder<'a> {
     }
 
     /// Construct the image by filling it with pixel data from memory (always 32bit RGBA).
-    pub fn build_from_rgba(self, width: usize, height: usize, data: &[u32]) -> ImageBuilderResult<'a> {
+    pub fn build_from_rgba(
+        self,
+        width: usize,
+        height: usize,
+        data: &[u32],
+    ) -> ImageBuilderResult<'a> {
         if data.len() < width * height {
             return Err(ImageBuilderError::NotEnoughData);
         }
 
-        let handle = unsafe { ffi::nvgCreateImageRGBA(self.context.raw(), width as c_int, height as c_int, self.flags.bits(), data.as_ptr() as *const _) };
+        let handle = unsafe {
+            ffi::nvgCreateImageRGBA(
+                self.context.raw(),
+                width as c_int,
+                height as c_int,
+                self.flags.bits(),
+                data.as_ptr() as *const _,
+            )
+        };
         if handle > 0 {
             Ok(Image(self.context, handle))
         } else {
@@ -634,12 +862,21 @@ impl<'a> Image<'a> {
 
     pub fn size(&self) -> (usize, usize) {
         let (mut w, mut h): (c_int, c_int) = (0, 0);
-        unsafe { ffi::nvgImageSize(self.ctx().raw(), self.raw(), &mut w as *mut _, &mut h as *mut _); }
+        unsafe {
+            ffi::nvgImageSize(
+                self.ctx().raw(),
+                self.raw(),
+                &mut w as *mut _,
+                &mut h as *mut _,
+            );
+        }
         (w as usize, h as usize)
     }
 
     pub fn update(&mut self, data: &[u32]) {
-        unsafe { ffi::nvgUpdateImage(self.ctx().raw(), self.raw(), data.as_ptr() as *const _); }
+        unsafe {
+            ffi::nvgUpdateImage(self.ctx().raw(), self.raw(), data.as_ptr() as *const _);
+        }
     }
 
     fn ctx(&self) -> &Context {
@@ -653,7 +890,9 @@ impl<'a> Image<'a> {
 
 impl<'a> Drop for Image<'a> {
     fn drop(&mut self) {
-        unsafe { ffi::nvgDeleteImage(self.ctx().raw(), self.raw()); }
+        unsafe {
+            ffi::nvgDeleteImage(self.ctx().raw(), self.raw());
+        }
         self.1 = 0;
     }
 }
@@ -685,7 +924,7 @@ pub enum CompositeOperation {
         rgb_destination: BlendFactor,
         alpha_source: BlendFactor,
         alpha_destination: BlendFactor,
-    }
+    },
 }
 
 #[derive(Copy, Clone)]
@@ -791,7 +1030,11 @@ impl<'a> Font<'a> {
 
     /// Attempt to load a font from the file at `path`.
     /// Fonts are always named (specified with `name`).
-    pub fn from_file<S: AsRef<str>, P: AsRef<IoPath>>(context: &'a Context, name: S, path: P) -> CreateFontResult {
+    pub fn from_file<S: AsRef<str>, P: AsRef<IoPath>>(
+        context: &'a Context,
+        name: S,
+        path: P,
+    ) -> CreateFontResult {
         let name = CString::new(name.as_ref())?;
         let path = CString::new(path.as_ref().to_str().ok_or(CreateFontError::InvalidPath)?)?;
         let handle = unsafe { ffi::nvgCreateFont(context.raw(), name.into_raw(), path.into_raw()) };
@@ -804,9 +1047,21 @@ impl<'a> Font<'a> {
 
     /// Attempt to load a font from memory.
     /// Fonts are always named (specified with `name`).
-    pub fn from_memory<'b, S: AsRef<str>>(context: &'a Context, name: S, memory: &'b [u8]) -> CreateFontResult<'a> {
+    pub fn from_memory<'b, S: AsRef<str>>(
+        context: &'a Context,
+        name: S,
+        memory: &'b [u8],
+    ) -> CreateFontResult<'a> {
         let name = CString::new(name.as_ref())?;
-        let handle = unsafe { ffi::nvgCreateFontMem(context.raw(), name.into_raw(), memory.as_ptr() as *mut _, memory.len() as c_int, 0) };
+        let handle = unsafe {
+            ffi::nvgCreateFontMem(
+                context.raw(),
+                name.into_raw(),
+                memory.as_ptr() as *mut _,
+                memory.len() as c_int,
+                0,
+            )
+        };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
@@ -816,7 +1071,8 @@ impl<'a> Font<'a> {
 
     /// Try to find a already loaded font with the given `name`.
     pub fn find<S: AsRef<str>>(context: &'a Context, name: S) -> CreateFontResult {
-        let handle = unsafe { ffi::nvgFindFont(context.raw(), CString::new(name.as_ref())?.into_raw()) };
+        let handle =
+            unsafe { ffi::nvgFindFont(context.raw(), CString::new(name.as_ref())?.into_raw()) };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
