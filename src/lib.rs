@@ -9,37 +9,6 @@ use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
 use libc::{c_int, c_float, c_uchar};
 
-#[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
-pub struct CreateFlags {
-    flags: ffi::NVGcreateFlags,
-}
-
-#[cfg(any(feature = "gl2", feature = "gl3", feature = "gles2", feature = "gles3"))]
-impl CreateFlags {
-    pub fn new() -> Self {
-        CreateFlags { flags: ffi::NVGcreateFlags::empty() }
-    }
-
-    pub fn antialias(mut self) -> Self {
-        self.flags |= ffi::NVGcreateFlags::NVG_ANTIALIAS;
-        self
-    }
-
-    pub fn stencil_strokes(mut self) -> Self {
-        self.flags |= ffi::NVGcreateFlags::NVG_STENCIL_STROKES;
-        self
-    }
-
-    pub fn debug(mut self) -> Self {
-        self.flags |= ffi::NVGcreateFlags::NVG_DEBUG;
-        self
-    }
-
-    fn bits(&self) -> c_int {
-        self.flags.bits()
-    }
-}
-
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {
     if unsafe { ffi::gladLoadGL() } == 1 {
@@ -54,53 +23,80 @@ fn init_gl() -> Result<(), ()> {
     Ok(())
 }
 
+#[cfg(feature = "gl3")]
+fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
+    unsafe { ffi::nvgCreateGL3(flags.bits()) }
+}
+
+#[cfg(feature = "gl2")]
+fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
+    unsafe { ffi::nvgCreateGL2(flags.bits()) }
+}
+
+#[cfg(feature = "gles3")]
+fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
+    unsafe { ffi::nvgCreateGLES3(flags.bits()) }
+}
+
+#[cfg(feature = "gles2")]
+fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
+    unsafe { ffi::nvgCreateGLES2(flags.bits()) }
+}
+
+#[cfg(not(any(feature = "gl3", feature = "gl2", feature = "gles3", feature = "gles2")))]
+fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
+    panic!("Unable to determine the backend / implementation. Have you enabled one of the features?")
+}
+
+/// A builder that configures and constructs a NanoVG context.
+pub struct ContextBuilder {
+    flags: ffi::NVGcreateFlags,
+}
+
+impl ContextBuilder {
+    pub fn new() -> Self {
+        Self {
+            flags: ffi::NVGcreateFlags::empty(),
+        }
+    }
+
+    /// Enable antialiased rasterization. Not needed if you have multisampling enabled.
+    pub fn antialias(mut self) -> Self {
+        self.flags.insert(ffi::NVGcreateFlags::NVG_ANTIALIAS);
+        self
+    }
+
+    /// Enable stencil strokes. Overlapping, stroked paths will only be drawn once, for a little performance loss.
+    pub fn stencil_strokes(mut self) -> Self {
+        self.flags.insert(ffi::NVGcreateFlags::NVG_STENCIL_STROKES);
+        self
+    }
+
+    /// Enable additional debug checks.
+    pub fn debug(mut self) -> Self {
+        self.flags.insert(ffi::NVGcreateFlags::NVG_DEBUG);
+        self
+    }
+
+    /// Construct the context.
+    /// Make sure you have enabled one of the 4 OpenGL features, or this function will panic.
+    pub fn build(self) -> Result<Context, ()> {
+        init_gl()?;
+        let raw = create_gl(self.flags);
+        if !raw.is_null() {
+            Ok(Context(raw))
+        } else {
+            Err(())
+        }
+    }
+}
+
+/// A initialized NanoVG context - the central type which all operations rely on.
 pub struct Context(*mut ffi::NVGcontext);
 
 impl Context {
     pub fn raw(&self) -> *mut ffi::NVGcontext {
         self.0
-    }
-
-    #[cfg(feature = "gl3")]
-    pub fn with_gl3(flags: CreateFlags) -> Result<Self, ()> {
-        init_gl()?;
-        let raw = unsafe { ffi::nvgCreateGL3(flags.bits()) };
-        if !raw.is_null() {
-            Ok(Context(raw))
-        } else {
-            Err(())
-        }
-    }
-
-    #[cfg(feature = "gl2")]
-    pub fn with_gl2(flags: CreateFlags) -> Result<Self, ()> {
-        init_gl()?;
-        let raw = unsafe { ffi::nvgCreateGL2(flags.bits()) };
-        if !raw.is_null() {
-            Ok(Context(raw))
-        } else {
-            Err(())
-        }
-    }
-
-    #[cfg(feature = "gles3")]
-    pub fn with_gles3(flags: CreateFlags) -> Result<Self, ()> {
-        let raw = unsafe { ffi::nvgCreateGLES3(flags.bits()) };
-        if !raw.is_null() {
-            Ok(Context(raw))
-        } else {
-            Err(())
-        }
-    }
-
-    #[cfg(feature = "gles2")]
-    pub fn with_gles2(flags: CreateFlags) -> Result<Self, ()> {
-        let raw = unsafe { ffi::nvgCreateGLES2(flags.bits()) };
-        if !raw.is_null() {
-            Ok(Context(raw))
-        } else {
-            Err(())
-        }
     }
 
     pub fn frame<F: FnOnce(Frame)>(
