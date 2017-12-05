@@ -54,6 +54,7 @@ pub struct ContextBuilder {
 }
 
 impl ContextBuilder {
+    /// Create a new context builer.
     pub fn new() -> Self {
         Self {
             flags: ffi::NVGcreateFlags::empty(),
@@ -95,10 +96,17 @@ impl ContextBuilder {
 pub struct Context(*mut ffi::NVGcontext);
 
 impl Context {
+    /// Return the raw FFI C-struct pointer to the context.
     pub fn raw(&self) -> *mut ffi::NVGcontext {
         self.0
     }
 
+    /// Begin drawing a frame.
+    /// All NanoVG drawing takes place within a frame (except text drawing).
+    ///
+    /// `width` and `height` should be the width and height of the framebuffer / window client size.
+    /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
+    /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
     pub fn frame<F: FnOnce(Frame)>(
         &self,
         (width, height): (i32, i32),
@@ -275,6 +283,8 @@ impl Drop for Context {
     fn drop(&mut self) {}
 }
 
+/// A scissor defines a region on the screen in which drawing operations are allowed.
+/// Pixels drawn outside of this region are clipped.
 pub enum Scissor {
     /// Defines a rectangular scissor.
     Rect {
@@ -283,9 +293,9 @@ pub enum Scissor {
         width: f32,
         height: f32,
     },
-    /// Define the scissor to be the intersection between the current scissor rectangle
+    /// Define the scissor to be the intersection between the previous scissor rectangle
     /// and the specified rectangle.
-    /// The current and specified rectangles are always transformed to be in the current transform space.
+    /// The previous and specified rectangles are always transformed to be in the previous transform space.
     Intersect {
         x: f32,
         y: f32,
@@ -294,7 +304,7 @@ pub enum Scissor {
     },
 }
 
-/// Provides options to change how a frame renders.
+/// Options which control how a path is rendered.
 pub struct PathOptions {
     /// The scissor defines the rectangular boundary in which the frame is clipped into.
     pub scissor: Option<Scissor>,
@@ -314,6 +324,8 @@ impl Default for PathOptions {
     }
 }
 
+/// A frame which can draw paths.
+/// All NanoVG path drawing operations are done on a frame.
 pub struct Frame<'a> {
     context: &'a Context,
 }
@@ -323,6 +335,10 @@ impl<'a> Frame<'a> {
         Self { context }
     }
 
+    /// Draw a new path.
+    ///
+    /// `handler` is the callback in which you operate the path.
+    /// `options` control how the path is rendered.
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
         self.context.global_composite_operation(
             options.composite_operation,
@@ -337,6 +353,7 @@ impl<'a> Frame<'a> {
     }
 }
 
+/// A path, the main type for most NanoVG drawing operations.
 pub struct Path<'a, 'b>
 where
     'b: 'a,
@@ -353,6 +370,7 @@ impl<'a, 'b> Path<'a, 'b> {
         self.frame.context.raw()
     }
 
+    /// Draw the current path by filling in it's shape.
     pub fn fill(&self, style: FillStyle) {
         let ctx = self.ctx();
         unsafe {
@@ -365,6 +383,7 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
+    /// Draw the current path by stroking it's perimeter.
     pub fn stroke(&self, style: StrokeStyle) {
         let ctx = self.ctx();
         unsafe {
@@ -379,6 +398,7 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
+    /// Add an arc to the path.
     pub fn arc(
         &self,
         (cx, cy): (f32, f32),
@@ -400,6 +420,7 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
+    /// Add a rectangle to the path.
     pub fn rect(&self, (x, y): (f32, f32), (w, h): (f32, f32)) {
         unsafe {
             ffi::nvgRect(
@@ -412,12 +433,14 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
+    /// Add a rounded rectangle to the path.
     pub fn rounded_rect(&self, (x, y): (f32, f32), (w, h): (f32, f32), radius: f32) {
         unsafe {
             ffi::nvgRoundedRect(self.ctx(), x, y, w, h, radius);
         }
     }
 
+    /// Add a rounded rectangle with varying corners to the path.
     /// `top_radii` and `bottom_radii` are both tuples in the form (left, right).
     pub fn rounded_rect_varying(
         &self,
@@ -441,18 +464,21 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
+    /// Add an ellipse to the path.
     pub fn ellipse(&self, (cx, cy): (f32, f32), radius_x: f32, radius_y: f32) {
         unsafe {
             ffi::nvgEllipse(self.ctx(), cx, cy, radius_x, radius_y);
         }
     }
 
+    /// Add a circle to the path.
     pub fn circle(&self, (cx, cy): (f32, f32), radius: f32) {
         unsafe {
             ffi::nvgCircle(self.ctx(), cx, cy, radius);
         }
     }
 
+    /// Add subpath to the path. A subpath is a custom shape.
     pub fn sub_path<F: FnOnce(SubPath)>(&self, (x, y): (f32, f32), handler: F) {
         let ctx = self.ctx();
         unsafe {
@@ -462,6 +488,7 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 }
 
+/// A custom shape defined by lines, arcs and curves.
 pub struct SubPath<'a, 'b, 'c>
 where
     'b: 'a,
@@ -479,12 +506,14 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
         self.path.ctx()
     }
 
+    /// Add a line to the subpath.
     pub fn line_to(&self, (x, y): (f32, f32)) {
         unsafe {
             ffi::nvgLineTo(self.ctx(), x, y);
         }
     }
 
+    /// Add a cubic bezier curve to the subpath.
     pub fn cubic_bezier_to(&self, (x, y): (f32, f32), control1: (f32, f32), control2: (f32, f32)) {
         unsafe {
             ffi::nvgBezierTo(
@@ -499,24 +528,29 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
         }
     }
 
+    /// Add a quadratic bezier curve to the subpath.
     pub fn quad_bezier_to(&self, (x, y): (f32, f32), control: (f32, f32)) {
         unsafe {
             ffi::nvgQuadTo(self.ctx(), control.0, control.1, x, y);
         }
     }
 
+    /// Add a arc to the subpath.
     pub fn arc_to(&self, p1: (f32, f32), p2: (f32, f32), radius: f32) {
         unsafe {
             ffi::nvgArcTo(self.ctx(), p1.0, p1.1, p2.0, p2.1, radius);
         }
     }
 
+    /// Set the winding of the subpath.
+    /// The winding defines which parts of the subparth are 'inside' and which are 'outside'.
     pub fn winding(&self, direction: Direction) {
         unsafe {
             ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits());
         }
     }
 
+    /// Close the path, ie. connect the first point and last point with a line.
     pub fn close(&self) {
         unsafe {
             ffi::nvgClosePath(self.ctx());
@@ -524,6 +558,7 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     }
 }
 
+/// Controls how filling in a path should look.
 pub struct FillStyle {
     pub coloring_style: ColoringStyle,
     pub antialias: bool,
@@ -538,6 +573,7 @@ impl Default for FillStyle {
     }
 }
 
+/// Controls how stroking a path should look.
 pub struct StrokeStyle {
     pub coloring_style: ColoringStyle,
     pub width: f32,
@@ -556,37 +592,46 @@ impl Default for StrokeStyle {
     }
 }
 
+/// Controls how something should be colored.
+/// Either through a single, flat color; or a more complex paint.
 pub enum ColoringStyle {
     Color(Color),
     Paint(Paint),
 }
 
 #[derive(Clone, Copy)]
+/// A 32-bit color value.
 pub struct Color(ffi::NVGcolor);
 
 impl Color {
+    /// Create a new color by setting all components manually.
+    /// Values are in the range 0.0...1.0.
     pub fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
         Color(ffi::NVGcolor { rgba: [r, g, b, a] })
     }
 
+    /// Create a new color from three 8-bit color channels.
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
         Color(unsafe {
             ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar)
         })
     }
 
+    /// Create a new color from three 8-bit color channels and an 8-bit alpha channel.
     pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
         Color(unsafe {
             ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar)
         })
     }
 
+    /// Create a new color from three hsl channels.
     pub fn from_hsl(h: f32, s: f32, l: f32) -> Self {
         Color(unsafe {
             ffi::nvgHSL(h as c_float, s as c_float, l as c_float)
         })
     }
 
+    /// Create a new color from three hsl channels and an 8-bit alpha channel.
     pub fn from_hsla(h: f32, s: f32, l: f32, a: u8) -> Self {
         Color(unsafe {
             ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar)
@@ -597,32 +642,47 @@ impl Color {
         self.0
     }
 
+    /// Get the red component.
     pub fn red(&self) -> f32 {
         self.0.rgba[0]
     }
+
+    /// Get the green component.
     pub fn green(&self) -> f32 {
         self.0.rgba[1]
     }
+
+    /// Get the blue component.
     pub fn blue(&self) -> f32 {
         self.0.rgba[2]
     }
+
+    /// Get the alpha component.
     pub fn alpha(&self) -> f32 {
         self.0.rgba[3]
     }
 
+    /// Set the red component.
     pub fn set_red(&mut self, red: f32) {
         self.0.rgba[0] = red;
     }
+
+    /// Get the green component.
     pub fn set_green(&mut self, green: f32) {
         self.0.rgba[1] = green;
     }
+
+    /// Get the blue component.
     pub fn set_blue(&mut self, blue: f32) {
         self.0.rgba[2] = blue;
     }
+
+    /// Get the alpha component.
     pub fn set_alpha(&mut self, alpha: f32) {
         self.0.rgba[3] = alpha;
     }
 
+    /// Create a new color by linearly interpolating between two existing colors.
     pub fn lerp(a: Color, b: Color, t: f32) -> Color {
         Color(unsafe {
             ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float)
@@ -631,6 +691,8 @@ impl Color {
 }
 
 #[derive(Copy, Clone)]
+/// A Paint is a more complex and powerful method of defining color.
+/// With it you can draw images and gradients.
 pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
