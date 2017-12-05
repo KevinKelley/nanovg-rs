@@ -5,13 +5,15 @@ extern crate nanovg;
 use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation, PathOptions, Scissor, TextOptions};
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font};
+
+const INIT_WINDOW_SIZE: (u32, u32) = (1024, 720);
 
 fn main() {
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("Glutin NanoVG")
-        .with_dimensions(1024, 720);
+        .with_dimensions(INIT_WINDOW_SIZE.0, INIT_WINDOW_SIZE.1);
     let context = glutin::ContextBuilder::new()
         .with_vsync(true)
         .with_multisampling(4)
@@ -25,12 +27,12 @@ fn main() {
     }
     
     let context = nanovg::Context::with_gl3(nanovg::CreateFlags::new().stencil_strokes()).unwrap();
-    let img = nanovg::Image::new(&context)
+    let img = Image::new(&context)
         .repeat_x()
         .repeat_y()
         .build_from_file("resources/lenna.png")
         .expect("Couldn't load image");
-    let mechanic_font = nanovg::Font::from_file(&context, "Mechanic", "resources/Mechanic of the Heart.ttf").expect("Failed to load font 'Mechanic of the Heart.ttf'");
+    let mechanic_font = Font::from_file(&context, "Mechanic", "resources/Mechanic of the Heart.ttf").expect("Failed to load font 'Mechanic of the Heart.ttf'");
 
     let start_time = Instant::now();
     let mut running = true;
@@ -58,11 +60,9 @@ fn main() {
             elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9
         } as f32;
 
-        let ratio = width as f32 / height as f32;
-
         // Let's draw a frame!
 
-        context.frame((width, height), ratio, |frame| {
+        context.frame((width, height), width as f32 / height as f32, |frame| {
             // Draw red-filled rectangle.
             frame.path(|path| {
                 path.rect((100.0, 100.0), (300.0, 300.0));
@@ -130,7 +130,7 @@ fn main() {
         });
 
         // Draw some strings!
-        
+
         context.text(mechanic_font, (50.0, 50.0), "Hello world", TextOptions {
             color: Color::new(1.0, 1.0, 1.0, 1.0),
             size: 24.0,
@@ -147,9 +147,9 @@ fn main() {
         context.text_box(mechanic_font, (800.0, 50.0), "This text is automatically wrapped.\nResize the window and try it out!", TextOptions {
             color: Color::new(0.6, 1.0, 1.0, 1.0),
             size: 24.0,
-            align: nanovg::Alignment::new().right().baseline(),
+            align: Alignment::new().right().baseline(),
             line_height: 1.2,
-            line_max_width: gl_window.get_inner_size().unwrap_or((1024, 720)).0 as f32 - 800.0,
+            line_max_width: gl_window.get_inner_size().unwrap_or(INIT_WINDOW_SIZE).0 as f32 - 800.0,
             .. Default::default()
         });
 
