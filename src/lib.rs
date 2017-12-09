@@ -312,6 +312,8 @@ pub struct PathOptions {
     pub composite_operation: CompositeOperation,
     /// The alpha component of the path.
     pub alpha: f32,
+    /// A transformation which 'transforms' the coordinate system and consequently the path.
+    pub transform: Option<Transform>,
 }
 
 impl Default for PathOptions {
@@ -320,6 +322,7 @@ impl Default for PathOptions {
             scissor: None,
             composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Atop),
             alpha: 1.0,
+            transform: None,
         }
     }
 }
@@ -340,16 +343,21 @@ impl<'a> Frame<'a> {
     /// `handler` is the callback in which you operate the path.
     /// `options` control how the path is rendered.
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
-        self.context.global_composite_operation(
-            options.composite_operation,
-        );
+        self.context.global_composite_operation(options.composite_operation);
         self.context.global_alpha(options.alpha);
         self.context.scissor(options.scissor);
 
-        unsafe {
-            ffi::nvgBeginPath(self.context.raw());
+        if let Some(t) = options.transform {
+            let t = t.matrix;
+            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
         }
+
+        unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));
+
+        if options.transform.is_some() {
+            unsafe { ffi::nvgResetTransform(self.context.raw()); }
+        }
     }
 }
 
@@ -599,8 +607,8 @@ pub enum ColoringStyle {
     Paint(Paint),
 }
 
-#[derive(Clone, Copy)]
 /// A 32-bit color value.
+#[derive(Clone, Copy)]
 pub struct Color(ffi::NVGcolor);
 
 impl Color {
@@ -690,9 +698,9 @@ impl Color {
     }
 }
 
-#[derive(Copy, Clone)]
 /// A Paint is a more complex and powerful method of defining color.
 /// With it you can draw images and gradients.
+#[derive(Copy, Clone)]
 pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
@@ -1054,9 +1062,9 @@ impl BlendFactor {
     }
 }
 
-#[derive(Clone, Copy)]
 /// A handle to a font.
 /// Fonts are handled by the NanoVG context itself. View this type only as a 'reference' to a font.
+#[derive(Clone, Copy)]
 pub struct Font<'a>(&'a Context, c_int);
 
 #[derive(Debug)]
@@ -1253,5 +1261,49 @@ impl Alignment {
         self.0.remove(ffi::NVGalign::NVG_ALIGN_BOTTOM);
         self.0.insert(ffi::NVGalign::NVG_ALIGN_BASELINE);
         self
+    }
+}
+
+/// Represents a transformation in 2D space.
+/// A transformation is a column-major matrix with in the following form:
+/// [a c e] - indices [0 2 4]
+/// [b d f] - indices [1 3 5]
+/// [0 0 1] - not passed.
+/// The last row however is not specified; it is always [0 0 1].
+#[derive(Clone, Copy)]
+pub struct Transform {
+    pub matrix: [f32; 6],
+}
+
+impl Transform {
+    /// Construct a new transform with an identity matrix.
+    pub fn new() -> Self {
+        Self {
+            matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        }
+    }
+
+    /// Set the translation of the transform.
+    pub fn translate(self, x: f32, y: f32) -> Self {
+        let mut new = self.clone();
+        new.matrix[4] = x;
+        new.matrix[5] = y;
+        new
+    }
+
+    /// Set the scale of the transform.
+    pub fn scale(self, x: f32, y: f32) -> Self {
+        let mut new = self.clone();
+        new.matrix[0] = x;
+        new.matrix[3] = y;
+        new
+    }
+
+    /// Set the skew of the transform.
+    pub fn skew(self, x: f32, y: f32) -> Self {
+        let mut new = self.clone();
+        new.matrix[2] = x;
+        new.matrix[1] = y;
+        new
     }
 }

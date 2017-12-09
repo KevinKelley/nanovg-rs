@@ -6,7 +6,7 @@ use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
 use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation,
-             BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font};
+             BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font, Transform};
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1024, 720);
 
@@ -111,6 +111,7 @@ fn main() {
                 PathOptions {
                     composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
                     alpha: elapsed.cos() * 0.5 + 0.5,
+                    transform: Some(Transform::new().scale(0.2, 1.0).translate(100.0, 50.0)),
                     ..Default::default()
                 },
             );
