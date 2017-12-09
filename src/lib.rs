@@ -1063,7 +1063,7 @@ impl BlendFactor {
 }
 
 /// A handle to a font.
-/// Fonts are handled by the NanoVG context itself. View this type only as a 'reference' to a font.
+/// Fonts are managed by the NanoVG context itself. View this type only as a 'reference' to a font.
 #[derive(Clone, Copy)]
 pub struct Font<'a>(&'a Context, c_int);
 

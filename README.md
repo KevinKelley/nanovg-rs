@@ -49,7 +49,9 @@ Output of the `demo-glutin` example.
 - [Glutin](https://github.com/tomaka/glutin)
 - [glfw-rs](https://github.com/PistonDevelopers/glfw-rs)
 
-# License
+# License and Credits
 
 The binding is licensed under [the MIT license](LICENSE.txt).
 NanoVG is released under the zlib license.
+
+Test-font *Mechanic of the Heart* by [Agathe M.Joyce](https://www.dafont.com/agathe-m-joyce.d6546).
