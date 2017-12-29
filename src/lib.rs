@@ -204,6 +204,7 @@ impl Context {
             ffi::nvgTextLineHeight(self.raw(), options.line_height);
             ffi::nvgTextAlign(self.raw(), options.align.into_raw().bits());
         }
+        self.scissor(options.scissor);
     }
 
     /// Draw a single line on the screen. Newline characters are ignored.
@@ -287,7 +288,7 @@ impl Drop for Context {
 
 /// A scissor defines a region on the screen in which drawing operations are allowed.
 /// Pixels drawn outside of this region are clipped.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Scissor {
     /// Defines a rectangular scissor.
     Rect {
@@ -311,6 +312,7 @@ pub enum Scissor {
 #[derive(Debug)]
 pub struct PathOptions {
     /// The scissor defines the rectangular boundary in which the frame is clipped into.
+    /// All overflowing pixels will be discarded.
     pub scissor: Option<Scissor>,
     /// Defines how overlapping paths are composited together.
     pub composite_operation: CompositeOperation,
@@ -1216,6 +1218,9 @@ pub struct TextOptions {
     pub align: Alignment,
     /// The fill color of the text.
     pub color: Color,
+    /// The scissor defines the rectangular boundary in which the text is clipped into.
+    /// All overflowing pixels will be discarded.
+    pub scissor: Option<Scissor>,
 }
 
 impl Default for TextOptions {
@@ -1228,6 +1233,7 @@ impl Default for TextOptions {
             line_max_width: std::f32::MAX,
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
+            scissor: None,
         }
     }
 }
