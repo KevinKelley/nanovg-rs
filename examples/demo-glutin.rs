@@ -69,7 +69,7 @@ fn main() {
 
         // Let's draw a frame!
 
-        context.frame((width, height), width as f32 / height as f32, |frame| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
             // Draw red-filled rectangle.
             frame.path(
                 |path| {
