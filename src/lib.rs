@@ -108,6 +108,7 @@ impl Context {
     ///
     /// `width` and `height` should be the width and height of the framebuffer / window client size.
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
+    /// Basically, this is your hidpi factor.
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
     pub fn frame<F: FnOnce(Frame)>(
         &self,
