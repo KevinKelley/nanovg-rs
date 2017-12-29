@@ -10,13 +10,13 @@ pub type NVGcontext = c_void;
 // No reason to use a union here, since the nanovg guys
 // only used it for convenience.
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct NVGcolor {
     pub rgba: [c_float; 4],
 }
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct NVGpaint {
     pub xform: [c_float; 6],
     pub extent: [c_float; 2],
@@ -90,6 +90,7 @@ bitflags! {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub enum NVGlineCap {
     NVG_BUTT,
     NVG_ROUND,
@@ -99,6 +100,7 @@ pub enum NVGlineCap {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub enum NVGcompositeOperation {
     NVG_SOURCE_OVER,
     NVG_SOURCE_IN,
@@ -114,6 +116,7 @@ pub enum NVGcompositeOperation {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct NVGcompositeOperationState {
     pub srcRGB: c_int,
     pub dstRGB: c_int,
@@ -122,6 +125,7 @@ pub struct NVGcompositeOperationState {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct NVGglyphPosition {
     pub s: *const c_char,
     pub x: c_float,
@@ -130,6 +134,7 @@ pub struct NVGglyphPosition {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct NVGtextRow {
     pub start: *const c_char,
     pub end: *const c_char,

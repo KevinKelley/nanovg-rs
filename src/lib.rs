@@ -49,12 +49,13 @@ fn create_gl(flags: ffi::NVGcreateFlags) -> *mut ffi::NVGcontext {
 }
 
 /// A builder that configures and constructs a NanoVG context.
+#[derive(Debug)]
 pub struct ContextBuilder {
     flags: ffi::NVGcreateFlags,
 }
 
 impl ContextBuilder {
-    /// Create a new context builer.
+    /// Create a new context builder.
     pub fn new() -> Self {
         Self {
             flags: ffi::NVGcreateFlags::empty(),
@@ -93,6 +94,7 @@ impl ContextBuilder {
 }
 
 /// A initialized NanoVG context - the central type which all operations rely on.
+#[derive(Debug)]
 pub struct Context(*mut ffi::NVGcontext);
 
 impl Context {
@@ -285,6 +287,7 @@ impl Drop for Context {
 
 /// A scissor defines a region on the screen in which drawing operations are allowed.
 /// Pixels drawn outside of this region are clipped.
+#[derive(Debug)]
 pub enum Scissor {
     /// Defines a rectangular scissor.
     Rect {
@@ -305,6 +308,7 @@ pub enum Scissor {
 }
 
 /// Options which control how a path is rendered.
+#[derive(Debug)]
 pub struct PathOptions {
     /// The scissor defines the rectangular boundary in which the frame is clipped into.
     pub scissor: Option<Scissor>,
@@ -329,6 +333,7 @@ impl Default for PathOptions {
 
 /// A frame which can draw paths.
 /// All NanoVG path drawing operations are done on a frame.
+#[derive(Debug)]
 pub struct Frame<'a> {
     context: &'a Context,
 }
@@ -362,6 +367,7 @@ impl<'a> Frame<'a> {
 }
 
 /// A path, the main type for most NanoVG drawing operations.
+#[derive(Debug)]
 pub struct Path<'a, 'b>
 where
     'b: 'a,
@@ -497,6 +503,7 @@ impl<'a, 'b> Path<'a, 'b> {
 }
 
 /// A custom shape defined by lines, arcs and curves.
+#[derive(Debug)]
 pub struct SubPath<'a, 'b, 'c>
 where
     'b: 'a,
@@ -567,6 +574,7 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
 }
 
 /// Controls how filling in a path should look.
+#[derive(Debug)]
 pub struct FillStyle {
     pub coloring_style: ColoringStyle,
     pub antialias: bool,
@@ -582,6 +590,7 @@ impl Default for FillStyle {
 }
 
 /// Controls how stroking a path should look.
+#[derive(Debug)]
 pub struct StrokeStyle {
     pub coloring_style: ColoringStyle,
     pub width: f32,
@@ -602,13 +611,14 @@ impl Default for StrokeStyle {
 
 /// Controls how something should be colored.
 /// Either through a single, flat color; or a more complex paint.
+#[derive(Debug)]
 pub enum ColoringStyle {
     Color(Color),
     Paint(Paint),
 }
 
 /// A 32-bit color value.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Color(ffi::NVGcolor);
 
 impl Color {
@@ -700,7 +710,7 @@ impl Color {
 
 /// A Paint is a more complex and powerful method of defining color.
 /// With it you can draw images and gradients.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
@@ -790,6 +800,7 @@ impl Paint {
     }
 }
 
+#[derive(Debug)]
 pub struct ImageBuilder<'a> {
     context: &'a Context,
     flags: ffi::NVGimageFlags,
@@ -919,6 +930,7 @@ impl From<NulError> for ImageBuilderError {
 pub type ImageBuilderResult<'a> = Result<Image<'a>, ImageBuilderError>;
 
 /// Handle to an image.
+#[derive(Debug)]
 pub struct Image<'a>(&'a Context, c_int);
 
 impl<'a> Image<'a> {
@@ -963,7 +975,7 @@ impl<'a> Drop for Image<'a> {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Direction {
     Clockwise,
     CounterClockwise,
@@ -978,7 +990,7 @@ impl Direction {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum CompositeOperation {
     Basic(BasicCompositeOperation),
     BlendFunc {
@@ -993,7 +1005,7 @@ pub enum CompositeOperation {
     },
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum BasicCompositeOperation {
     SourceOver,
     SourceIn,
@@ -1028,7 +1040,7 @@ impl BasicCompositeOperation {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum BlendFactor {
     Zero,
     One,
@@ -1064,7 +1076,7 @@ impl BlendFactor {
 
 /// A handle to a font.
 /// Fonts are managed by the NanoVG context itself. View this type only as a 'reference' to a font.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Font<'a>(&'a Context, c_int);
 
 #[derive(Debug)]
@@ -1157,7 +1169,7 @@ impl<'a> Font<'a> {
 }
 
 /// Options which control the visual appearance of a text.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TextOptions {
     /// The size of the text in points.
     pub size: f32,
@@ -1190,7 +1202,7 @@ impl Default for TextOptions {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Alignment(ffi::NVGalign);
 
 impl Alignment {
@@ -1269,8 +1281,8 @@ impl Alignment {
 /// [a c e] - indices [0 2 4]
 /// [b d f] - indices [1 3 5]
 /// [0 0 1] - not passed.
-/// The last row however is not specified; it is always [0 0 1].
-#[derive(Clone, Copy)]
+/// The last row however is not specified; it is always [0 0 1] behind the scenes.
+#[derive(Clone, Copy, Debug)]
 pub struct Transform {
     pub matrix: [f32; 6],
 }
