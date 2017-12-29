@@ -343,6 +343,11 @@ impl<'a> Frame<'a> {
         Self { context }
     }
 
+    /// Get the underlying context this frame was created on.
+    pub fn context(&self) -> &'a Context {
+        self.context
+    }
+
     /// Draw a new path.
     ///
     /// `handler` is the callback in which you operate the path.
@@ -382,6 +387,11 @@ impl<'a, 'b> Path<'a, 'b> {
 
     fn ctx(&self) -> *mut ffi::NVGcontext {
         self.frame.context.raw()
+    }
+
+    /// Get the underlying context this path was created on.
+    pub fn context(&self) -> &'a Context {
+        self.frame.context()
     }
 
     /// Draw the current path by filling in it's shape.
@@ -519,6 +529,11 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
 
     fn ctx(&self) -> *mut ffi::NVGcontext {
         self.path.ctx()
+    }
+
+    /// Get the underlying context this sub-path was created on.
+    pub fn context(&self) -> &'a Context {
+        self.path.context()
     }
 
     /// Add a line to the subpath.
@@ -814,6 +829,11 @@ impl<'a> ImageBuilder<'a> {
         }
     }
 
+    /// Get the underlying context this ImageBuilder was created on.
+    pub fn context(&self) -> &'a Context {
+        self.context
+    }
+
     /// Create mipmaps during the creation of the image.
     pub fn mipmaps(mut self) -> Self {
         self.flags |= ffi::NVGimageFlags::NVG_IMAGE_GENERATE_MIPMAPS;
@@ -936,6 +956,11 @@ pub struct Image<'a>(&'a Context, c_int);
 impl<'a> Image<'a> {
     pub fn new(context: &'a Context) -> ImageBuilder {
         ImageBuilder::new(context)
+    }
+
+    /// Get the underlying context this image was created on.
+    pub fn context(&self) -> &'a Context {
+        self.0
     }
 
     pub fn size(&self) -> (usize, usize) {
@@ -1104,6 +1129,11 @@ impl<'a> Font<'a> {
 
     fn id(&self) -> c_int {
         self.1
+    }
+
+    /// Get the underlying context this font was created on.
+    pub fn context(&self) -> &'a Context {
+        self.0
     }
 
     /// Attempt to load a font from the file at `path`.
