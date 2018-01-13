@@ -10,3 +10,6 @@ target/
 *.orig
 Cargo.lock
 examples/demo/dump.png
+*.DS_Store
+.idea/
+nanovg-rs.iml
