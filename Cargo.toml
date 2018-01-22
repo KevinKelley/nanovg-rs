@@ -4,6 +4,12 @@ version = "0.4.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "build.rs"
 readme = "README.md"
+description = "Idiomatic bindings to the NanoVG library"
+homepage = "https://github.com/KevinKelley/nanovg-rs"
+repository = "https://github.com/KevinKelley/nanovg-rs"
+keywords = ["nanovg", "bindings", "vector", "graphics", "opengl"]
+categories = ["rendering::graphics-api", "games", "gui"]
+license = "MIT/Zlib"
 
 [lib]
 name = "nanovg"
