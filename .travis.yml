@@ -6,12 +6,12 @@ matrix:
   allow_failures:
     - rust: nightly
 
-before_install:
-  - sudo add-apt-repository --yes ppa:codegear/release
-  - sudo apt-get update -qq
-install:
-  - sudo apt-get install -qq --force-yes premake4
-  - sudo apt-get install xorg-dev libglu1-mesa-dev
+# before_install:
+#   - sudo add-apt-repository --yes ppa:codegear/release
+#   - sudo apt-get update -qq
+# install:
+#   - sudo apt-get install -qq --force-yes premake4
+#   - sudo apt-get install xorg-dev libglu1-mesa-dev
 script:
   # glfw
   # - git clone https://github.com/glfw/glfw.git
