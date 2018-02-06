@@ -3,11 +3,10 @@ extern crate gl;
 extern crate nanovg;
 extern crate chrono;
 
-//use std::time::{Instant};
 use std::f32::consts::PI;
 use glutin::GlContext;
 use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation,
-             BasicCompositeOperation, PathOptions, TextOptions, Font, Transform, Alignment /*cissor, Image,*/};
+             BasicCompositeOperation, PathOptions, TextOptions, Font, Transform, Alignment };
 use chrono::prelude::*;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (480, 480);
@@ -79,13 +78,14 @@ fn main() {
         }
 
 
-        let size = width.min(height) - 2;
+        // round clock size is minimum of height and width
+        let clock_size = width.min(height) - 2;
         
         let font_size = 24.0;
 
         let origin = (0.0, 0.0);  // upper-left corner
         let dial_center = (f64::from(width) as f32 / 2.0, f64::from(height) as f32 / 2.0); 
-        let dial_radius: f32 = f64::from(size / 2) as f32;
+        let dial_radius: f32 = f64::from(clock_size / 2) as f32;
         let second_hand_len = dial_radius * 0.9;
         let minute_hand_len = dial_radius * 0.8;
         let hour_hand_len   = dial_radius * 0.6;
@@ -93,16 +93,12 @@ fn main() {
         let two_pi = 2.0 * PI;
         let radians_per_sec = two_pi / 60.0;
         let radians_per_hour = two_pi / 12.0;
-        //let hour_angle = hour*radians_per_hour + minute*PI/360.0;
-        let hour_angle = (((hour * 60.0 + minute) / 60.0) / 12.0) * two_pi;
 
 
         let white:     Color = Color::new(1.0, 1.0, 1.0, 1.0);
         let silver:    Color = Color::from_rgb(196,199,206);
         let darksilver:Color = Color::from_rgb(148,152,161);
-        //let gray:      Color = Color::from_rgb(128,128,128);
         let darkgray:  Color = Color::from_rgb(169,169,169);
-        //let lightgray: Color = Color::from_rgb(211,211,211);
         let dial_color = Color::new(0.2, 0.0, 0.8, 1.0);
 
 
@@ -110,7 +106,7 @@ fn main() {
         context.frame((width, height), gl_window.hidpi_factor(), |frame| {
             
             // hour/minute markers
-            
+
             //let sigils = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
             let sigils: Vec<String> = (0..13).map(|n| { format!("{}", n) }).collect();
             for h in 1..13 {
@@ -161,17 +157,20 @@ fn main() {
             }
 
             // time-string
-            context.text(
-                roboto_font,
-                (dial_center.0, dial_center.1 + dial_radius * 0.7 - font_size),
-                format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM"}  else { "PM" }),
-                    TextOptions {
-                        color: silver,
-                        size: font_size,
-                        align: Alignment::new().center().baseline(),
-                        ..Default::default()
-                    },
-                );
+            let show_time_string = false;
+            if show_time_string {
+                context.text(
+                    roboto_font,
+                    (dial_center.0, dial_center.1 + dial_radius * 0.7 - font_size),
+                    format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM"}  else { "PM" }),
+                        TextOptions {
+                            color: silver,
+                            size: font_size,
+                            align: Alignment::new().center().baseline(),
+                            ..Default::default()
+                        },
+                    );                
+            }
             // date-string
             context.text(
                 roboto_font,
@@ -235,8 +234,14 @@ fn main() {
             };
 
             // draw the hands
-            draw_hand(second * radians_per_sec, second_hand_len, 1.0);
-            draw_hand(minute * radians_per_sec, minute_hand_len, 3.0);
+
+            //let hour_angle = hour*radians_per_hour + minute*PI/360.0;
+            let hour_angle = (((hour * 60.0 + minute) / 60.0) / 12.0) * two_pi;
+            let minute_angle = minute * radians_per_sec;
+            let second_angle = second * radians_per_sec;
+
+            draw_hand(second_angle, second_hand_len, 1.0);
+            draw_hand(minute_angle, minute_hand_len, 3.0);
             draw_hand(hour_angle, hour_hand_len, 5.0);
 
 
