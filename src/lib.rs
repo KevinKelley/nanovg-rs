@@ -1314,7 +1314,7 @@ impl Alignment {
 }
 
 /// Represents a transformation in 2D space.
-/// A transformation is a column-major matrix with in the following form:
+/// A transformation is a column-major matrix in the following form:
 /// [a c e] - indices [0 2 4]
 /// [b d f] - indices [1 3 5]
 /// [0 0 1] - not passed.
@@ -1353,6 +1353,16 @@ impl Transform {
         let mut new = self.clone();
         new.matrix[2] = x;
         new.matrix[1] = y;
+        new
+    }
+
+    /// Set the rotation of the transform.
+    pub fn rotate(self, theta: f32) -> Self {
+        let mut new = self.clone();
+        new.matrix[0] = theta.cos();
+        new.matrix[2] = -theta.sin();
+        new.matrix[1] = theta.sin();
+        new.matrix[3] = theta.cos();
         new
     }
 }
