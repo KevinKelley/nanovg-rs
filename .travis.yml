@@ -11,8 +11,7 @@ before_install:
   - sudo apt-get update -qq
 install:
   - sudo apt-get install -qq --force-yes premake4
-  # - sudo apt-get install xorg-dev libglu1-mesa-dev
-  - sudo apt-get install xorg-dev xrandr-dev
+  - sudo apt-get install xorg-dev libglu1-mesa-dev
 script:
   # glfw
   # - git clone https://github.com/glfw/glfw.git
