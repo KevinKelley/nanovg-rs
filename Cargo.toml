@@ -30,7 +30,12 @@ gcc = "0.3"
 [dev-dependencies]
 glutin = "0.10.0"
 gl = "0.6.3"
+chrono = "0.4"
 
 [[example]]
 name = "demo-glutin"
+required-features = ["gl3"]
+
+[[example]]
+name = "demo-clock"
 required-features = ["gl3"]

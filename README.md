@@ -16,7 +16,9 @@ Alternatively, you can clone and build the library yourself:
     cd nanovg-rs
     cargo build
 
-This library comes with a very useful example called `demo-glutin`. If you want to make sure that nanovg is working on your system, clone and build this crate as shown above and run the command `cargo run --example demo-glutin --features="gl3"`. This should produce a window similar to that below.
+This library comes with a couple examples:
+- very useful example called `demo-glutin`. If you want to make sure that nanovg is working on your system, clone and build this crate as shown above and run the command `cargo run --example demo-glutin --features="gl3"`. This should produce a window similar to that below.
+- a Clock, 'demo-clock', because who doesn't like clocks?  And I needed to get rotation transforms working.  Run it with `cargo run --example demo-clock --features "gl3"`
 
 **Note** that when running the examples, the needed resources might not be found if you run it without a `cargo run --example` command. Thist is just a working-directory path issue.
 
@@ -38,8 +40,11 @@ to specify the version of OpenGL to use. Use `gl3` or `gl2` for computers and `g
 
 # Screenshots
 
-![demo-glutin](/screenshot.png)
+![demo-glutin](/demo-glutin.png)
 Output of the `demo-glutin` example.
+
+![demo-clock](/demo-clock.png)
+Output of the `demo-clock` example.
 
 # Interesting Links
 
