@@ -26,4 +26,4 @@ script:
   - sudo make install
   - cd ..
 
-  - cargo build
+  - cargo build --features "gl3"

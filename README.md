@@ -14,7 +14,7 @@ Alternatively, you can clone and build the library yourself:
 
     git clone --recursive https://github.com/KevinKelley/nanovg-rs
     cd nanovg-rs
-    cargo build
+    cargo build --features "gl3"
 
 This library comes with a couple examples:
 - very useful example called `demo-glutin`. If you want to make sure that nanovg is working on your system, clone and build this crate as shown above and run the command `cargo run --example demo-glutin --features="gl3"`. This should produce a window similar to that below.
