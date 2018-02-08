@@ -432,7 +432,7 @@ impl<'a, 'b> Path<'a, 'b> {
         radius: f32,
         start_angle: f32,
         end_angle: f32,
-        direction: Direction,
+        winding: Winding,
     ) {
         unsafe {
             ffi::nvgArc(
@@ -442,7 +442,7 @@ impl<'a, 'b> Path<'a, 'b> {
                 radius,
                 start_angle,
                 end_angle,
-                direction.into_raw().bits(),
+                winding.into_raw(),
             );
         }
     }
@@ -577,9 +577,9 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
 
     /// Set the winding of the subpath.
     /// The winding defines which parts of the subparth are 'inside' and which are 'outside'.
-    pub fn winding(&self, direction: Direction) {
+    pub fn winding(&self, winding: Winding) {
         unsafe {
-            ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits());
+            ffi::nvgPathWinding(self.ctx(), winding.into_raw());
         }
     }
 
@@ -1015,6 +1015,43 @@ impl Direction {
             Direction::Clockwise => ffi::NVGwinding::NVG_CW,
             Direction::CounterClockwise => ffi::NVGwinding::NVG_CCW,
         }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum Solidity {
+    Hole,
+    Solid,
+}
+
+impl Solidity {
+    fn into_raw(self) -> ffi::NVGsolidity {
+        match self {
+            Solidity::Hole => ffi::NVGsolidity::NVG_HOLE,
+            Solidity::Solid => ffi::NVGsolidity::NVG_SOLID,
+        }
+    }
+}
+
+/// Winding struct that holds either Direction or Solidity enum
+/// These two are identical aliases.
+/// They are here for different meanings in different contexts
+#[derive(Copy, Clone, Debug)]
+pub struct Winding(c_int);
+
+impl Winding {
+    /// Construct Winding from Direction enum
+    pub fn direction(direction: Direction) -> Winding {
+        Winding(direction.into_raw().bits())
+    }
+
+    /// Construct Winding from Solidity enum
+    pub fn solidity(solidity: Solidity) -> Winding {
+        Winding(solidity.into_raw().bits())
+    }
+
+    fn into_raw(self) -> c_int {
+        self.0
     }
 }
 
