@@ -576,7 +576,7 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     }
 
     /// Set the winding of the subpath.
-    /// The winding defines which parts of the subparth are 'inside' and which are 'outside'.
+    /// The winding defines which parts of the subpath are 'inside' and which are 'outside'.
     pub fn winding(&self, winding: Winding) {
         unsafe {
             ffi::nvgPathWinding(self.ctx(), winding.into_raw());
