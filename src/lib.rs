@@ -1033,25 +1033,21 @@ impl Solidity {
     }
 }
 
-/// Winding struct that holds either Direction or Solidity enum
+/// Winding enum that holds either Direction or Solidity enum
 /// These two are identical aliases.
 /// They are here for different meanings in different contexts
-#[derive(Copy, Clone, Debug)]
-pub struct Winding(c_int);
+#[derive(Debug)]
+pub enum Winding {
+    Direction(Direction),
+    Solidity(Solidity),
+}
 
 impl Winding {
-    /// Construct Winding from Direction enum
-    pub fn direction(direction: Direction) -> Winding {
-        Winding(direction.into_raw().bits())
-    }
-
-    /// Construct Winding from Solidity enum
-    pub fn solidity(solidity: Solidity) -> Winding {
-        Winding(solidity.into_raw().bits())
-    }
-
     fn into_raw(self) -> c_int {
-        self.0
+        match self {
+            Winding::Direction(direction) => direction.into_raw().bits(),
+            Winding::Solidity(solidity) => solidity.into_raw().bits(),
+        }
     }
 }
 
