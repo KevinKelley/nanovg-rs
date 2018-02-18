@@ -482,6 +482,8 @@ impl<'a, 'b> Path<'a, 'b> {
                 ColoringStyle::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
             }
             ffi::nvgStrokeWidth(ctx, style.width as c_float);
+            ffi::nvgLineCap(ctx, style.line_cap.into_raw() as c_int);
+            ffi::nvgLineJoin(ctx, style.line_join.into_raw() as c_int);
             ffi::nvgMiterLimit(ctx, style.miter_limit as c_float);
             ffi::nvgStroke(ctx);
         }
@@ -674,6 +676,8 @@ impl Default for FillStyle {
 pub struct StrokeStyle {
     pub coloring_style: ColoringStyle,
     pub width: f32,
+    pub line_cap: LineCap,
+    pub line_join: LineJoin,
     pub miter_limit: f32,
     pub antialias: bool,
 }
@@ -683,8 +687,46 @@ impl Default for StrokeStyle {
         Self {
             coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
             width: 1.0,
+            line_cap: LineCap::Butt,
+            line_join: LineJoin::Miter,
             miter_limit: 10.0,
             antialias: true,
+        }
+    }
+}
+
+/// Controls how the end of line is drawn.
+#[derive(Clone, Copy, Debug)]
+pub enum LineCap {
+    Butt,
+    Round,
+    Square,
+}
+
+impl LineCap {
+    fn into_raw(self) -> ffi::NVGlineCap {
+        match self {
+            LineCap::Butt => ffi::NVGlineCap::NVG_BUTT,
+            LineCap::Round => ffi::NVGlineCap::NVG_ROUND,
+            LineCap::Square => ffi::NVGlineCap::NVG_SQUARE,
+        }
+    }
+}
+
+/// Controls how lines are joined together.
+#[derive(Clone, Copy, Debug)]
+pub enum LineJoin {
+    Miter,
+    Round,
+    Bevel
+}
+
+impl LineJoin {
+    fn into_raw(self) -> ffi::NVGlineCap {
+        match self {
+            LineJoin::Miter => ffi::NVGlineCap::NVG_MITER,
+            LineJoin::Round => ffi::NVGlineCap::NVG_ROUND,
+            LineJoin::Bevel => ffi::NVGlineCap::NVG_BEVEL,
         }
     }
 }
