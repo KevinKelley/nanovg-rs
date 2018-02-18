@@ -253,7 +253,7 @@ impl Context {
         }
     }
 
-    /// Measures specified text string
+    /// Measures specified text string.
     /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
     /// and the second element specifies the bounding box of measured text.
     /// `font` the font face to use.
@@ -270,17 +270,16 @@ impl Context {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
         let mut bounds = [0.0f32; 4];
-        let mut measure = 0.0f32;
-        unsafe {
-            measure = ffi::nvgTextBounds(
+        let measure = unsafe {
+            ffi::nvgTextBounds(
                 self.raw(),
                 x,
                 y,
                 text.into_raw(),
                 0 as *const _,
                 bounds.as_mut_ptr(),
-            );
-        }
+            )
+        };
         (measure, TextBounds::new(&bounds))
     }
 
