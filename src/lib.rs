@@ -252,6 +252,69 @@ impl Context {
             );
         }
     }
+
+    /// Measures specified text string
+    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
+    /// and the second element specifies the bounding box of measured text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> (f32, TextBounds) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        let mut measure = 0.0f32;
+        unsafe {
+            measure = ffi::nvgTextBounds(
+                self.raw(),
+                x,
+                y,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            );
+        }
+        (measure, TextBounds::new(&bounds))
+    }
+
+    /// Measures specified multi-text string.
+    /// Returns bounding box of measured multi-text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `break_row_width` break line into new row after exceeding this width.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_box_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        break_row_width: f32,
+        text: S,
+        options: TextOptions,
+    ) -> TextBounds {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        unsafe {
+            ffi::nvgTextBoxBounds(
+                self.raw(),
+                x,
+                y,
+                break_row_width,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        }
+        TextBounds::new(&bounds)
+    }
 }
 
 impl Drop for Context {
@@ -1268,6 +1331,27 @@ impl Default for TextOptions {
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
             scissor: None,
+        }
+    }
+}
+
+/// Struct to store min and max bounds when measuring text with text_bounds or text_box_bounds
+#[derive(Debug)]
+pub struct TextBounds {
+    min_x: f32,
+    min_y: f32,
+    max_x: f32,
+    max_y: f32,
+}
+
+impl TextBounds {
+    /// Creates new TextBounds struct instance from array
+    fn new(bounds: &[f32; 4]) -> TextBounds {
+        TextBounds {
+            min_x: bounds[0],
+            min_y: bounds[1],
+            max_x: bounds[2],
+            max_y: bounds[3],
         }
     }
 }
