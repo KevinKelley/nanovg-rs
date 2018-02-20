@@ -331,6 +331,24 @@ impl Context {
             CString::new(text.as_ref()).unwrap()
         )
     }
+
+    /// Returns vertical text metrics based on given font and text options
+    /// Measured values are stored in TextMetrics struct in local coordinate space.
+    /// `options` the options specify how metrics should be calculated.
+    /// `font` the font for which to calculate metrics.
+    pub fn text_metrics(&self, font: Font, options: TextOptions) -> TextMetrics {
+        self.text_prepare(font, options);
+        let mut metrics = TextMetrics::new();
+        unsafe {
+            ffi::nvgTextMetrics(
+                self.raw(),
+                &mut metrics.ascender,
+                &mut metrics.descender,
+                &mut metrics.line_height
+            );
+        }
+        metrics
+    }
 }
 
 impl Drop for Context {
@@ -1506,6 +1524,24 @@ impl GlyphPosition {
             min_x: glyph.minx,
             max_x: glyph.maxx,
             next: next
+        }
+    }
+}
+
+/// Struct to store measured text metrics computed with Context::text_metrics
+#[derive(Clone, Copy, Debug)]
+pub struct TextMetrics {
+    pub ascender: f32,
+    pub descender: f32,
+    pub line_height: f32,
+}
+
+impl TextMetrics {
+    fn new() -> TextMetrics {
+        TextMetrics {
+            ascender: 0.0,
+            descender: 0.0,
+            line_height: 0.0,
         }
     }
 }
