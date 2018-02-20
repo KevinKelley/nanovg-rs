@@ -7,7 +7,7 @@ pub mod ffi;
 use std::ops::Drop;
 use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
-use libc::{c_int, c_float, c_uchar};
+use libc::{c_int, c_float, c_uchar, c_char};
 
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {
@@ -313,6 +313,23 @@ impl Context {
             )
         }
         TextBounds::new(&bounds)
+    }
+
+    /// Calculates and breaks text into series of glyph positions.
+    /// Returns iterator over all glyph positions in text.
+    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
+    /// `text` the text to break into glyph positions
+    pub fn text_glyph_positions<S: AsRef<str>>(
+        &self,
+        (x, y): (f32, f32),
+        text: S,
+    ) -> TextGlyphPositions {
+        TextGlyphPositions::new(
+            &self,
+            x,
+            y,
+            CString::new(text.as_ref()).unwrap()
+        )
     }
 }
 
@@ -1393,6 +1410,102 @@ impl TextBounds {
             min_y: bounds[1],
             max_x: bounds[2],
             max_y: bounds[3],
+        }
+    }
+}
+
+/// Iterator over text glyph positions, calculated by Context::text_glyph_positions
+pub struct TextGlyphPositions<'a> {
+    context: &'a Context,
+    x: f32,
+    y: f32,
+    start: *const c_char,
+    glyphs: [ffi::NVGglyphPosition; 2],
+}
+
+impl<'a> TextGlyphPositions<'a> {
+    /// Creates new TextGlyphPositions iterator with needed variables for iterating over glyphs in text
+    fn new(context: &'a Context, x: f32, y: f32, text: CString) -> TextGlyphPositions<'a> {
+        TextGlyphPositions {
+            context: context,
+            x: x,
+            y: y,
+            start: text.into_raw(),
+            glyphs: [ffi::NVGglyphPosition {
+                s: 0 as *const _,
+                x: 0.0,
+                minx: 0.0,
+                maxx: 0.0,
+            }; 2]
+        }
+    }
+}
+
+impl<'a> Iterator for TextGlyphPositions<'a> {
+    type Item = GlyphPosition;
+
+    /// Returns next glyph in text
+    fn next(&mut self) -> Option<Self::Item> {
+        let num_glyphs = unsafe {
+             ffi::nvgTextGlyphPositions(
+                self.context.raw(),
+                self.x,
+                self.y,
+                self.start,
+                0 as *const _,
+                self.glyphs.as_mut_ptr(),
+                2
+            )
+        };
+
+        match num_glyphs {
+            1 => {
+                self.start = &('\0' as c_char);
+                Some(GlyphPosition::new(&self.glyphs[0], Box::new(None)))
+            },
+            2 => {
+                self.x = self.glyphs[1].x;
+                self.start = self.glyphs[1].s;
+
+                Some(
+                    GlyphPosition::new(
+                        &self.glyphs[0],
+                        Box::new(
+                            Some(
+                                GlyphPosition::new(
+                                    &self.glyphs[1],
+                                    Box::new(None)
+                                )
+                            )
+                        )
+                    )
+                )
+            },
+            _ => None
+        }
+    }
+}
+
+// Stores position of glyph returned by iterator Context::text_glyph_positions
+#[derive(Clone, Debug)]
+pub struct GlyphPosition {
+    pub x: f32,
+    pub min_x: f32,
+    pub max_x: f32,
+    /// Next GlyphPosition for convenience (stores only one glyph position in advance)
+    pub next: Box<Option<GlyphPosition>>,
+}
+
+impl GlyphPosition {
+    /// Creates new GlyphPosition from raw nanovg glyph position.
+    /// We can optionally pass next glyph position
+    /// (there is usually some if it is not the last glyph in text, otherwise it is none for last glyph).
+    fn new(glyph: &ffi::NVGglyphPosition, next: Box<Option<GlyphPosition>>) -> GlyphPosition {
+        GlyphPosition {
+            x: glyph.x,
+            min_x: glyph.minx,
+            max_x: glyph.maxx,
+            next: next
         }
     }
 }

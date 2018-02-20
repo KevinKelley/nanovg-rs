@@ -125,7 +125,7 @@ pub struct NVGcompositeOperationState {
 }
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct NVGglyphPosition {
     pub s: *const c_char,
     pub x: c_float,
