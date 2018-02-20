@@ -7,7 +7,7 @@ pub mod ffi;
 use std::ops::Drop;
 use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
-use libc::{c_int, c_float, c_uchar};
+use libc::{c_int, c_float, c_uchar, c_char};
 
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {
@@ -252,6 +252,85 @@ impl Context {
             );
         }
     }
+
+    /// Measures specified text string.
+    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
+    /// and the second element specifies the bounding box of measured text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> (f32, TextBounds) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        let measure = unsafe {
+            ffi::nvgTextBounds(
+                self.raw(),
+                x,
+                y,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        };
+        (measure, TextBounds::new(&bounds))
+    }
+
+    /// Measures specified multi-text string.
+    /// Returns bounding box of measured multi-text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `break_row_width` break line into new row after exceeding this width.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_box_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        break_row_width: f32,
+        text: S,
+        options: TextOptions,
+    ) -> TextBounds {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        unsafe {
+            ffi::nvgTextBoxBounds(
+                self.raw(),
+                x,
+                y,
+                break_row_width,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        }
+        TextBounds::new(&bounds)
+    }
+
+    /// Calculates and breaks text into series of glyph positions.
+    /// Returns iterator over all glyph positions in text.
+    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
+    /// `text` the text to break into glyph positions
+    pub fn text_glyph_positions<S: AsRef<str>>(
+        &self,
+        (x, y): (f32, f32),
+        text: S,
+    ) -> TextGlyphPositions {
+        TextGlyphPositions::new(
+            &self,
+            x,
+            y,
+            CString::new(text.as_ref()).unwrap()
+        )
+    }
 }
 
 impl Drop for Context {
@@ -420,6 +499,8 @@ impl<'a, 'b> Path<'a, 'b> {
                 ColoringStyle::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
             }
             ffi::nvgStrokeWidth(ctx, style.width as c_float);
+            ffi::nvgLineCap(ctx, style.line_cap.into_raw() as c_int);
+            ffi::nvgLineJoin(ctx, style.line_join.into_raw() as c_int);
             ffi::nvgMiterLimit(ctx, style.miter_limit as c_float);
             ffi::nvgStroke(ctx);
         }
@@ -432,7 +513,7 @@ impl<'a, 'b> Path<'a, 'b> {
         radius: f32,
         start_angle: f32,
         end_angle: f32,
-        direction: Direction,
+        winding: Winding,
     ) {
         unsafe {
             ffi::nvgArc(
@@ -442,7 +523,7 @@ impl<'a, 'b> Path<'a, 'b> {
                 radius,
                 start_angle,
                 end_angle,
-                direction.into_raw().bits(),
+                winding.into_raw(),
             );
         }
     }
@@ -576,10 +657,10 @@ impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
     }
 
     /// Set the winding of the subpath.
-    /// The winding defines which parts of the subparth are 'inside' and which are 'outside'.
-    pub fn winding(&self, direction: Direction) {
+    /// The winding defines which parts of the subpath are 'inside' and which are 'outside'.
+    pub fn winding(&self, winding: Winding) {
         unsafe {
-            ffi::nvgPathWinding(self.ctx(), direction.into_raw().bits());
+            ffi::nvgPathWinding(self.ctx(), winding.into_raw());
         }
     }
 
@@ -612,6 +693,8 @@ impl Default for FillStyle {
 pub struct StrokeStyle {
     pub coloring_style: ColoringStyle,
     pub width: f32,
+    pub line_cap: LineCap,
+    pub line_join: LineJoin,
     pub miter_limit: f32,
     pub antialias: bool,
 }
@@ -621,8 +704,46 @@ impl Default for StrokeStyle {
         Self {
             coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
             width: 1.0,
+            line_cap: LineCap::Butt,
+            line_join: LineJoin::Miter,
             miter_limit: 10.0,
             antialias: true,
+        }
+    }
+}
+
+/// Controls how the end of line is drawn.
+#[derive(Clone, Copy, Debug)]
+pub enum LineCap {
+    Butt,
+    Round,
+    Square,
+}
+
+impl LineCap {
+    fn into_raw(self) -> ffi::NVGlineCap {
+        match self {
+            LineCap::Butt => ffi::NVGlineCap::NVG_BUTT,
+            LineCap::Round => ffi::NVGlineCap::NVG_ROUND,
+            LineCap::Square => ffi::NVGlineCap::NVG_SQUARE,
+        }
+    }
+}
+
+/// Controls how lines are joined together.
+#[derive(Clone, Copy, Debug)]
+pub enum LineJoin {
+    Miter,
+    Round,
+    Bevel
+}
+
+impl LineJoin {
+    fn into_raw(self) -> ffi::NVGlineCap {
+        match self {
+            LineJoin::Miter => ffi::NVGlineCap::NVG_MITER,
+            LineJoin::Round => ffi::NVGlineCap::NVG_ROUND,
+            LineJoin::Bevel => ffi::NVGlineCap::NVG_BEVEL,
         }
     }
 }
@@ -1019,6 +1140,39 @@ impl Direction {
 }
 
 #[derive(Copy, Clone, Debug)]
+pub enum Solidity {
+    Hole,
+    Solid,
+}
+
+impl Solidity {
+    fn into_raw(self) -> ffi::NVGsolidity {
+        match self {
+            Solidity::Hole => ffi::NVGsolidity::NVG_HOLE,
+            Solidity::Solid => ffi::NVGsolidity::NVG_SOLID,
+        }
+    }
+}
+
+/// Winding enum that holds either Direction or Solidity enum
+/// These two are identical aliases.
+/// They are here for different meanings in different contexts
+#[derive(Debug)]
+pub enum Winding {
+    Direction(Direction),
+    Solidity(Solidity),
+}
+
+impl Winding {
+    fn into_raw(self) -> c_int {
+        match self {
+            Winding::Direction(direction) => direction.into_raw().bits(),
+            Winding::Solidity(solidity) => solidity.into_raw().bits(),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub enum CompositeOperation {
     Basic(BasicCompositeOperation),
     BlendFunc {
@@ -1235,6 +1389,123 @@ impl Default for TextOptions {
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
             scissor: None,
+        }
+    }
+}
+
+/// Struct to store min and max bounds when measuring text with text_bounds or text_box_bounds
+#[derive(Clone, Copy, Debug)]
+pub struct TextBounds {
+    pub min_x: f32,
+    pub min_y: f32,
+    pub max_x: f32,
+    pub max_y: f32,
+}
+
+impl TextBounds {
+    /// Creates new TextBounds struct instance from array
+    fn new(bounds: &[f32; 4]) -> TextBounds {
+        TextBounds {
+            min_x: bounds[0],
+            min_y: bounds[1],
+            max_x: bounds[2],
+            max_y: bounds[3],
+        }
+    }
+}
+
+/// Iterator over text glyph positions, calculated by Context::text_glyph_positions
+pub struct TextGlyphPositions<'a> {
+    context: &'a Context,
+    x: f32,
+    y: f32,
+    start: *const c_char,
+    glyphs: [ffi::NVGglyphPosition; 2],
+}
+
+impl<'a> TextGlyphPositions<'a> {
+    /// Creates new TextGlyphPositions iterator with needed variables for iterating over glyphs in text
+    fn new(context: &'a Context, x: f32, y: f32, text: CString) -> TextGlyphPositions<'a> {
+        TextGlyphPositions {
+            context: context,
+            x: x,
+            y: y,
+            start: text.into_raw(),
+            glyphs: [ffi::NVGglyphPosition {
+                s: 0 as *const _,
+                x: 0.0,
+                minx: 0.0,
+                maxx: 0.0,
+            }; 2]
+        }
+    }
+}
+
+impl<'a> Iterator for TextGlyphPositions<'a> {
+    type Item = GlyphPosition;
+
+    /// Returns next glyph in text
+    fn next(&mut self) -> Option<Self::Item> {
+        let num_glyphs = unsafe {
+             ffi::nvgTextGlyphPositions(
+                self.context.raw(),
+                self.x,
+                self.y,
+                self.start,
+                0 as *const _,
+                self.glyphs.as_mut_ptr(),
+                2
+            )
+        };
+
+        match num_glyphs {
+            1 => {
+                self.start = &('\0' as c_char);
+                Some(GlyphPosition::new(&self.glyphs[0], Box::new(None)))
+            },
+            2 => {
+                self.x = self.glyphs[1].x;
+                self.start = self.glyphs[1].s;
+
+                Some(
+                    GlyphPosition::new(
+                        &self.glyphs[0],
+                        Box::new(
+                            Some(
+                                GlyphPosition::new(
+                                    &self.glyphs[1],
+                                    Box::new(None)
+                                )
+                            )
+                        )
+                    )
+                )
+            },
+            _ => None
+        }
+    }
+}
+
+// Stores position of glyph returned by iterator Context::text_glyph_positions
+#[derive(Clone, Debug)]
+pub struct GlyphPosition {
+    pub x: f32,
+    pub min_x: f32,
+    pub max_x: f32,
+    /// Next GlyphPosition for convenience (stores only one glyph position in advance)
+    pub next: Box<Option<GlyphPosition>>,
+}
+
+impl GlyphPosition {
+    /// Creates new GlyphPosition from raw nanovg glyph position.
+    /// We can optionally pass next glyph position
+    /// (there is usually some if it is not the last glyph in text, otherwise it is none for last glyph).
+    fn new(glyph: &ffi::NVGglyphPosition, next: Box<Option<GlyphPosition>>) -> GlyphPosition {
+        GlyphPosition {
+            x: glyph.x,
+            min_x: glyph.minx,
+            max_x: glyph.maxx,
+            next: next
         }
     }
 }
