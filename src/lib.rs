@@ -349,6 +349,23 @@ impl Context {
         }
         metrics
     }
+
+    /// Breaks text into lines.
+    /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
+    /// Returns iterator over text lines.
+    /// `text` the text to break into lines
+    /// `break_row_width` maximum width of row
+    pub fn text_break_lines<S: AsRef<str>>(
+        &self,
+        text: S,
+        break_row_width: f32,
+    ) -> TextBreakLines {
+        TextBreakLines::new(
+            &self,
+            CString::new(text.as_ref()).unwrap(),
+            break_row_width
+        )
+    }
 }
 
 impl Drop for Context {
@@ -1459,6 +1476,58 @@ impl<'a> TextGlyphPositions<'a> {
     }
 }
 
+/// Holds computed values for given row.
+#[derive(Clone, Copy, Debug)]
+pub struct TextRow<'a> {
+    pub width: f32,
+    pub min_x: f32,
+    pub max_x: f32,
+    pub text: &'a str,
+}
+
+impl<'a> TextRow<'a> {
+    /// Creates new TextRow from raw nanovg text row
+    /// and also adds text contained in this row.
+    fn new(row: &ffi::NVGtextRow, text: &'a str) -> TextRow<'a> {
+        TextRow {
+            width: row.width,
+            min_x: row.minx,
+            max_x: row.maxx,
+            text: text,
+        }
+    }
+}
+
+/// Iterator over rows in text
+/// Returned by Context::text_break_lines
+#[derive(Debug)]
+pub struct TextBreakLines<'a> {
+    context: &'a Context,
+    start: *const c_char,
+    break_row_width: f32,
+    row: ffi::NVGtextRow,
+}
+
+impl<'a> TextBreakLines<'a> {
+    /// Creates new TextBreakLines iterator which iterated over all text rows in text.
+    /// break_row_width specifies max length of row.
+    fn new(context: &'a Context, text: CString, break_row_width: f32) -> TextBreakLines<'a> {
+        TextBreakLines {
+            context: context,
+            start: text.into_raw(),
+            break_row_width: break_row_width,
+            row: ffi::NVGtextRow {
+                start: 0 as *const _,
+                end: 0 as *const _,
+                next: 0 as *const _,
+                width: 0.0,
+                minx: 0.0,
+                maxx: 0.0,
+            }
+        }
+    }
+}
+
 impl<'a> Iterator for TextGlyphPositions<'a> {
     type Item = GlyphPosition;
 
@@ -1542,6 +1611,27 @@ impl TextMetrics {
             ascender: 0.0,
             descender: 0.0,
             line_height: 0.0,
+        }
+    }
+}
+
+impl<'a> Iterator for TextBreakLines<'a> {
+    type Item = TextRow<'a>;
+
+    /// Returns next row in text
+    fn next(&mut self) -> Option<Self::Item> {
+        unsafe {
+            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, 0 as *const _, self.break_row_width, &mut self.row, 1);
+            self.start = self.row.next;
+
+            if nrows > 0 {
+                let string_length = self.row.end as usize - self.row.start as usize;
+                let string_slice = std::slice::from_raw_parts(self.row.start as *const u8, string_length);
+                let text_str = std::str::from_utf8(string_slice).unwrap();
+                Some(TextRow::new(&self.row, text_str))
+            } else {
+                None
+            }
         }
     }
 }
