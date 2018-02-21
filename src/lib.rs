@@ -287,14 +287,12 @@ impl Context {
     /// Returns bounding box of measured multi-text.
     /// `font` the font face to use.
     /// `(x, y)` the origin / position to measure the text from.
-    /// `break_row_width` break line into new row after exceeding this width.
     /// `text` the string to measure.
     /// `options` optional (`Default::default`) options that controls how the text is measured.
     pub fn text_box_bounds<S: AsRef<str>>(
         &self,
         font: Font,
         (x, y): (f32, f32),
-        break_row_width: f32,
         text: S,
         options: TextOptions,
     ) -> TextBounds {
@@ -306,7 +304,7 @@ impl Context {
                 self.raw(),
                 x,
                 y,
-                break_row_width,
+                options.line_max_width,
                 text.into_raw(),
                 0 as *const _,
                 bounds.as_mut_ptr(),
