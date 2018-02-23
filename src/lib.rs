@@ -422,7 +422,7 @@ pub enum Scissor {
 }
 
 /// Options which control how a path is rendered.
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct PathOptions {
     /// The scissor defines the rectangular boundary in which the frame is clipped into.
     /// All overflowing pixels will be discarded.
