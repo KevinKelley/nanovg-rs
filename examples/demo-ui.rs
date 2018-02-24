@@ -731,7 +731,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
         |path| {
             path.rect((r0 - 2.0 - 10.0, -4.0 - 10.0), (r1 - r0 + 4.0 + 20.0, 8.0 + 20.0));
             path.sub_path((0.0, 0.0), |sub_path| {
-                path.rect((r0 - 2.0, -4.0), (r1 - r0 + 4.0, 8.0));
+                sub_path.rect((r0 - 2.0, -4.0), (r1 - r0 + 4.0, 8.0));
                 sub_path.winding(Winding::Solidity(Solidity::Hole));
             });
             path.fill(FillStyle {
@@ -766,7 +766,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.sub_path((r, 0.0), |sub_path| {
                 sub_path.line_to((ax, ay));
                 sub_path.line_to((bx, by));
-                sub_path.close()
+                sub_path.close();
             });
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
@@ -825,7 +825,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
         |path| {
             path.rect((ax - 20.0, ay - 20.0), (40.0, 40.0));
             path.sub_path((0.0, 0.0), |sub_path| {
-                path.circle((ax, ay), 7.0);
+                sub_path.circle((ax, ay), 7.0);
                 sub_path.winding(Winding::Solidity(Solidity::Hole));
             });
             path.fill(FillStyle {
@@ -1068,7 +1068,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
             path.sub_path((x, y), |sub_path| {
-                path.rounded_rect((x, y), (w, h), corner_radius);
+                sub_path.rounded_rect((x, y), (w, h), corner_radius);
                 sub_path.winding(Winding::Solidity(Solidity::Hole));
             });
             path.fill(FillStyle {
@@ -1539,7 +1539,7 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
                 (kr * 2.0 + 5.0 + 5.0, kr * 2.0 + 5.0 + 5.0 + 3.0),
             );
             path.sub_path((x, y), |sub_path| {
-                path.circle((x + value * w, cy), kr);
+                sub_path.circle((x + value * w, cy), kr);
                 sub_path.winding(Winding::Solidity(Solidity::Hole));
             });
 
@@ -1603,7 +1603,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
             path.sub_path((x, y), |sub_path| {
-                path.rounded_rect((x, y), (w, h), corner_radius);
+                sub_path.rounded_rect((x, y), (w, h), corner_radius);
                 sub_path.winding(Winding::Solidity(Solidity::Hole));
             });
             path.fill(FillStyle {
@@ -1705,7 +1705,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             |path| {
                 path.rect((tx - 5.0, ty - 5.0), (thumb + 10.0, thumb + 10.0));
                 path.sub_path((tx, ty), |sub_path| {
-                    path.rounded_rect((tx, ty), (thumb, thumb), 6.0);
+                    sub_path.rounded_rect((tx, ty), (thumb, thumb), 6.0);
                     sub_path.winding(Winding::Solidity(Solidity::Hole));
                 });
                 path.fill(FillStyle {
