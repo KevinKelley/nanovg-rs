@@ -620,37 +620,12 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 
     /// Add subpath to the path. A subpath is a custom shape.
-    pub fn sub_path<F: FnOnce(SubPath)>(&self, (x, y): (f32, f32), handler: F) {
+    pub fn sub_path<F: FnOnce(&Path)>(&self, (x, y): (f32, f32), handler: F) {
         let ctx = self.ctx();
         unsafe {
             ffi::nvgMoveTo(ctx, x, y);
         }
-        handler(SubPath::new(self));
-    }
-}
-
-/// A custom shape defined by lines, arcs and curves.
-#[derive(Debug)]
-pub struct SubPath<'a, 'b, 'c>
-where
-    'b: 'a,
-    'c: 'b,
-{
-    path: &'a Path<'b, 'c>,
-}
-
-impl<'a, 'b, 'c> SubPath<'a, 'b, 'c> {
-    fn new(path: &'a Path<'b, 'c>) -> Self {
-        Self { path }
-    }
-
-    fn ctx(&self) -> *mut ffi::NVGcontext {
-        self.path.ctx()
-    }
-
-    /// Get the underlying context this sub-path was created on.
-    pub fn context(&self) -> &'a Context {
-        self.path.context()
+        handler(self);
     }
 
     /// Add a line to the subpath.
