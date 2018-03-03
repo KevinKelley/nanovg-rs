@@ -20,7 +20,7 @@ fn build_library(backend_macro: &str) {
 
     // Hide the nanovg warnings. Not really relevant to us.
     // MSVC get's passed a `/W4` by default.
-    if !cfg!(target_env = "msvc") {
+    if !target.contains("msvc") {
         config.flag("-w");
     }
 
