@@ -12,4 +12,5 @@ Cargo.lock
 examples/demo/dump.png
 *.DS_Store
 .idea/
+.vscode/
 nanovg-rs.iml

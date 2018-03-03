@@ -17,8 +17,13 @@ fn build_library(backend_macro: &str) {
         config.file("glad/glad.c");
         config.include("glad");
     }
+
     // Hide the nanovg warnings. Not really relevant to us.
-    config.flag("-w");
+    // MSVC get's passed a `/W4` by default.
+    if !cfg!(target_env = "msvc") {
+        config.flag("-w");
+    }
+
     config.compile("libnanovg.a")
 }
 
