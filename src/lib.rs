@@ -619,15 +619,6 @@ impl<'a, 'b> Path<'a, 'b> {
         }
     }
 
-    /// Add subpath to the path. A subpath is a custom shape.
-    pub fn sub_path<F: FnOnce(&Path)>(&self, (x, y): (f32, f32), handler: F) {
-        let ctx = self.ctx();
-        unsafe {
-            ffi::nvgMoveTo(ctx, x, y);
-        }
-        handler(self);
-    }
-
     /// Add a line to the subpath.
     pub fn line_to(&self, (x, y): (f32, f32)) {
         unsafe {
@@ -669,6 +660,13 @@ impl<'a, 'b> Path<'a, 'b> {
     pub fn winding(&self, winding: Winding) {
         unsafe {
             ffi::nvgPathWinding(self.ctx(), winding.into_raw());
+        }
+    }
+
+    /// Start new sub-path with specified coordinates as the first point.
+    pub fn move_to(&self, (x, y): (f32, f32)) {
+        unsafe {
+            ffi::nvgMoveTo(self.ctx(), x, y);
         }
     }
 

@@ -93,11 +93,10 @@ fn main() {
                 |path| {
                     let origin = (150.0, 140.0);
                     path.circle(origin, 64.0);
-                    path.sub_path(origin, |sp| {
-                        sp.line_to((origin.0 + 300.0, origin.1 - 50.0));
-                        sp.quad_bezier_to((origin.0 + 500.0, origin.1 + 100.0), (300.0, 100.0));
-                        sp.close();
-                    });
+                    path.move_to(origin);
+                    path.line_to((origin.0 + 300.0, origin.1 - 50.0));
+                    path.quad_bezier_to((origin.0 + 500.0, origin.1 + 100.0), (300.0, 100.0));
+                    path.close();
                     path.stroke(StrokeStyle {
                         coloring_style: ColoringStyle::Color(Color::new(1.0, 1.0, 0.0, 1.0)),
                         width: 3.0,

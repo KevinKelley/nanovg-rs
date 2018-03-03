@@ -217,7 +217,7 @@ fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32,
 
     draw_edit_box(frame, &data.fonts, "Password", x, y, 280.0, 28.0);
     y += 38.0;
-    
+
     draw_check_box(frame, &data.fonts, "Remember me", x, y, 140.0, 28.0);
     draw_button(frame, &data.fonts, Some(ICON_LOGIN), "Sign in", x + 138.0, y, 140.0, 28.0, Color::from_rgba(0, 96, 128, 255));
     y += 45.0;
@@ -232,7 +232,7 @@ fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32,
     y += 55.0;
 
     draw_button(frame, &data.fonts, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::from_rgba(128, 16, 8, 255));
-    
+
     draw_button(frame, &data.fonts, None, "Cancel", x + 170.0, y, 110.0, 28.0, Color::from_rgba(0, 0, 0, 0));
 
     draw_thumbnails(frame, &data.images, 365.0, popy - 30.0, 160.0, 300.0, t);
@@ -496,10 +496,9 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             );
             let px = (bounds.max_x + bounds.min_x) / 2.0;
             let py = bounds.min_y;
-            path.sub_path((px, py - 10.0), |sub_path| {
-                sub_path.line_to((px + 7.0, py + 1.0));
-                sub_path.line_to((px - 7.0, py + 1.0));
-            });
+            path.move_to((px, py - 10.0));
+            path.line_to((px + 7.0, py + 1.0));
+            path.line_to((px - 7.0, py + 1.0));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Color(Color::from_rgba(220, 220, 220, 255)),
                 ..Default::default()
@@ -535,18 +534,17 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     // graph background
     frame.path(
         |path| {
-            path.sub_path((sx[0], sy[0]), |sub_path| {
-                for i in 1..6 {
-                    sub_path.cubic_bezier_to(
-                        (sx[i], sy[i]),
-                        (sx[i - 1] + dx * 0.5, sy[i - 1]),
-                        (sx[i] - dx * 0.5, sy[i]),
-                    );
-                }
+            path.move_to((sx[0], sy[0]));
+            for i in 1..6 {
+                path.cubic_bezier_to(
+                    (sx[i], sy[i]),
+                    (sx[i - 1] + dx * 0.5, sy[i - 1]),
+                    (sx[i] - dx * 0.5, sy[i]),
+                );
+            }
 
-                sub_path.line_to((x + w, y + h));
-                sub_path.line_to((x, y + h));
-            });
+            path.line_to((x + w, y + h));
+            path.line_to((x, y + h));
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
@@ -565,15 +563,14 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     // graph line (darker)
     frame.path(
         |path| {
-            path.sub_path((sx[0], sy[0] + 2.0), |sub_path| {
-                for i in 1..6 {
-                    sub_path.cubic_bezier_to(
-                        (sx[i], sy[i] + 2.0),
-                        (sx[i - 1] + dx * 0.5, sy[i - 1] + 2.0),
-                        (sx[i] - dx * 0.5, sy[i] + 2.0),
-                    );
-                }
-            });
+            path.move_to((sx[0], sy[0] + 2.0));
+            for i in 1..6 {
+                path.cubic_bezier_to(
+                    (sx[i], sy[i] + 2.0),
+                    (sx[i - 1] + dx * 0.5, sy[i - 1] + 2.0),
+                    (sx[i] - dx * 0.5, sy[i] + 2.0),
+                );
+            }
 
             path.stroke(StrokeStyle {
                 coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 32)),
@@ -587,15 +584,14 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     // graph line (lighter)
     frame.path(
         |path| {
-            path.sub_path((sx[0], sy[0]), |sub_path| {
-                for i in 1..6 {
-                    sub_path.cubic_bezier_to(
-                        (sx[i], sy[i]),
-                        (sx[i - 1] + dx * 0.5, sy[i - 1]),
-                        (sx[i] - dx * 0.5, sy[i]),
-                    );
-                }
-            });
+            path.move_to((sx[0], sy[0]));
+            for i in 1..6 {
+                path.cubic_bezier_to(
+                    (sx[i], sy[i]),
+                    (sx[i - 1] + dx * 0.5, sy[i - 1]),
+                    (sx[i] - dx * 0.5, sy[i]),
+                );
+            }
 
             path.stroke(StrokeStyle {
                 coloring_style: ColoringStyle::Color(Color::from_rgba(0, 160, 192, 255)),
@@ -704,7 +700,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 width: 1.0,
                 ..Default::default()
             });
-        }, 
+        },
         Default::default()
     );
 
@@ -719,7 +715,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 width: 2.0,
                 ..Default::default()
             });
-        }, 
+        },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
@@ -730,10 +726,9 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((r0 - 2.0 - 10.0, -4.0 - 10.0), (r1 - r0 + 4.0 + 20.0, 8.0 + 20.0));
-            path.sub_path((0.0, 0.0), |sub_path| {
-                sub_path.rect((r0 - 2.0, -4.0), (r1 - r0 + 4.0, 8.0));
-                sub_path.winding(Winding::Solidity(Solidity::Hole));
-            });
+            path.move_to((0.0, 0.0));
+            path.rect((r0 - 2.0, -4.0), (r1 - r0 + 4.0, 8.0));
+            path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
                     frame.context(),
@@ -754,7 +749,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     let r = r0 - 6.0;
-    
+
     // center triangle
     frame.path(
         |path| {
@@ -763,11 +758,10 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             let bx = f32::cos(-120.0 / 180.0 * consts::PI) * r;
             let by = f32::sin(-120.0 / 180.0 * consts::PI) * r;
 
-            path.sub_path((r, 0.0), |sub_path| {
-                sub_path.line_to((ax, ay));
-                sub_path.line_to((bx, by));
-                sub_path.close();
-            });
+            path.move_to((r, 0.0));
+            path.line_to((ax, ay));
+            path.line_to((bx, by));
+            path.close();
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
                     frame.context(),
@@ -813,7 +807,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 width: 2.0,
                 ..Default::default()
             });
-        }, 
+        },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
@@ -824,10 +818,9 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((ax - 20.0, ay - 20.0), (40.0, 40.0));
-            path.sub_path((0.0, 0.0), |sub_path| {
-                sub_path.circle((ax, ay), 7.0);
-                sub_path.winding(Winding::Solidity(Solidity::Hole));
-            });
+            path.move_to((0.0, 0.0));
+            path.circle((ax, ay), 7.0);
+            path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
                     frame.context(),
@@ -873,11 +866,10 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
 
             frame.path(
                 |path| {
-                    path.sub_path((fx + pts[0], fy + pts[1]), |sub_path| {
-                        sub_path.line_to((fx + pts[2], fy + pts[3]));
-                        sub_path.line_to((fx + pts[4], fy + pts[5]));
-                        sub_path.line_to((fx + pts[6], fy + pts[7]));
-                    });
+                    path.move_to((fx + pts[0], fy + pts[1]));
+                    path.line_to((fx + pts[2], fy + pts[3]));
+                    path.line_to((fx + pts[4], fy + pts[5]));
+                    path.line_to((fx + pts[6], fy + pts[7]));
 
                     path.stroke(StrokeStyle {
                         coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 160)),
@@ -892,11 +884,10 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
 
             frame.path(
                 |path| {
-                    path.sub_path((fx + pts[0], fy + pts[1]), |sub_path| {
-                        sub_path.line_to((fx + pts[2], fy + pts[3]));
-                        sub_path.line_to((fx + pts[4], fy + pts[5]));
-                        sub_path.line_to((fx + pts[6], fy + pts[7]));
-                    });
+                    path.move_to((fx + pts[0], fy + pts[1]));
+                    path.line_to((fx + pts[2], fy + pts[3]));
+                    path.line_to((fx + pts[4], fy + pts[5]));
+                    path.line_to((fx + pts[6], fy + pts[7]));
 
                     path.stroke(StrokeStyle {
                         coloring_style: ColoringStyle::Color(Color::from_rgba(0, 192, 255, 255)),
@@ -919,9 +910,8 @@ fn draw_widths(frame: &Frame, x: f32, y: f32, width: f32) {
         let w = (i as f32 + 0.5) * 0.1;
         frame.path(
             |path| {
-                path.sub_path((x, y), |sub_path| {
-                    sub_path.line_to((x + width, y + width * 0.3));
-                });
+                path.move_to((x, y));
+                path.line_to((x + width, y + width * 0.3));
 
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 255)),
@@ -965,9 +955,8 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
     for i in 0..caps.len() {
         frame.path(
             |path| {
-                path.sub_path((x, y + i as f32 * 10.0 + 5.0), |sub_path| {
-                    sub_path.line_to((x + width, y + i as f32 * 10.0 + 5.0));
-                });
+                path.move_to((x, y + i as f32 * 10.0 + 5.0));
+                path.line_to((x + width, y + i as f32 * 10.0 + 5.0));
 
                 path.stroke(StrokeStyle {
                     coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 255)),
@@ -1067,10 +1056,9 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
     frame.path(
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
-            path.sub_path((x, y), |sub_path| {
-                sub_path.rounded_rect((x, y), (w, h), corner_radius);
-                sub_path.winding(Winding::Solidity(Solidity::Hole));
-            });
+            path.move_to((x, y));
+            path.rounded_rect((x, y), (w, h), corner_radius);
+            path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
                     frame.context(),
@@ -1108,9 +1096,8 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
     // header separator
     frame.path(
         |path| {
-            path.sub_path((x + 0.5, y + 0.5 + 30.0), |sub_path| {
-                sub_path.line_to((x + 0.5 + w - 1.0, y + 0.5 + 30.0))
-            });
+            path.move_to((x + 0.5, y + 0.5 + 30.0));
+            path.line_to((x + 0.5 + w - 1.0, y + 0.5 + 30.0));
 
             path.stroke(StrokeStyle {
                 coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 32)),
@@ -1538,10 +1525,9 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
                 (x + (value * w) - kr - 5.0, cy - kr - 5.0),
                 (kr * 2.0 + 5.0 + 5.0, kr * 2.0 + 5.0 + 5.0 + 3.0),
             );
-            path.sub_path((x, y), |sub_path| {
-                sub_path.circle((x + value * w, cy), kr);
-                sub_path.winding(Winding::Solidity(Solidity::Hole));
-            });
+            path.move_to((x, y));
+            path.circle((x + value * w, cy), kr);
+            path.winding(Winding::Solidity(Solidity::Hole));
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
@@ -1602,10 +1588,9 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
     frame.path(
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
-            path.sub_path((x, y), |sub_path| {
-                sub_path.rounded_rect((x, y), (w, h), corner_radius);
-                sub_path.winding(Winding::Solidity(Solidity::Hole));
-            });
+            path.move_to((x, y));
+            path.rounded_rect((x, y), (w, h), corner_radius);
+            path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
                     frame.context(),
@@ -1627,10 +1612,9 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         |path| {
             let arry = 30.5;
             path.rounded_rect((x, y), (w, h), corner_radius);
-            path.sub_path((x - 10.0, y + arry), |sub_path| {
-                sub_path.line_to((x + 1.0, y + arry - 11.0));
-                sub_path.line_to((x + 1.0, y + arry + 11.0));
-            });
+            path.move_to((x - 10.0, y + arry));
+            path.line_to((x + 1.0, y + arry - 11.0));
+            path.line_to((x + 1.0, y + arry + 11.0));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Color(Color::from_rgba(200, 200, 200, 255)),
                 ..Default::default()
@@ -1704,10 +1688,9 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         frame.path(
             |path| {
                 path.rect((tx - 5.0, ty - 5.0), (thumb + 10.0, thumb + 10.0));
-                path.sub_path((tx, ty), |sub_path| {
-                    sub_path.rounded_rect((tx, ty), (thumb, thumb), 6.0);
-                    sub_path.winding(Winding::Solidity(Solidity::Hole));
-                });
+                path.move_to((tx, ty));
+                path.rounded_rect((tx, ty), (thumb, thumb), 6.0);
+                path.winding(Winding::Solidity(Solidity::Hole));
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
                         frame.context(),
@@ -1806,7 +1789,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
                     frame.context(),
-                    (x + w - 12.0 - 1.0, y + 4.0 + (h - 8.0 - scrollh) * u - 1.0), 
+                    (x + w - 12.0 - 1.0, y + 4.0 + (h - 8.0 - scrollh) * u - 1.0),
                     (8.0, scrollh),
                     3.0,
                     4.0,
@@ -1895,39 +1878,38 @@ impl PerformanceGraph {
 
         frame.path(
             |path| {
-                path.sub_path((x, y + h), |sub_path| {
-                    match self.style {
-                        GraphRenderStyle::Fps => {
-                            for i in 0..self.values.len() {
-                                let v = 1.0 / (0.00001 + self.values[(self.head + i) % self.values.len()]);
-                                let v = clamp(v, 0.0, 80.0);
-                                let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
-                                let vy = y + h - ((v / 80.0) * h);
-                                sub_path.line_to((vx, vy));
-                            }
-                        },
-                        GraphRenderStyle::Ms => {
-                            for i in 0..self.values.len() {
-                                let v = self.values[(self.head + i) % self.values.len()] * 1000.0;
-                                let v = clamp(v, 0.0, 20.0);
-                                let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
-                                let vy = y + h - ((v / 20.0) * h);
-                                sub_path.line_to((vx, vy));
-                            }
-                        },
-                        GraphRenderStyle::Percent => {
-                            for i in 0..self.values.len() {
-                                let v = self.values[(self.head + i) % self.values.len()] * 1.0;
-                                let v = clamp(v, 0.0, 100.0);
-                                let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
-                                let vy = y + h - ((v / 100.0) * h);
-                                sub_path.line_to((vx, vy));
-                            }
+                path.move_to((x, y + h));
+                match self.style {
+                    GraphRenderStyle::Fps => {
+                        for i in 0..self.values.len() {
+                            let v = 1.0 / (0.00001 + self.values[(self.head + i) % self.values.len()]);
+                            let v = clamp(v, 0.0, 80.0);
+                            let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
+                            let vy = y + h - ((v / 80.0) * h);
+                            path.line_to((vx, vy));
+                        }
+                    },
+                    GraphRenderStyle::Ms => {
+                        for i in 0..self.values.len() {
+                            let v = self.values[(self.head + i) % self.values.len()] * 1000.0;
+                            let v = clamp(v, 0.0, 20.0);
+                            let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
+                            let vy = y + h - ((v / 20.0) * h);
+                            path.line_to((vx, vy));
+                        }
+                    },
+                    GraphRenderStyle::Percent => {
+                        for i in 0..self.values.len() {
+                            let v = self.values[(self.head + i) % self.values.len()] * 1.0;
+                            let v = clamp(v, 0.0, 100.0);
+                            let vx = x + (i as f32 / (self.values.len() - 1) as f32) * w;
+                            let vy = y + h - ((v / 100.0) * h);
+                            path.line_to((vx, vy));
                         }
                     }
+                }
 
-                    sub_path.line_to((x + w, y + h));
-                });
+                path.line_to((x + w, y + h));
 
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Color(Color::from_rgba(255, 192, 0, 128)),

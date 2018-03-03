@@ -49,7 +49,7 @@ fn main() {
             _ => {}
         });
 
-        let dt: DateTime<Local> = Local::now(); // e.g. `2014-11-28T21:45:59.324310806+09:00`                
+        let dt: DateTime<Local> = Local::now(); // e.g. `2014-11-28T21:45:59.324310806+09:00`
         let hour = dt.hour();
         let am = hour < 12;
         let hour: f32 = f64::from(hour % 12) as f32;
@@ -57,10 +57,10 @@ fn main() {
         let second: f32 = f64::from(dt.second()) as f32;
         let year: i32 = dt.year();
         let month: u32 = dt.month();
-        let day: u32 = dt.day(); 
+        let day: u32 = dt.day();
 
         // don't bother re-draw unless time has changed
-        if second == prev_second { 
+        if second == prev_second {
             continue;
         }
         else {
@@ -80,11 +80,11 @@ fn main() {
 
         // round clock size is minimum of height and width
         let clock_size = width.min(height) - 2;
-        
+
         let font_size = 24.0;
 
         let origin = (0.0, 0.0);  // upper-left corner
-        let dial_center = (f64::from(width) as f32 / 2.0, f64::from(height) as f32 / 2.0); 
+        let dial_center = (f64::from(width) as f32 / 2.0, f64::from(height) as f32 / 2.0);
         let dial_radius: f32 = f64::from(clock_size / 2) as f32;
         let second_hand_len = dial_radius * 0.9;
         let minute_hand_len = dial_radius * 0.8;
@@ -104,7 +104,7 @@ fn main() {
 
 
         context.frame((width, height), gl_window.hidpi_factor(), |frame| {
-            
+
             // hour/minute markers
 
             //let sigils = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
@@ -133,10 +133,9 @@ fn main() {
                 let tick_width = 1.0;
                 frame.path(
                     |path| {
-                        path.sub_path((0.0, -ticks_radius), |sp| {
-                            sp.line_to((0.0, -ticks_radius-tick_len));
-                            sp.close();
-                        });
+                        path.move_to((0.0, -ticks_radius));
+                        path.line_to((0.0, -ticks_radius-tick_len));
+                        path.close();
                         path.stroke(StrokeStyle {
                             coloring_style: ColoringStyle::Color(white),
                             width: tick_width,
@@ -169,7 +168,7 @@ fn main() {
                             align: Alignment::new().center().baseline(),
                             ..Default::default()
                         },
-                    );                
+                    );
             }
             // date-string
             context.text(
@@ -210,10 +209,9 @@ fn main() {
             let draw_hand = |theta: f32, length: f32, width: f32| {
                 frame.path(
                     |path| {
-                        path.sub_path(origin, |sp| {
-                            sp.line_to((0.0, -length));
-                            sp.close();
-                        });
+                        path.move_to(origin);
+                        path.line_to((0.0, -length));
+                        path.close();
                         path.stroke(StrokeStyle {
                             coloring_style: ColoringStyle::Color(white),
                             width: width,
