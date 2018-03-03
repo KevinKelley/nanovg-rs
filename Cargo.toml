@@ -28,8 +28,8 @@ bitflags = "1.0"
 gcc = "0.3"
 
 [dev-dependencies]
-glutin = "0.10.0"
-gl = "0.6.3"
+glutin = "0.13.0"
+gl = "0.10.0"
 chrono = "0.4"
 rand = "0.4"
 

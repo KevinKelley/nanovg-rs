@@ -79,7 +79,7 @@ fn main() {
             glutin::Event::WindowEvent { event, .. } => match event {
                 glutin::WindowEvent::Closed => running = false,
                 glutin::WindowEvent::Resized(w, h) => gl_window.resize(w, h),
-                glutin::WindowEvent::MouseMoved { position, .. } => {
+                glutin::WindowEvent::CursorMoved { position, .. } => {
                     mx = position.0 as f32;
                     my = position.1 as f32;
                 }
@@ -88,7 +88,7 @@ fn main() {
             _ => {}
         });
 
-        let (width, height) = gl_window.get_inner_size_pixels().unwrap();
+        let (width, height) = gl_window.get_inner_size().unwrap();
         let (width, height) = (width as i32, height as i32);
 
         unsafe {

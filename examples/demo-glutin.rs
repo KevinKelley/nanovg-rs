@@ -52,7 +52,7 @@ fn main() {
             _ => {}
         });
 
-        let (width, height) = gl_window.get_inner_size_pixels().unwrap();
+        let (width, height) = gl_window.get_inner_size().unwrap();
         let (width, height) = (width as i32, height as i32);
 
         unsafe {
