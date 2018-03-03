@@ -40,14 +40,14 @@ to specify the version of OpenGL to use. Use `gl3` or `gl2` for computers and `g
 
 # Screenshots
 
-![demo-glutin](/demo-glutin.png)  
-Output of the `demo-glutin` example.
-
-![demo-clock](/demo-clock.png)  
+![demo-clock](/demo-clock.png)
 Output of the `demo-clock` example.
 
-![demo-ui](/demo-ui.png)  
+![demo-ui](/demo-ui.png)
 Output of the `demo-ui` example.
+
+![demo-glutin](/demo-glutin.png)
+Output of the `demo-glutin` example.
 
 # Interesting Links
 
