@@ -1004,7 +1004,7 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
     );
 
     // let transform = transform.translate(40.0, 0.0).rotate(t);
-    let second_transform = Transform::new().translate(x + 40.0, y).rotate(t);
+    let second_transform = first_transform.translate(40.0, 0.0).rotate(t);
 
     frame.path(
         |path| {

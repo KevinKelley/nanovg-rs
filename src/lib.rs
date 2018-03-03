@@ -1701,7 +1701,7 @@ impl Transform {
     }
 
     /// Set the translation of the transform.
-    pub fn translate(self, x: f32, y: f32) -> Self {
+    pub fn with_translation(self, x: f32, y: f32) -> Self {
         let mut new = self.clone();
         new.matrix[4] = x;
         new.matrix[5] = y;
@@ -1709,7 +1709,7 @@ impl Transform {
     }
 
     /// Set the scale of the transform.
-    pub fn scale(self, x: f32, y: f32) -> Self {
+    pub fn with_scale(self, x: f32, y: f32) -> Self {
         let mut new = self.clone();
         new.matrix[0] = x;
         new.matrix[3] = y;
@@ -1717,7 +1717,7 @@ impl Transform {
     }
 
     /// Set the skew of the transform.
-    pub fn skew(self, x: f32, y: f32) -> Self {
+    pub fn with_skew(self, x: f32, y: f32) -> Self {
         let mut new = self.clone();
         new.matrix[2] = x;
         new.matrix[1] = y;
@@ -1725,12 +1725,67 @@ impl Transform {
     }
 
     /// Set the rotation of the transform.
-    pub fn rotate(self, theta: f32) -> Self {
+    pub fn with_rotation(self, theta: f32) -> Self {
         let mut new = self.clone();
         new.matrix[0] = theta.cos();
         new.matrix[2] = -theta.sin();
         new.matrix[1] = theta.sin();
         new.matrix[3] = theta.cos();
+        new
+    }
+
+    /// Translate transform by x and y.
+    pub fn translate(self, x: f32, y: f32) -> Self {
+        let mut new = self.clone();
+        let mut t = [0.0f32; 6];
+        unsafe {
+            ffi::nvgTransformTranslate(t.as_mut_ptr(), x, y);
+            ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
+        }
+        new
+    }
+
+    /// Rotate transform with spcified angle.
+    pub fn rotate(self, angle: f32) -> Self {
+        let mut new = self.clone();
+        let mut t = [0.0f32; 6];
+        unsafe {
+            ffi::nvgTransformRotate(t.as_mut_ptr(), angle);
+            ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
+        }
+        new
+    }
+
+    /// Skew transform along x axis with specified angle.
+    pub fn skew_x(self, angle: f32) -> Self {
+        let mut new = self.clone();
+        let mut t = [0.0f32; 6];
+        unsafe {
+            ffi::nvgTransformSkewX(t.as_mut_ptr(), angle);
+            ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
+        }
+        new
+    }
+
+    /// Skew transform along y axis with specified angle.
+    pub fn skew_y(self, angle: f32) -> Self {
+        let mut new = self.clone();
+        let mut t = [0.0f32; 6];
+        unsafe {
+            ffi::nvgTransformSkewY(t.as_mut_ptr(), angle);
+            ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
+        }
+        new
+    }
+
+    /// Scale transform along x and y.
+    pub fn scale(self, x: f32, y: f32) -> Self {
+        let mut new = self.clone();
+        let mut t = [0.0f32; 6];
+        unsafe {
+            ffi::nvgTransformScale(t.as_mut_ptr(), x, y);
+            ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
+        }
         new
     }
 }
