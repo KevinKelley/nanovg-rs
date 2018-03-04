@@ -149,7 +149,7 @@ fn main() {
                     PathOptions {
                         composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
                         alpha: 1.0,
-                        transform: Some(Transform::new().rotate(m * radians_per_sec).translate(dial_center.0, dial_center.1)),
+                        transform: Some(Transform::new().translate(dial_center.0, dial_center.1).rotate(m * radians_per_sec)),
                         ..Default::default()
                     },
                 );
@@ -225,7 +225,7 @@ fn main() {
                     PathOptions {
                         composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
                         alpha: 1.0,
-                        transform: Some(Transform::new().rotate(theta).translate(dial_center.0, dial_center.1)),
+                        transform: Some(Transform::new().translate(dial_center.0, dial_center.1).rotate(theta)),
                         ..Default::default()
                     },
                 );

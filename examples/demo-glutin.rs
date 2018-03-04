@@ -110,7 +110,7 @@ fn main() {
                 PathOptions {
                     composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
                     alpha: elapsed.cos() * 0.5 + 0.5,
-                    transform: Some(Transform::new().scale(0.2, 1.0).translate(100.0, 50.0)),
+                    transform: Some(Transform::new().translate(100.0, 50.0).scale(0.2, 1.0)),
                     ..Default::default()
                 },
             );
