@@ -32,6 +32,7 @@ glutin = "0.13.0"
 gl = "0.10.0"
 chrono = "0.4"
 rand = "0.4"
+lazy_static = "1.0"
 
 [[example]]
 name = "demo-glutin"
@@ -43,4 +44,8 @@ required-features = ["gl3"]
 
 [[example]]
 name = "demo-ui"
+required-features = ["gl3"]
+
+[[example]]
+name = "demo-cutout"
 required-features = ["gl3"]

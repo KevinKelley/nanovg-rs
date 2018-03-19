@@ -49,6 +49,9 @@ Output of the `demo-ui` example.
 ![demo-glutin](/demo-glutin.png)
 Output of the `demo-glutin` example.
 
+![demo-cutout](/demo-cutout.gif)
+Output of the `demo-cutout` example.
+
 # Interesting Links
 
 - [Blendish](https://bitbucket.org/duangle/blendish)
