@@ -256,7 +256,6 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y + h * 0.5),
                     (x + w * 0.1, y + h),
                     Color::from_rgba(0, 0, 0, 32),
@@ -276,7 +275,6 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y + h * 0.25),
                     (x + w * 0.1, y + h),
                     Color::from_rgba(220, 220, 220, 255),
@@ -327,7 +325,6 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
             path.ellipse((lx, ly), ex, ey);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                    frame.context(),
                     (lx - ex * 0.25, ly - ey * 0.5),
                     ex * 0.1,
                     ex * 0.75,
@@ -346,7 +343,6 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
             path.ellipse((rx, ry), ex, ey);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                    frame.context(),
                     (rx - ex * 0.25, ry - ey * 0.5),
                     ex * 0.1,
                     ex * 0.75,
@@ -548,7 +544,6 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y),
                     (x, y + h),
                     Color::from_rgba(0, 160, 192, 0),
@@ -609,7 +604,6 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 path.rect((sx[i] - 10.0, sy[i] - 10.0 + 2.0), (20.0, 20.0));
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                        frame.context(),
                         (sx[i], sy[i] + 2.0),
                         3.0,
                         8.0,
@@ -677,7 +671,6 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 let by = cy + f32::sin(a1) * (r0 + r1) * 0.5;
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                        frame.context(),
                         (ax, ay),
                         (bx, by),
                         Color::from_hsla(a0 / (consts::PI * 2.0), 1.0, 0.55, 255),
@@ -731,7 +724,6 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (r0 - 3.0, -5.0),
                     (r1 - r0 + 6.0, 10.0),
                     2.0,
@@ -764,7 +756,6 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.close();
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (r, 0.0),
                     (ax, ay),
                     Color::from_hsla(hue, 1.0, 0.5, 255),
@@ -774,7 +765,6 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             });
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     ((r + ax) * 0.5, ((0.0 + ay) * 0.5)),
                     (bx, by),
                     Color::from_rgba(0, 0, 0, 0),
@@ -823,7 +813,6 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                    frame.context(),
                     (ax, ay),
                     7.0,
                     9.0,
@@ -1061,7 +1050,6 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x, y + 2.0),
                     (w, h),
                     corner_radius * 2.0,
@@ -1081,7 +1069,6 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, 30.0), corner_radius - 1.0);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    path.context(),
                     (x, y),
                     (x, y + 15.0),
                     Color::from_rgba(255, 255, 255, 8),
@@ -1144,7 +1131,6 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x, y + 1.5),
                     (w, h),
                     h / 2.0,
@@ -1204,7 +1190,6 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y),
                     (x, y + h),
                     Color::from_rgba(255, 255, 255, 16),
@@ -1278,7 +1263,6 @@ fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x + 1.0, y + 1.0 + 1.5),
                     (w - 2.0, h - 2.0),
                     3.0,
@@ -1368,7 +1352,6 @@ fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
             path.rounded_rect((x + 1.0, y + h * 0.5 - 9.0), (18.0, 18.0), 3.0);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x + 1.0, y + h * 0.5 - 9.0 + 1.0),
                     (18.0, 18.0),
                     3.0,
@@ -1413,7 +1396,6 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y),
                     (x, y + h),
                     Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
@@ -1504,7 +1486,6 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
             path.rounded_rect((x, cy - 2.0), (w, 4.0), corner_radius);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x, cy - 2.0 + 1.0),
                     (w, 4.0),
                     2.0,
@@ -1531,7 +1512,6 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                    frame.context(),
                     (x + value * w, cy + 1.0),
                     kr - 3.0,
                     kr + 3.0,
@@ -1555,7 +1535,6 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
 
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, cy - kr),
                     (x, cy + kr),
                     Color::from_rgba(255, 255, 255, 16),
@@ -1593,7 +1572,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x, y + 4.0),
                     (w, h),
                     corner_radius * 2.0,
@@ -1671,7 +1649,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                 path.rounded_rect((tx, ty), (thumb, thumb), 5.0);
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_image_pattern(
-                        frame.context(),
                         image,
                         (tx + ix, ty + iy),
                         (iw, ih),
@@ -1693,7 +1670,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                 path.winding(Winding::Solidity(Solidity::Hole));
                 path.fill(FillStyle {
                     coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                        frame.context(),
                         (tx - 1.0, ty),
                         (thumb + 2.0, thumb + 2.0),
                         5.0,
@@ -1727,7 +1703,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.rect((x + 4.0, y), (w - 8.0, 6.0));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y),
                     (x, y + 6.0),
                     Color::from_rgba(200, 200, 200, 255),
@@ -1745,7 +1720,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.rect((x + 4.0, y + h - 6.0), (w - 8.0, 6.0));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (x, y + h),
                     (x, y + h - 6.0),
                     Color::from_rgba(200, 200, 200, 255),
@@ -1763,7 +1737,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.rounded_rect((x + w - 12.0, y + 4.0), (8.0, h - 8.0), 3.0);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x + w - 12.0 + 1.0, y + 4.0 + 1.0),
                     (8.0, h - 8.0),
                     3.0,
@@ -1788,7 +1761,6 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             );
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_box_gradient(
-                    frame.context(),
                     (x + w - 12.0 - 1.0, y + 4.0 + (h - 8.0 - scrollh) * u - 1.0),
                     (8.0, scrollh),
                     3.0,
@@ -1819,7 +1791,6 @@ fn draw_spinner(frame: &Frame, options: PathOptions, cx: f32, cy: f32, r: f32, t
             path.arc((cx, cy), r1, a1, a0, Winding::Direction(Direction::CounterClockwise));
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    frame.context(),
                     (ax, ay),
                     (bx, by),
                     Color::from_rgba(0, 0, 0, 0),

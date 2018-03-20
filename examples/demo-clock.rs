@@ -255,7 +255,6 @@ fn main() {
                     });
                     path.fill(FillStyle {
                         coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                            &context,
                             origin,
                             0.0, boss_rad,
                             silver,
