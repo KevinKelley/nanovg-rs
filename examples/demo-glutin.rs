@@ -76,7 +76,6 @@ fn main() {
                     path.rect((100.0, 100.0), (300.0, 300.0));
                     path.fill(FillStyle {
                         coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                            &context,
                             (100.0, 100.0),
                             (400.0, 400.0),
                             Color::from_rgb(0xAA, 0x6C, 0x39),
@@ -123,7 +122,6 @@ fn main() {
                     let rolled = ((elapsed / 5.0).sin() * 0.5 + 0.5) * distance; // Distance currently rolled
                     let origin = (rolled + 100.0, 600.0);
                     let paint = Paint::with_image_pattern(
-                        &context,
                         &img,
                         origin,
                         (100.0, 100.0),

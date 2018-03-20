@@ -860,7 +860,6 @@ pub struct Paint(ffi::NVGpaint);
 
 impl Paint {
     pub fn with_linear_gradient(
-        context: &Context,
         start: (f32, f32),
         end: (f32, f32),
         start_color: Color,
@@ -869,7 +868,7 @@ impl Paint {
         let ((sx, sy), (ex, ey)) = (start, end);
         Paint(unsafe {
             ffi::nvgLinearGradient(
-                context.raw(),
+                0 as *mut _,
                 sx,
                 sy,
                 ex,
@@ -881,7 +880,6 @@ impl Paint {
     }
 
     pub fn with_box_gradient(
-        context: &Context,
         (x, y): (f32, f32),
         (w, h): (f32, f32),
         radius: f32,
@@ -891,7 +889,7 @@ impl Paint {
     ) -> Self {
         Paint(unsafe {
             ffi::nvgBoxGradient(
-                context.raw(),
+                0 as *mut _,
                 x,
                 y,
                 w,
@@ -905,7 +903,6 @@ impl Paint {
     }
 
     pub fn with_radial_gradient(
-        context: &Context,
         center: (f32, f32),
         inner_radius: f32,
         outer_radius: f32,
@@ -915,7 +912,7 @@ impl Paint {
         let (cx, cy) = center;
         Paint(unsafe {
             ffi::nvgRadialGradient(
-                context.raw(),
+                0 as *mut _,
                 cx,
                 cy,
                 inner_radius,
@@ -927,7 +924,6 @@ impl Paint {
     }
 
     pub fn with_image_pattern(
-        context: &Context,
         image: &Image,
         origin: (f32, f32),
         size: (f32, f32),
@@ -936,7 +932,7 @@ impl Paint {
     ) -> Self {
         let ((ox, oy), (ex, ey)) = (origin, size);
         Paint(unsafe {
-            ffi::nvgImagePattern(context.raw(), ox, oy, ex, ey, angle, image.raw(), alpha)
+            ffi::nvgImagePattern(0 as *mut _, ox, oy, ex, ey, angle, image.raw(), alpha)
         })
     }
 
