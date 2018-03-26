@@ -1784,4 +1784,30 @@ impl Transform {
         }
         new
     }
+
+    /// Transforms a point with this transform.
+    /// Returns transformed point (x, y).
+    pub fn transform_point(&self, (x, y): (f32, f32)) -> (f32, f32) {
+        let mut transformed = (0.0f32, 0.0f32);
+        unsafe {
+            ffi::nvgTransformPoint(&mut transformed.0, &mut transformed.1, self.matrix.as_ptr(), x, y);
+        }
+        transformed
+    }
+
+    /// Inverses this transform.
+    /// Returns inversed copy or None if inversion fails.
+    pub fn try_inverse(&self) -> Option<Transform> {
+        let mut inv = Transform::new();
+        let result = unsafe {
+            ffi::nvgTransformInverse(inv.matrix.as_mut_ptr(), self.matrix.as_ptr())
+        };
+
+        if result == 1 {
+            Some(inv)
+        }
+        else {
+            None
+        }
+    }
 }
