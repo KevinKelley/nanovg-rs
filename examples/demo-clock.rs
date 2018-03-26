@@ -113,7 +113,7 @@ fn main() {
                 let j = f64::from(h) as f32;
                 let x = dial_center.0 + (second_hand_len * (j*radians_per_hour).sin());
                 let y = dial_center.1 - (second_hand_len * (j*radians_per_hour).cos());
-                context.text(
+                frame.text(
                     roboto_font,
                     (x, y),
                     &sigils[h as usize],
@@ -158,7 +158,7 @@ fn main() {
             // time-string
             let show_time_string = false;
             if show_time_string {
-                context.text(
+                frame.text(
                     roboto_font,
                     (dial_center.0, dial_center.1 + dial_radius * 0.7 - font_size),
                     format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM"}  else { "PM" }),
@@ -171,7 +171,7 @@ fn main() {
                     );
             }
             // date-string
-            context.text(
+            frame.text(
                 roboto_font,
                 (dial_center.0, dial_center.1 + dial_radius * 0.7),
                 format!("{:4}-{:02}-{:02}", year, month, day),

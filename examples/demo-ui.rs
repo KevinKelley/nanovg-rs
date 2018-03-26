@@ -364,7 +364,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         align: Alignment::new().left().top(),
         ..Default::default()
     };
-    let metrics = frame.context().text_metrics(fonts.sans, text_options);
+    let metrics = frame.text_metrics(fonts.sans, text_options);
 
     let mut gutter_line = 0;
     let mut gutter_x = 0.0f32;
@@ -372,7 +372,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
 
     let mut y = y;
     let mut line_number = 0;
-    for row in frame.context().text_break_lines(text, width) {
+    for row in frame.text_break_lines(text, width) {
         line_number += 1;
         let hit = mx > x && mx < (x + width) && my >= y && my < (y + metrics.line_height);
 
@@ -389,7 +389,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         );
 
         // draw line text
-        frame.context().text(
+        frame.text(
             fonts.sans,
             (x, y),
             row.text,
@@ -401,7 +401,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             let mut px = x;
 
             // calculate mouse caret position
-            for glyph in frame.context().text_glyph_positions((x, y), row.text) {
+            for glyph in frame.text_glyph_positions((x, y), row.text) {
                 let x0 = glyph.x;
                 let x1 = if let Some(next) = *glyph.next { next.x } else { x + row.width };
                 let gx = x0 * 0.3 + x1 * 0.7;
@@ -446,7 +446,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             align: Alignment::new().right().middle(),
             ..Default::default()
         };
-        let (_, bounds) = frame.context().text_bounds(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
+        let (_, bounds) = frame.text_bounds(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
         frame.path(
             |path| {
                 path.rounded_rect(
@@ -462,7 +462,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             },
             Default::default()
         );
-        frame.context().text(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
+        frame.text(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
     }
 
     y += 20.0;
@@ -477,7 +477,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         ..Default::default()
     };
     // draw tooltip
-    let bounds = frame.context().text_box_bounds(fonts.sans, (x, y), tooltip_text, tooltip_opts);
+    let bounds = frame.text_box_bounds(fonts.sans, (x, y), tooltip_text, tooltip_opts);
     let gx = f32::abs((mx - (bounds.min_x + bounds.max_x) * 0.5) / (bounds.min_x - bounds.max_x));
     let gy = f32::abs((my - (bounds.min_y + bounds.max_y) * 0.5) / (bounds.min_y - bounds.max_y));
     let alpha = f32::max(gx, gy) - 0.5;
@@ -506,7 +506,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         }
     );
 
-    frame.context().text_box(fonts.sans, (x, y), tooltip_text, tooltip_opts);
+    frame.text_box(fonts.sans, (x, y), tooltip_text, tooltip_opts);
 }
 
 fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
@@ -1095,7 +1095,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
     );
 
     // header text
-    frame.context().text(
+    frame.text(
         fonts.sans_bold,
         (x + w / 2.0, y + 16.0),
         title,
@@ -1108,7 +1108,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
         },
     );
 
-    frame.context().text(
+    frame.text(
         fonts.sans_bold,
         (x + w / 2.0, y + 16.0),
         title,
@@ -1144,7 +1144,7 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
         Default::default(),
     );
 
-    frame.context().text(
+    frame.text(
         fonts.icons,
         (x + h * 0.55, y + h * 0.55),
         ICON_SEARCH,
@@ -1156,7 +1156,7 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
         },
     );
 
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x + h * 1.05, y + h * 0.5),
         text,
@@ -1168,7 +1168,7 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
         },
     );
 
-    frame.context().text(
+    frame.text(
         fonts.icons,
         (x + w - h * 0.55, y + h * 0.55),
         ICON_CIRCLED_CROSS,
@@ -1214,7 +1214,7 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     );
 
     // main drop down text
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x + h * 0.3, y + h * 0.5),
         text,
@@ -1227,7 +1227,7 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     );
 
     // chevron on right
-    frame.context().text(
+    frame.text(
         fonts.icons,
         (x + w - h * 0.5, y + h * 0.5),
         ICON_CHEVRON_RIGHT,
@@ -1241,7 +1241,7 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
 }
 
 fn draw_label(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x, y + h * 0.5),
         text,
@@ -1292,7 +1292,7 @@ fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
 fn draw_edit_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
     draw_edit_box_base(frame, x, y, w, h);
 
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x + h * 0.3, y + h * 0.5),
         text,
@@ -1315,11 +1315,11 @@ fn draw_edit_box_num(frame: &Frame, fonts: &DemoFonts, text: &str, units: &str, 
         ..Default::default()
     };
 
-    let (uw, _) = frame.context().text_bounds(fonts.sans, (0.0, 0.0), units, units_options);
+    let (uw, _) = frame.text_bounds(fonts.sans, (0.0, 0.0), units, units_options);
 
-    frame.context().text(fonts.sans, (x + w - h * 0.3, y + h * 0.5), units, units_options);
+    frame.text(fonts.sans, (x + w - h * 0.3, y + h * 0.5), units, units_options);
 
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x + w - uw - h * 0.5, y + h * 0.5),
         text,
@@ -1334,7 +1334,7 @@ fn draw_edit_box_num(frame: &Frame, fonts: &DemoFonts, text: &str, units: &str, 
 
 fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
     // checkbox text
-    frame.context().text(
+    frame.text(
         fonts.sans,
         (x + 28.0, y + h * 0.5),
         text,
@@ -1366,7 +1366,7 @@ fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     );
 
     // tick icon
-    frame.context().text(
+    frame.text(
         fonts.icons,
         (x + 9.0 + 2.0, y + h * 0.5),
         ICON_CHECK,
@@ -1419,7 +1419,7 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
         Default::default(),
     );
 
-    let (tw, _) = frame.context().text_bounds(
+    let (tw, _) = frame.text_bounds(
         fonts.sans_bold,
         (0.0, 0.0),
         text,
@@ -1439,10 +1439,10 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
             ..Default::default()
         };
 
-        iw = frame.context().text_bounds(fonts.icons, (0.0, 0.0), icon, icon_options).0;
+        iw = frame.text_bounds(fonts.icons, (0.0, 0.0), icon, icon_options).0;
         iw += h * 0.15;
 
-        frame.context().text(
+        frame.text(
             fonts.icons,
             (x + w * 0.5 - tw * 0.5 - iw * 0.75, y + h * 0.5),
             icon,
@@ -1458,7 +1458,7 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
 
     options.color = Color::from_rgba(0, 0, 0, 160);
 
-    frame.context().text(
+    frame.text(
         fonts.sans_bold,
         (x + w * 0.5 - tw * 0.5 + iw * 0.25, y + h * 0.5 - 1.0),
         text,
@@ -1467,7 +1467,7 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
 
     options.color = Color::from_rgba(255, 255, 255, 160);
 
-    frame.context().text(
+    frame.text(
         fonts.sans_bold,
         (x + w * 0.5 - tw * 0.5 + iw * 0.25, y + h * 0.5),
         text,
@@ -1890,7 +1890,7 @@ impl PerformanceGraph {
             Default::default()
         );
 
-        frame.context().text(font, (x + 3.0, y + 1.0), &self.name, TextOptions {
+        frame.text(font, (x + 3.0, y + 1.0), &self.name, TextOptions {
             color: Color::from_rgba(240, 240, 240, 192),
             align: Alignment::new().left().top(),
             size: 14.0,
@@ -1899,7 +1899,7 @@ impl PerformanceGraph {
 
         match self.style {
             GraphRenderStyle::Fps => {
-                frame.context().text(
+                frame.text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.2} FPS", 1.0 / average),
@@ -1911,7 +1911,7 @@ impl PerformanceGraph {
                     }
                 );
 
-                frame.context().text(
+                frame.text(
                     font,
                     (x + w - 3.0, y + h - 1.0),
                     format!("{:.2} ms", average * 1000.0),
@@ -1924,7 +1924,7 @@ impl PerformanceGraph {
                 );
             },
             GraphRenderStyle::Ms => {
-                frame.context().text(
+                frame.text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.2} ms", average * 1000.0),
@@ -1937,7 +1937,7 @@ impl PerformanceGraph {
                 );
             },
             GraphRenderStyle::Percent => {
-                frame.context().text(
+                frame.text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.1} %", average * 1.0),
