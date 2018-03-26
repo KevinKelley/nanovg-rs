@@ -8,7 +8,7 @@ extern crate lazy_static;
 
 use std::time::Instant;
 use glutin::GlContext;
-use nanovg::{Color, ColoringStyle, FillStyle, Context, Solidity, Winding, Transform, PathOptions, StrokeStyle};
+use nanovg::{Color, ColoringStyle, FillStyle, Frame, Solidity, Winding, Transform, PathOptions, StrokeStyle};
 use rand::{Rng, Rand, thread_rng};
 use std::collections::HashMap;
 use std::f32::consts::PI;
@@ -83,13 +83,13 @@ fn main() {
 
         smoothed_mouse = smooth_mouse(mouse, smoothed_mouse, delta_time, 7.0);
 
-        context.frame((width, height), gl_window.hidpi_factor(), |context| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
             let (width, height) = (width as f32, height as f32);
             let block_size = 75.0;
             let offset = block_size / 2.0;
 
             // background
-            render_rectangle(&context, (0.0, 0.0), (width, height), Color::from_rgb(0xFF, 0xFF, 0xAF));
+            render_rectangle(&frame, (0.0, 0.0), (width, height), Color::from_rgb(0xFF, 0xFF, 0xAF));
 
             let max_cols = (width / block_size) as u16 + 2;
             let max_rows = (height / block_size) as u16 + 2;
@@ -100,11 +100,11 @@ fn main() {
                     shape.update(delta_time);
                     let x = x as f32 * block_size - offset;
                     let y = y as f32 * block_size - offset;
-                    shape.draw(&context, (x, y), block_size);
+                    shape.draw(&frame, (x, y), block_size);
                 }
             }
 
-            render_cutout(&context, (0.0, 0.0), (width, height), smoothed_mouse);
+            render_cutout(&frame, (0.0, 0.0), (width, height), smoothed_mouse);
         });
 
         gl_window.swap_buffers().unwrap();
@@ -200,8 +200,8 @@ impl Shape {
         self.rotation = self.rotation + dt * self.speed;
     }
 
-    // Draws shape onto 'context' at specified position, with available square area with side length of 'size'.
-    fn draw(&self, context: &Context, (x, y): (f32, f32), size: f32) {
+    // Draws shape onto 'frame' at specified position, with available square area with side length of 'size'.
+    fn draw(&self, frame: &Frame, (x, y): (f32, f32), size: f32) {
         let margin = size * 0.2;
         let x = x + margin;
         let y = y + margin;
@@ -209,8 +209,8 @@ impl Shape {
         let half_size = size / 2.0;
         let pos = (x + half_size, y + half_size);
         match self.kind {
-            ShapeKind::Polygon(sides) => Shape::render_polygon(context, pos, size, self.rotation, self.color, sides),
-            ShapeKind::Squiggle(phi) => Shape::render_squiggle(context, pos, (size, size / 3.0), self.rotation, self.color, phi),
+            ShapeKind::Polygon(sides) => Shape::render_polygon(frame, pos, size, self.rotation, self.color, sides),
+            ShapeKind::Squiggle(phi) => Shape::render_squiggle(frame, pos, (size, size / 3.0), self.rotation, self.color, phi),
         };
     }
 
@@ -218,13 +218,13 @@ impl Shape {
     /// 'color' The colors of the shape.
     /// 'rotation' Specifies the rotation of shape in radians.
     /// 'num_sides' Number of polygon sides.
-    fn render_polygon(context: &Context, (cx, cy): (f32, f32), diameter: f32, rotation: f32, color: Color, num_sides: u8) {
+    fn render_polygon(frame: &Frame, (cx, cy): (f32, f32), diameter: f32, rotation: f32, color: Color, num_sides: u8) {
         assert!(num_sides >= 3);
 
         let radius = diameter / 2.0;
         let num_sides = num_sides as u32;
 
-        context.path(
+        frame.path(
             |path| {
                 path.move_to((Shape::get_polygon_point(0, num_sides, radius)));
                 for i in 1..num_sides {
@@ -247,7 +247,7 @@ impl Shape {
     /// 'color' The colors of the shape.
     /// 'rotation' Specifies the rotation of shape in radians.
     /// 'phi' Specifies number of peaks (oscillations).
-    fn render_squiggle(context: &Context, (cx, cy): (f32, f32), (w, h): (f32, f32), rotation: f32, color: Color, phi: u8) {
+    fn render_squiggle(frame: &Frame, (cx, cy): (f32, f32), (w, h): (f32, f32), rotation: f32, color: Color, phi: u8) {
         let phi = phi as f32;
         let mut points = [(0.0, 0.0); 64];
         for i in 0..points.len() {
@@ -258,7 +258,7 @@ impl Shape {
             points[i as usize] = (sx, sy);
         }
 
-        context.path(
+        frame.path(
             |path| {
                 path.move_to(points[0]);
                 for point in points.iter().skip(1) {
@@ -301,10 +301,10 @@ fn get_elapsed(instant: &Instant) -> f32 {
 }
 
 /// Renders foreground with hole cut in it.
-fn render_cutout(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my): (f32, f32)) {
+fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my): (f32, f32)) {
     let base_circle_size = 200.0;
     let circle_thickness = 25.0;
-    context.path(
+    frame.path(
         |path| {
             path.rect((x, y), (w, h));
             path.move_to((0.0, 0.0));
@@ -319,7 +319,7 @@ fn render_cutout(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), (mx,
         Default::default()
     );
 
-    context.path(
+    frame.path(
         |path| {
             path.move_to((0.0, 0.0));
             path.circle((mx, my), base_circle_size + circle_thickness);
@@ -334,7 +334,7 @@ fn render_cutout(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), (mx,
         Default::default()
     );
 
-    context.path(
+    frame.path(
         |path| {
             path.move_to((0.0, 0.0));
             path.circle((mx, my), base_circle_size);
@@ -352,8 +352,8 @@ fn render_cutout(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), (mx,
 }
 
 /// Renders rectangle on position with specified dimensions and color.
-fn render_rectangle(context: &Context, (x, y): (f32, f32), (w, h): (f32, f32), color: Color) {
-    context.path(
+fn render_rectangle(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), color: Color) {
+    frame.path(
         |path| {
             path.rect((x, y), (w, h));
             path.fill(FillStyle {

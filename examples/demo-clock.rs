@@ -103,7 +103,7 @@ fn main() {
 
 
 
-        context.frame((width, height), gl_window.hidpi_factor(), |context| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
 
             // hour/minute markers
 
@@ -131,7 +131,7 @@ fn main() {
                 let ticks_radius = dial_radius * 0.925;
                 let tick_len = 3.0;
                 let tick_width = 1.0;
-                context.path(
+                frame.path(
                     |path| {
                         path.move_to((0.0, -ticks_radius));
                         path.line_to((0.0, -ticks_radius-tick_len));
@@ -185,7 +185,7 @@ fn main() {
 
 
             //Draw the dial
-            context.path(
+            frame.path(
                 |path| {
                     path.circle(origin, dial_radius);
                     path.stroke(StrokeStyle {
@@ -207,7 +207,7 @@ fn main() {
             );
 
             let draw_hand = |theta: f32, length: f32, width: f32| {
-                context.path(
+                frame.path(
                     |path| {
                         path.move_to(origin);
                         path.line_to((0.0, -length));
@@ -244,7 +244,7 @@ fn main() {
 
 
             //Draw the boss
-            context.path(
+            frame.path(
                 |path| {
                     let boss_rad = 6.0;
                     path.circle(origin, boss_rad);

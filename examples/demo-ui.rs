@@ -7,7 +7,7 @@ use std::time::Instant;
 use std::f32::consts;
 use rand::Rng;
 use glutin::GlContext;
-use nanovg::{Direction, Alignment, Color, ColoringStyle, FillStyle, Font,
+use nanovg::{Direction, Alignment, Color, ColoringStyle, FillStyle, Font, Frame,
              LineCap, LineJoin, Paint, PathOptions, Scissor, Solidity, StrokeStyle,
              TextOptions, Transform, Winding, Image, Context};
 
@@ -97,9 +97,9 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
-        context.frame((width, height), gl_window.hidpi_factor(), |context| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
             render_demo(
-                &context,
+                &frame,
                 mx,
                 my,
                 width as f32,
@@ -108,9 +108,9 @@ fn main() {
                 &demo_data,
             );
 
-            fps_graph.draw(&context, demo_data.fonts.sans, 5.0, 5.0);
-            cpu_graph.draw(&context, demo_data.fonts.sans, 5.0 + 200.0 + 5.0, 5.0);
-            rng_graph.draw(&context, demo_data.fonts.sans, 5.0 + 200.0 + 5.0 + 200.0 + 5.0, 5.0);
+            fps_graph.draw(&frame, demo_data.fonts.sans, 5.0, 5.0);
+            cpu_graph.draw(&frame, demo_data.fonts.sans, 5.0 + 200.0 + 5.0, 5.0);
+            rng_graph.draw(&frame, demo_data.fonts.sans, 5.0 + 200.0 + 5.0 + 200.0 + 5.0, 5.0);
         });
 
         fps_graph.update(delta_time);
@@ -184,61 +184,61 @@ fn clamp(value: f32, min: f32, max: f32) -> f32 {
     }
 }
 
-fn render_demo(context: &Context, mx: f32, my: f32, width: f32, height: f32, t: f32, data: &DemoData) {
-    draw_eyes(context, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
-    draw_paragraph(context, &data.fonts, width - 450.0, 50.0, 150.0, 100.0, mx, my);
-    draw_graph(context, 0.0, height / 2.0, width, height / 2.0, t);
-    draw_color_wheel(context, width - 300.0, height - 300.0, 250.0, 250.0, t);
-    draw_lines(context, 120.0, height - 50.0, 600.0, 50.0, t);
-    draw_widths(context, 10.0, 50.0, 30.0);
-    draw_caps(context, 10.0, 300.0, 30.0);
-    draw_scissor(context, 50.0, height - 80.0, t);
+fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32, data: &DemoData) {
+    draw_eyes(frame, width - 250.0, 50.0, 150.0, 100.0, mx, my, t);
+    draw_paragraph(frame, &data.fonts, width - 450.0, 50.0, 150.0, 100.0, mx, my);
+    draw_graph(frame, 0.0, height / 2.0, width, height / 2.0, t);
+    draw_color_wheel(frame, width - 300.0, height - 300.0, 250.0, 250.0, t);
+    draw_lines(frame, 120.0, height - 50.0, 600.0, 50.0, t);
+    draw_widths(frame, 10.0, 50.0, 30.0);
+    draw_caps(frame, 10.0, 300.0, 30.0);
+    draw_scissor(frame, 50.0, height - 80.0, t);
 
     let mut x = 50.0;
     let mut y = 50.0;
     // widgets
-    draw_window(context, &data.fonts, "Widgets `n stuff", x, y, 300.0, 400.0);
+    draw_window(frame, &data.fonts, "Widgets `n stuff", x, y, 300.0, 400.0);
     x += 10.0;
     y += 45.0;
 
-    draw_search_box(context, &data.fonts, "Search", x, y, 280.0, 25.0);
+    draw_search_box(frame, &data.fonts, "Search", x, y, 280.0, 25.0);
     y += 40.0;
 
-    draw_drop_down(context, &data.fonts, "Effects", x, y, 280.0,28.0);
+    draw_drop_down(frame, &data.fonts, "Effects", x, y, 280.0,28.0);
     let popy = y + 14.0;
     y += 45.0;
 
     // form
-    draw_label(context, &data.fonts, "Login", x, y, 280.0, 20.0);
+    draw_label(frame, &data.fonts, "Login", x, y, 280.0, 20.0);
     y += 25.0;
 
-    draw_edit_box(context, &data.fonts, "Email", x, y, 280.0, 28.0);
+    draw_edit_box(frame, &data.fonts, "Email", x, y, 280.0, 28.0);
     y += 35.0;
 
-    draw_edit_box(context, &data.fonts, "Password", x, y, 280.0, 28.0);
+    draw_edit_box(frame, &data.fonts, "Password", x, y, 280.0, 28.0);
     y += 38.0;
 
-    draw_check_box(context, &data.fonts, "Remember me", x, y, 140.0, 28.0);
-    draw_button(context, &data.fonts, Some(ICON_LOGIN), "Sign in", x + 138.0, y, 140.0, 28.0, Color::from_rgba(0, 96, 128, 255));
+    draw_check_box(frame, &data.fonts, "Remember me", x, y, 140.0, 28.0);
+    draw_button(frame, &data.fonts, Some(ICON_LOGIN), "Sign in", x + 138.0, y, 140.0, 28.0, Color::from_rgba(0, 96, 128, 255));
     y += 45.0;
 
     // slider
-    draw_label(context, &data.fonts, "Diameter", x, y, 280.0, 20.0);
+    draw_label(frame, &data.fonts, "Diameter", x, y, 280.0, 20.0);
     y += 25.0;
 
-    draw_edit_box_num(context, &data.fonts, "128.00", "px", x + 180.0, y, 100.0, 28.0, );
+    draw_edit_box_num(frame, &data.fonts, "128.00", "px", x + 180.0, y, 100.0, 28.0, );
 
-    draw_slider(context, 0.4, x, y, 170.0, 28.0);
+    draw_slider(frame, 0.4, x, y, 170.0, 28.0);
     y += 55.0;
 
-    draw_button(context, &data.fonts, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::from_rgba(128, 16, 8, 255));
+    draw_button(frame, &data.fonts, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::from_rgba(128, 16, 8, 255));
 
-    draw_button(context, &data.fonts, None, "Cancel", x + 170.0, y, 110.0, 28.0, Color::from_rgba(0, 0, 0, 0));
+    draw_button(frame, &data.fonts, None, "Cancel", x + 170.0, y, 110.0, 28.0, Color::from_rgba(0, 0, 0, 0));
 
-    draw_thumbnails(context, &data.images, 365.0, popy - 30.0, 160.0, 300.0, t);
+    draw_thumbnails(frame, &data.images, 365.0, popy - 30.0, 160.0, 300.0, t);
 }
 
-fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t: f32) {
+fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t: f32) {
     let ex = w * 0.23;
     let ey = h * 0.5;
     let lx = x + ex;
@@ -249,7 +249,7 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     let blink = 1.0 - ((t * 0.5).sin()).powf(200.0) * 0.8;
 
     // eye shades
-    context.path(
+    frame.path(
         |path| {
             path.ellipse((lx + 3.0, ly + 16.0), ex, ey);
             path.ellipse((rx + 3.0, ry + 16.0), ex, ey);
@@ -268,7 +268,7 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     );
 
     // eye whites
-    context.path(
+    frame.path(
         |path| {
             path.ellipse((lx, ly), ex, ey);
             path.ellipse((rx, ry), ex, ey);
@@ -287,7 +287,7 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     );
 
     // eye pupils
-    context.path(
+    frame.path(
         |path| {
             let mut dx = (mx - rx) / (ex * 10.0);
             let mut dy = (my - ry) / (ey * 10.0);
@@ -320,12 +320,12 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     );
 
     // left eye gloss
-    context.path(
+    frame.path(
         |path| {
             path.ellipse((lx, ly), ex, ey);
             path.fill(FillStyle {
                 coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                   (lx - ex * 0.25, ly - ey * 0.5),
+                    (lx - ex * 0.25, ly - ey * 0.5),
                     ex * 0.1,
                     ex * 0.75,
                     Color::from_rgba(255, 255, 255, 128),
@@ -338,7 +338,7 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     );
 
     // right eye gloss
-    context.path(
+    frame.path(
         |path| {
             path.ellipse((rx, ry), ex, ey);
             path.fill(FillStyle {
@@ -356,7 +356,7 @@ fn draw_eyes(context: &Context, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32
     );
 }
 
-fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f32, _height: f32, mx: f32, my: f32) {
+fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, _height: f32, mx: f32, my: f32) {
     let text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.🎉";
     let text_options = TextOptions {
         color: Color::from_rgba(255, 255, 255, 255),
@@ -364,7 +364,7 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
         align: Alignment::new().left().top(),
         ..Default::default()
     };
-    let metrics = context.text_metrics(fonts.sans, text_options);
+    let metrics = frame.context().text_metrics(fonts.sans, text_options);
 
     let mut gutter_line = 0;
     let mut gutter_x = 0.0f32;
@@ -372,12 +372,12 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
 
     let mut y = y;
     let mut line_number = 0;
-    for row in context.text_break_lines(text, width) {
+    for row in frame.context().text_break_lines(text, width) {
         line_number += 1;
         let hit = mx > x && mx < (x + width) && my >= y && my < (y + metrics.line_height);
 
         // draw line background
-        context.path(
+        frame.path(
             |path| {
                 path.rect((x, y), (row.width, metrics.line_height));
                 path.fill(FillStyle {
@@ -389,7 +389,7 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
         );
 
         // draw line text
-        context.text(
+        frame.context().text(
             fonts.sans,
             (x, y),
             row.text,
@@ -401,7 +401,7 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
             let mut px = x;
 
             // calculate mouse caret position
-            for glyph in context.text_glyph_positions((x, y), row.text) {
+            for glyph in frame.context().text_glyph_positions((x, y), row.text) {
                 let x0 = glyph.x;
                 let x1 = if let Some(next) = *glyph.next { next.x } else { x + row.width };
                 let gx = x0 * 0.3 + x1 * 0.7;
@@ -415,7 +415,7 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
             }
 
             // draw mouse caret
-            context.path(
+            frame.path(
                 |path| {
                     path.rect((caretx, y), (1.0, metrics.line_height));
                     path.fill(FillStyle {
@@ -446,8 +446,8 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
             align: Alignment::new().right().middle(),
             ..Default::default()
         };
-        let (_, bounds) = context.text_bounds(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
-        context.path(
+        let (_, bounds) = frame.context().text_bounds(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
+        frame.path(
             |path| {
                 path.rounded_rect(
                     (bounds.min_x - 4.0, bounds.min_y - 2.0),
@@ -462,7 +462,7 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
             },
             Default::default()
         );
-        context.text(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
+        frame.context().text(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
     }
 
     y += 20.0;
@@ -477,13 +477,13 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
         ..Default::default()
     };
     // draw tooltip
-    let bounds = context.text_box_bounds(fonts.sans, (x, y), tooltip_text, tooltip_opts);
+    let bounds = frame.context().text_box_bounds(fonts.sans, (x, y), tooltip_text, tooltip_opts);
     let gx = f32::abs((mx - (bounds.min_x + bounds.max_x) * 0.5) / (bounds.min_x - bounds.max_x));
     let gy = f32::abs((my - (bounds.min_y + bounds.max_y) * 0.5) / (bounds.min_y - bounds.max_y));
     let alpha = f32::max(gx, gy) - 0.5;
     let alpha = clamp(alpha, 0.0, 1.0);
 
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect(
                 (bounds.min_x - 2.0, bounds.min_y - 2.0),
@@ -506,10 +506,10 @@ fn draw_paragraph(context: &Context, fonts: &DemoFonts, x: f32, y: f32, width: f
         }
     );
 
-    context.text_box(fonts.sans, (x, y), tooltip_text, tooltip_opts);
+    frame.context().text_box(fonts.sans, (x, y), tooltip_text, tooltip_opts);
 }
 
-fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
+fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let mut samples = [0.0f32; 6];
     let mut sx = [0.0f32; 6];
     let mut sy = [0.0f32; 6];
@@ -528,7 +528,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     }
 
     // graph background
-    context.path(
+    frame.path(
         |path| {
             path.move_to((sx[0], sy[0]));
             for i in 1..6 {
@@ -556,7 +556,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     // graph line (darker)
-    context.path(
+    frame.path(
         |path| {
             path.move_to((sx[0], sy[0] + 2.0));
             for i in 1..6 {
@@ -577,7 +577,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     // graph line (lighter)
-    context.path(
+    frame.path(
         |path| {
             path.move_to((sx[0], sy[0]));
             for i in 1..6 {
@@ -599,7 +599,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
 
     // graph sample points (background shades)
     for i in 0..6 {
-        context.path(
+        frame.path(
             |path| {
                 path.rect((sx[i] - 10.0, sy[i] - 10.0 + 2.0), (20.0, 20.0));
                 path.fill(FillStyle {
@@ -618,7 +618,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     }
 
     // graph sample points (main dots)
-    context.path(
+    frame.path(
         |path| {
             for i in 0..6 {
                 path.circle((sx[i], sy[i]), 4.0);
@@ -633,7 +633,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     // graph sample points (small white dots)
-    context.path(
+    frame.path(
         |path| {
             for i in 0..6 {
                 path.circle((sx[i], sy[i]), 2.0);
@@ -648,7 +648,7 @@ fn draw_graph(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 }
 
-fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
+fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let cx = x + w * 0.5;
     let cy = y + h * 0.5;
     let r1 = if w < h { w } else { h } * 0.5 - 5.0;
@@ -661,7 +661,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
         let a1 = (i as f32 + 1.0) / 6.0 * consts::PI * 2.0 + aeps;
 
         // draw color segment gradient
-        context.path(
+        frame.path(
             |path| {
                 path.arc((cx, cy), r0, a0, a1, Winding::Direction(Direction::Clockwise));
                 path.arc((cx, cy), r1, a1, a0, Winding::Direction(Direction::CounterClockwise));
@@ -684,7 +684,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     }
 
     // draw circle outlines
-    context.path(
+    frame.path(
         |path| {
             path.circle((cx, cy), r0 - 0.5);
             path.circle((cx, cy), r1 + 0.5);
@@ -700,7 +700,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let transform = Transform::new().translate(cx, cy).rotate(hue * consts::PI * 2.0);
 
     // color selector
-    context.path(
+    frame.path(
         |path| {
             path.rect((r0 - 1.0, -3.0), (r1 - r0 + 2.0, 6.0));
             path.stroke(StrokeStyle {
@@ -716,7 +716,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     // color marker inside selector
-    context.path(
+    frame.path(
         |path| {
             path.rect((r0 - 2.0 - 10.0, -4.0 - 10.0), (r1 - r0 + 4.0 + 20.0, 8.0 + 20.0));
             path.move_to((0.0, 0.0));
@@ -743,7 +743,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let r = r0 - 6.0;
 
     // center triangle
-    context.path(
+    frame.path(
         |path| {
             let ax = f32::cos(120.0 / 180.0 * consts::PI) * r;
             let ay = f32::sin(120.0 / 180.0 * consts::PI) * r;
@@ -789,7 +789,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let ay = f32::sin(120.0 / 180.0 * consts::PI) * r * 0.4;
 
     // select circle on triangle
-    context.path(
+    frame.path(
         |path| {
             path.circle((ax, ay), 5.0);
             path.stroke(StrokeStyle {
@@ -805,7 +805,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 
     // select circle outline
-    context.path(
+    frame.path(
         |path| {
             path.rect((ax - 20.0, ay - 20.0), (40.0, 40.0));
             path.move_to((0.0, 0.0));
@@ -829,7 +829,7 @@ fn draw_color_wheel(context: &Context, x: f32, y: f32, w: f32, h: f32, t: f32) {
     );
 }
 
-fn draw_lines(context: &Context, x: f32, y: f32, w: f32, _h: f32, t: f32) {
+fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
     let pad = 5.0;
     let s = w / 9.0 - pad * 2.0;
     let mut pts = [0.0f32; 4 * 2];
@@ -853,7 +853,7 @@ fn draw_lines(context: &Context, x: f32, y: f32, w: f32, _h: f32, t: f32) {
             let cap = caps[i];
             let join = joins[j];
 
-            context.path(
+            frame.path(
                 |path| {
                     path.move_to((fx + pts[0], fy + pts[1]));
                     path.line_to((fx + pts[2], fy + pts[3]));
@@ -871,7 +871,7 @@ fn draw_lines(context: &Context, x: f32, y: f32, w: f32, _h: f32, t: f32) {
                 Default::default(),
             );
 
-            context.path(
+            frame.path(
                 |path| {
                     path.move_to((fx + pts[0], fy + pts[1]));
                     path.line_to((fx + pts[2], fy + pts[3]));
@@ -892,12 +892,12 @@ fn draw_lines(context: &Context, x: f32, y: f32, w: f32, _h: f32, t: f32) {
     }
 }
 
-fn draw_widths(context: &Context, x: f32, y: f32, width: f32) {
+fn draw_widths(frame: &Frame, x: f32, y: f32, width: f32) {
     let mut y = y;
 
     for i in 0..20 {
         let w = (i as f32 + 0.5) * 0.1;
-        context.path(
+        frame.path(
             |path| {
                 path.move_to((x, y));
                 path.line_to((x + width, y + width * 0.3));
@@ -915,11 +915,11 @@ fn draw_widths(context: &Context, x: f32, y: f32, width: f32) {
     }
 }
 
-fn draw_caps(context: &Context, x: f32, y: f32, width: f32) {
+fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
     let caps = [LineCap::Butt, LineCap::Round, LineCap::Square];
     let line_width = 8.0;
 
-    context.path(
+    frame.path(
         |path| {
             path.rect((x - line_width / 2.0, y), (width + line_width, 40.0));
             path.fill(FillStyle {
@@ -930,7 +930,7 @@ fn draw_caps(context: &Context, x: f32, y: f32, width: f32) {
         Default::default(),
     );
 
-    context.path(
+    frame.path(
         |path| {
             path.rect((x, y), (width, 40.0));
             path.fill(FillStyle {
@@ -942,7 +942,7 @@ fn draw_caps(context: &Context, x: f32, y: f32, width: f32) {
     );
 
     for i in 0..caps.len() {
-        context.path(
+        frame.path(
             |path| {
                 path.move_to((x, y + i as f32 * 10.0 + 5.0));
                 path.line_to((x + width, y + i as f32 * 10.0 + 5.0));
@@ -959,7 +959,7 @@ fn draw_caps(context: &Context, x: f32, y: f32, width: f32) {
     }
 }
 
-fn draw_scissor(context: &Context, x: f32, y: f32, t: f32) {
+fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
     let first_transform = Transform::new().translate(x, y).rotate(5.0f32.to_radians());
 
     // let scissor_rect = Scissor::Rect {
@@ -977,7 +977,7 @@ fn draw_scissor(context: &Context, x: f32, y: f32, t: f32) {
     };
 
     // draw scissor area as a rect
-    context.path(
+    frame.path(
         |path| {
             path.rect((-20.0, -20.0), (60.0, 40.0));
             path.fill(FillStyle {
@@ -995,7 +995,7 @@ fn draw_scissor(context: &Context, x: f32, y: f32, t: f32) {
     // let transform = transform.translate(40.0, 0.0).rotate(t);
     let second_transform = first_transform.translate(40.0, 0.0).rotate(t);
 
-    context.path(
+    frame.path(
         |path| {
             path.rect((-20.0, -10.0), (60.0, 30.0));
             path.fill(FillStyle {
@@ -1010,7 +1010,7 @@ fn draw_scissor(context: &Context, x: f32, y: f32, t: f32) {
         },
     );
 
-    context.path(
+    frame.path(
         |path| {
             path.rect((-20.0, -10.0), (60.0, 30.0));
             path.fill(FillStyle {
@@ -1026,11 +1026,11 @@ fn draw_scissor(context: &Context, x: f32, y: f32, t: f32) {
     );
 }
 
-fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32, w: f32, h: f32) {
+fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w: f32, h: f32) {
     let corner_radius = 3.0;
 
     // window background
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.fill(FillStyle {
@@ -1042,7 +1042,7 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
     );
 
     // drop shadow
-    context.path(
+    frame.path(
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
             path.move_to((x, y));
@@ -1064,7 +1064,7 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
     );
 
     // header
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, 30.0), corner_radius - 1.0);
             path.fill(FillStyle {
@@ -1081,7 +1081,7 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
     );
 
     // header separator
-    context.path(
+    frame.path(
         |path| {
             path.move_to((x + 0.5, y + 0.5 + 30.0));
             path.line_to((x + 0.5 + w - 1.0, y + 0.5 + 30.0));
@@ -1095,7 +1095,7 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
     );
 
     // header text
-    context.text(
+    frame.context().text(
         fonts.sans_bold,
         (x + w / 2.0, y + 16.0),
         title,
@@ -1108,7 +1108,7 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
         },
     );
 
-    context.text(
+    frame.context().text(
         fonts.sans_bold,
         (x + w / 2.0, y + 16.0),
         title,
@@ -1122,11 +1122,11 @@ fn draw_window(context: &Context, fonts: &DemoFonts, title: &str, x: f32, y: f32
     );
 }
 
-fn draw_search_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
+fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
     let corner_radius = h / 2.0 - 1.0;
 
     // background rounded rectangle
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.fill(FillStyle {
@@ -1144,7 +1144,7 @@ fn draw_search_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: 
         Default::default(),
     );
 
-    context.text(
+    frame.context().text(
         fonts.icons,
         (x + h * 0.55, y + h * 0.55),
         ICON_SEARCH,
@@ -1156,7 +1156,7 @@ fn draw_search_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: 
         },
     );
 
-    context.text(
+    frame.context().text(
         fonts.sans,
         (x + h * 1.05, y + h * 0.5),
         text,
@@ -1168,7 +1168,7 @@ fn draw_search_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: 
         },
     );
 
-    context.text(
+    frame.context().text(
         fonts.icons,
         (x + w - h * 0.55, y + h * 0.55),
         ICON_CIRCLED_CROSS,
@@ -1181,11 +1181,11 @@ fn draw_search_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: 
     );
 }
 
-fn draw_drop_down(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
+fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
     let corner_radius = 4.0;
 
     // drop down button with linear gradient
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(FillStyle {
@@ -1202,7 +1202,7 @@ fn draw_drop_down(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 
     // border arond drop down
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
             path.stroke(StrokeStyle {
@@ -1214,7 +1214,7 @@ fn draw_drop_down(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 
     // main drop down text
-    context.text(
+    frame.context().text(
         fonts.sans,
         (x + h * 0.3, y + h * 0.5),
         text,
@@ -1227,7 +1227,7 @@ fn draw_drop_down(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 
     // chevron on right
-    context.text(
+    frame.context().text(
         fonts.icons,
         (x + w - h * 0.5, y + h * 0.5),
         ICON_CHEVRON_RIGHT,
@@ -1240,8 +1240,8 @@ fn draw_drop_down(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 }
 
-fn draw_label(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
-    context.text(
+fn draw_label(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
+    frame.context().text(
         fonts.sans,
         (x, y + h * 0.5),
         text,
@@ -1254,11 +1254,11 @@ fn draw_label(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     );
 }
 
-fn draw_edit_box_base(context: &Context, x: f32, y: f32, w: f32, h: f32) {
+fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
     let corner_radius = 4.0;
 
     // base background
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(FillStyle {
@@ -1277,7 +1277,7 @@ fn draw_edit_box_base(context: &Context, x: f32, y: f32, w: f32, h: f32) {
     );
 
     // base border
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
             path.stroke(StrokeStyle {
@@ -1289,10 +1289,10 @@ fn draw_edit_box_base(context: &Context, x: f32, y: f32, w: f32, h: f32) {
     );
 }
 
-fn draw_edit_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
-    draw_edit_box_base(context, x, y, w, h);
+fn draw_edit_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, w: f32, h: f32) {
+    draw_edit_box_base(frame, x, y, w, h);
 
-    context.text(
+    frame.context().text(
         fonts.sans,
         (x + h * 0.3, y + h * 0.5),
         text,
@@ -1305,8 +1305,8 @@ fn draw_edit_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f3
     );
 }
 
-fn draw_edit_box_num(context: &Context, fonts: &DemoFonts, text: &str, units: &str, x: f32, y: f32, w: f32, h: f32) {
-    draw_edit_box_base(context, x, y, w, h);
+fn draw_edit_box_num(frame: &Frame, fonts: &DemoFonts, text: &str, units: &str, x: f32, y: f32, w: f32, h: f32) {
+    draw_edit_box_base(frame, x, y, w, h);
 
     let units_options = TextOptions {
         size: 18.0,
@@ -1315,11 +1315,11 @@ fn draw_edit_box_num(context: &Context, fonts: &DemoFonts, text: &str, units: &s
         ..Default::default()
     };
 
-    let (uw, _) = context.text_bounds(fonts.sans, (0.0, 0.0), units, units_options);
+    let (uw, _) = frame.context().text_bounds(fonts.sans, (0.0, 0.0), units, units_options);
 
-    context.text(fonts.sans, (x + w - h * 0.3, y + h * 0.5), units, units_options);
+    frame.context().text(fonts.sans, (x + w - h * 0.3, y + h * 0.5), units, units_options);
 
-    context.text(
+    frame.context().text(
         fonts.sans,
         (x + w - uw - h * 0.5, y + h * 0.5),
         text,
@@ -1332,9 +1332,9 @@ fn draw_edit_box_num(context: &Context, fonts: &DemoFonts, text: &str, units: &s
     );
 }
 
-fn draw_check_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
+fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, _w: f32, h: f32) {
     // checkbox text
-    context.text(
+    frame.context().text(
         fonts.sans,
         (x + 28.0, y + h * 0.5),
         text,
@@ -1347,7 +1347,7 @@ fn draw_check_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 
     // tick box
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 1.0, y + h * 0.5 - 9.0), (18.0, 18.0), 3.0);
             path.fill(FillStyle {
@@ -1366,7 +1366,7 @@ fn draw_check_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 
     // tick icon
-    context.text(
+    frame.context().text(
         fonts.icons,
         (x + 9.0 + 2.0, y + h * 0.5),
         ICON_CHECK,
@@ -1379,12 +1379,12 @@ fn draw_check_box(context: &Context, fonts: &DemoFonts, text: &str, x: f32, y: f
     );
 }
 
-fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text: &str, x: f32, y: f32, w: f32, h: f32, color: Color) {
+fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &str, x: f32, y: f32, w: f32, h: f32, color: Color) {
     let corner_radius = 4.0;
     let color_is_black = is_black(color);
 
     // button background
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 0.5);
             if !color_is_black {
@@ -1408,7 +1408,7 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
     );
 
     // button border
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
             path.stroke(StrokeStyle {
@@ -1419,7 +1419,7 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
         Default::default(),
     );
 
-    let (tw, _) = context.text_bounds(
+    let (tw, _) = frame.context().text_bounds(
         fonts.sans_bold,
         (0.0, 0.0),
         text,
@@ -1439,10 +1439,10 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
             ..Default::default()
         };
 
-        iw = context.text_bounds(fonts.icons, (0.0, 0.0), icon, icon_options).0;
+        iw = frame.context().text_bounds(fonts.icons, (0.0, 0.0), icon, icon_options).0;
         iw += h * 0.15;
 
-        context.text(
+        frame.context().text(
             fonts.icons,
             (x + w * 0.5 - tw * 0.5 - iw * 0.75, y + h * 0.5),
             icon,
@@ -1458,7 +1458,7 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
 
     options.color = Color::from_rgba(0, 0, 0, 160);
 
-    context.text(
+    frame.context().text(
         fonts.sans_bold,
         (x + w * 0.5 - tw * 0.5 + iw * 0.25, y + h * 0.5 - 1.0),
         text,
@@ -1467,7 +1467,7 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
 
     options.color = Color::from_rgba(255, 255, 255, 160);
 
-    context.text(
+    frame.context().text(
         fonts.sans_bold,
         (x + w * 0.5 - tw * 0.5 + iw * 0.25, y + h * 0.5),
         text,
@@ -1475,13 +1475,13 @@ fn draw_button(context: &Context, fonts: &DemoFonts, preicon: Option<&str>, text
     );
 }
 
-fn draw_slider(context: &Context, value: f32, x: f32, y: f32, w: f32, h: f32) {
+fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
     let cy = y + h * 0.5;
     let kr = h * 0.25;
     let corner_radius = 2.0;
 
     // slot bar
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x, cy - 2.0), (w, 4.0), corner_radius);
             path.fill(FillStyle {
@@ -1500,7 +1500,7 @@ fn draw_slider(context: &Context, value: f32, x: f32, y: f32, w: f32, h: f32) {
     );
 
     // knob shadow
-    context.path(
+    frame.path(
         |path| {
             path.rect(
                 (x + (value * w) - kr - 5.0, cy - kr - 5.0),
@@ -1525,7 +1525,7 @@ fn draw_slider(context: &Context, value: f32, x: f32, y: f32, w: f32, h: f32) {
     );
 
     // knob
-    context.path(
+    frame.path(
         |path| {
             path.circle((x + (value * w), cy), kr - 1.0);
             path.fill(FillStyle {
@@ -1547,7 +1547,7 @@ fn draw_slider(context: &Context, value: f32, x: f32, y: f32, w: f32, h: f32) {
     );
 
     // knob outline
-    context.path(
+    frame.path(
         |path| {
             path.circle((x + value * w, cy), kr - 0.5);
             path.stroke(StrokeStyle {
@@ -1559,12 +1559,12 @@ fn draw_slider(context: &Context, value: f32, x: f32, y: f32, w: f32, h: f32) {
     );
 }
 
-fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f32, h: f32, t: f32) {
+fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h: f32, t: f32) {
     let corner_radius = 3.0;
     let thumb = 60.0;
     let stackh = (images.len() / 2) as f32 * (thumb + 10.0) + 10.0;
 
-    context.path(
+    frame.path(
         |path| {
             path.rect((x - 10.0, y - 10.0), (w + 20.0, h + 30.0));
             path.move_to((x, y));
@@ -1586,7 +1586,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
     );
 
     // left arrow
-    context.path(
+    frame.path(
         |path| {
             let arry = 30.5;
             path.rounded_rect((x, y), (w, h), corner_radius);
@@ -1640,11 +1640,11 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
         };
 
         if a < 1.0 {
-            draw_spinner(context, path_opts, tx + thumb / 2.0, ty + thumb / 2.0, thumb * 0.25, t);
+            draw_spinner(frame, path_opts, tx + thumb / 2.0, ty + thumb / 2.0, thumb * 0.25, t);
         }
 
         // draw image
-        context.path(
+        frame.path(
             |path| {
                 path.rounded_rect((tx, ty), (thumb, thumb), 5.0);
                 path.fill(FillStyle {
@@ -1662,7 +1662,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
         );
 
         // draw image background shade
-        context.path(
+        frame.path(
             |path| {
                 path.rect((tx - 5.0, ty - 5.0), (thumb + 10.0, thumb + 10.0));
                 path.move_to((tx, ty));
@@ -1684,7 +1684,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
         );
 
         // draw image border
-        context.path(
+        frame.path(
             |path| {
                 path.rounded_rect((tx + 0.5, ty + 0.5), (thumb - 1.0, thumb - 1.0), 4.0 - 0.5);
                 path.stroke(StrokeStyle {
@@ -1698,7 +1698,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
     }
 
     // white fade border (top)
-    context.path(
+    frame.path(
         |path| {
             path.rect((x + 4.0, y), (w - 8.0, 6.0));
             path.fill(FillStyle {
@@ -1715,7 +1715,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
     );
 
     // white fade border (bottom)
-    context.path(
+    frame.path(
         |path| {
             path.rect((x + 4.0, y + h - 6.0), (w - 8.0, 6.0));
             path.fill(FillStyle {
@@ -1732,7 +1732,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
     );
 
     // scrollbar socket
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect((x + w - 12.0, y + 4.0), (8.0, h - 8.0), 3.0);
             path.fill(FillStyle {
@@ -1752,7 +1752,7 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
 
     let scrollh = (h / stackh) * (h - 8.0);
     // scrollbar thumb
-    context.path(
+    frame.path(
         |path| {
             path.rounded_rect(
                 (x + w - 12.0 + 1.0, y + 4.0 + 1.0 + (h - 8.0 - scrollh) * u),
@@ -1775,13 +1775,13 @@ fn draw_thumbnails(context: &Context, images: &Vec<Image>, x: f32, y: f32, w: f3
     );
 }
 
-fn draw_spinner(context: &Context, options: PathOptions, cx: f32, cy: f32, r: f32, t: f32) {
+fn draw_spinner(frame: &Frame, options: PathOptions, cx: f32, cy: f32, r: f32, t: f32) {
     let a0 = 0.0 + t * 6.0;
     let a1 = consts::PI + t * 6.0;
     let r0 = r;
     let r1 = r * 0.75;
 
-    context.path(
+    frame.path(
         |path| {
             let ax = cx + f32::cos(a0) * (r0 + r1) * 0.5;
             let ay = cy + f32::sin(a0) * (r0 + r1) * 0.5;
@@ -1826,17 +1826,17 @@ impl PerformanceGraph {
         }
     }
 
-    fn update(&mut self, context_time: f32) {
+    fn update(&mut self, frame_time: f32) {
         self.head = (self.head + 1) % GRAPH_HISTORY_COUNT;
-        self.values[self.head] = context_time;
+        self.values[self.head] = frame_time;
     }
 
-    fn draw(&self, context: &Context, font: Font, x: f32, y: f32) {
+    fn draw(&self, frame: &Frame, font: Font, x: f32, y: f32) {
         let w = 200.0;
         let h = 35.0;
         let average = self.average();
 
-        context.path(
+        frame.path(
             |path| {
                 path.rect((x, y), (w, h));
                 path.fill(FillStyle {
@@ -1847,7 +1847,7 @@ impl PerformanceGraph {
             Default::default()
         );
 
-        context.path(
+        frame.path(
             |path| {
                 path.move_to((x, y + h));
                 match self.style {
@@ -1890,7 +1890,7 @@ impl PerformanceGraph {
             Default::default()
         );
 
-        context.text(font, (x + 3.0, y + 1.0), &self.name, TextOptions {
+        frame.context().text(font, (x + 3.0, y + 1.0), &self.name, TextOptions {
             color: Color::from_rgba(240, 240, 240, 192),
             align: Alignment::new().left().top(),
             size: 14.0,
@@ -1899,7 +1899,7 @@ impl PerformanceGraph {
 
         match self.style {
             GraphRenderStyle::Fps => {
-                context.text(
+                frame.context().text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.2} FPS", 1.0 / average),
@@ -1911,7 +1911,7 @@ impl PerformanceGraph {
                     }
                 );
 
-                context.text(
+                frame.context().text(
                     font,
                     (x + w - 3.0, y + h - 1.0),
                     format!("{:.2} ms", average * 1000.0),
@@ -1924,7 +1924,7 @@ impl PerformanceGraph {
                 );
             },
             GraphRenderStyle::Ms => {
-                context.text(
+                frame.context().text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.2} ms", average * 1000.0),
@@ -1937,7 +1937,7 @@ impl PerformanceGraph {
                 );
             },
             GraphRenderStyle::Percent => {
-                context.text(
+                frame.context().text(
                     font,
                     (x + w - 3.0, y + 1.0),
                     format!("{:.1} %", average * 1.0),

@@ -104,13 +104,13 @@ impl Context {
     }
 
     /// Begin drawing a frame.
-    /// All NanoVG drawing takes place within a frame.
+    /// All NanoVG drawing takes place within a frame (except text drawing).
     ///
     /// `width` and `height` should be the width and height of the framebuffer / window client size.
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
     /// Basically, this is your hidpi factor.
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
-    pub fn frame<F: FnOnce(&Context)>(
+    pub fn frame<F: FnOnce(Frame)>(
         &self,
         (width, height): (i32, i32),
         device_pixel_ratio: f32,
@@ -125,33 +125,11 @@ impl Context {
             );
         }
         {
-            handler(self);
+            let frame = Frame::new(self);
+            handler(frame);
         }
         unsafe {
             ffi::nvgEndFrame(self.raw());
-        }
-    }
-
-    /// Draw a new path.
-    /// Needs to be invoked inside frame function.
-    ///
-    /// `handler` is the callback in which you operate the path.
-    /// `options` control how the path is rendered.
-    pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
-        self.global_composite_operation(options.composite_operation);
-        self.global_alpha(options.alpha);
-        self.scissor(options.scissor);
-
-        if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
-        }
-
-        unsafe { ffi::nvgBeginPath(self.raw()); }
-        handler(Path::new(self));
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.raw()); }
         }
     }
 
@@ -446,7 +424,7 @@ pub enum Scissor {
 /// Options which control how a path is rendered.
 #[derive(Clone, Copy, Debug)]
 pub struct PathOptions {
-    /// The scissor defines the rectangular boundary in which the path is clipped into.
+    /// The scissor defines the rectangular boundary in which the frame is clipped into.
     /// All overflowing pixels will be discarded.
     pub scissor: Option<Scissor>,
     /// Defines how overlapping paths are composited together.
@@ -468,24 +446,67 @@ impl Default for PathOptions {
     }
 }
 
-/// A path, the main type for most NanoVG drawing operations.
+/// A frame which can draw paths.
+/// All NanoVG path drawing operations are done on a frame.
 #[derive(Debug)]
-pub struct Path<'a> {
+pub struct Frame<'a> {
     context: &'a Context,
 }
 
-impl<'a> Path<'a> {
+impl<'a> Frame<'a> {
     fn new(context: &'a Context) -> Self {
         Self { context }
     }
 
+    /// Get the underlying context this frame was created on.
+    pub fn context(&self) -> &'a Context {
+        self.context
+    }
+
+    /// Draw a new path.
+    ///
+    /// `handler` is the callback in which you operate the path.
+    /// `options` control how the path is rendered.
+    pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
+        self.context.global_composite_operation(options.composite_operation);
+        self.context.global_alpha(options.alpha);
+        self.context.scissor(options.scissor);
+
+        if let Some(t) = options.transform {
+            let t = t.matrix;
+            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+        }
+
+        unsafe { ffi::nvgBeginPath(self.context.raw()); }
+        handler(Path::new(self));
+
+        if options.transform.is_some() {
+            unsafe { ffi::nvgResetTransform(self.context.raw()); }
+        }
+    }
+}
+
+/// A path, the main type for most NanoVG drawing operations.
+#[derive(Debug)]
+pub struct Path<'a, 'b>
+where
+    'b: 'a,
+{
+    frame: &'a Frame<'b>,
+}
+
+impl<'a, 'b> Path<'a, 'b> {
+    fn new(frame: &'a Frame<'b>) -> Self {
+        Self { frame }
+    }
+
     fn ctx(&self) -> *mut ffi::NVGcontext {
-        self.context.raw()
+        self.frame.context.raw()
     }
 
     /// Get the underlying context this path was created on.
     pub fn context(&self) -> &'a Context {
-        self.context
+        self.frame.context()
     }
 
     /// Draw the current path by filling in it's shape.
