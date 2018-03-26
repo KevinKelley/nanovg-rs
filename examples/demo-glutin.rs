@@ -69,9 +69,9 @@ fn main() {
 
         // Let's draw a frame!
 
-        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
+        context.frame((width, height), gl_window.hidpi_factor(), |context| {
             // Draw red-filled rectangle.
-            frame.path(
+            context.path(
                 |path| {
                     path.rect((100.0, 100.0), (300.0, 300.0));
                     path.fill(FillStyle {
@@ -88,7 +88,7 @@ fn main() {
             );
 
             // Draw custom yellow/blue shape.
-            frame.path(
+            context.path(
                 |path| {
                     let origin = (150.0, 140.0);
                     path.circle(origin, 64.0);
@@ -115,7 +115,7 @@ fn main() {
             );
 
             // Draw rolling image (with scissors)
-            frame.path(
+            context.path(
                 |path| {
                     let radius = 100.0;
                     let distance = 500.0; // Distance to roll
@@ -146,7 +146,7 @@ fn main() {
             );
 
             // Draw stroked rectangle.
-            frame.path(
+            context.path(
                 |path| {
                     path.rect((300.0, 310.0), (300.0, 300.0));
                     let color = Color::lerp(
