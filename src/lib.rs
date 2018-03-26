@@ -104,7 +104,7 @@ impl Context {
     }
 
     /// Begin drawing a frame.
-    /// All NanoVG drawing takes place within a frame (except text drawing).
+    /// All NanoVG drawing takes place within a frame.
     ///
     /// `width` and `height` should be the width and height of the framebuffer / window client size.
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
@@ -193,176 +193,6 @@ impl Context {
                 ffi::nvgResetScissor(self.raw());
             }
         }
-    }
-
-    fn text_prepare(&self, font: Font, options: TextOptions) {
-        unsafe {
-            ffi::nvgFontFaceId(self.raw(), font.id());
-            ffi::nvgFillColor(self.raw(), options.color.into_raw());
-            ffi::nvgFontSize(self.raw(), options.size);
-            ffi::nvgFontBlur(self.raw(), options.blur);
-            ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
-            ffi::nvgTextLineHeight(self.raw(), options.line_height);
-            ffi::nvgTextAlign(self.raw(), options.align.into_raw().bits());
-        }
-        self.scissor(options.scissor);
-    }
-
-    /// Draw a single line on the screen. Newline characters are ignored.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
-    /// `text` the string to draw.
-    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        unsafe {
-            ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
-        }
-    }
-
-    /// Draw multiline text on the screen.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
-    /// `text` the string to draw.
-    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text_box<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        unsafe {
-            ffi::nvgTextBox(
-                self.raw(),
-                x,
-                y,
-                options.line_max_width,
-                text.into_raw(),
-                0 as *const _,
-            );
-        }
-    }
-
-    /// Measures specified text string.
-    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
-    /// and the second element specifies the bounding box of measured text.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to measure the text from.
-    /// `text` the string to measure.
-    /// `options` optional (`Default::default`) options that controls how the text is measured.
-    pub fn text_bounds<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) -> (f32, TextBounds) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        let mut bounds = [0.0f32; 4];
-        let measure = unsafe {
-            ffi::nvgTextBounds(
-                self.raw(),
-                x,
-                y,
-                text.into_raw(),
-                0 as *const _,
-                bounds.as_mut_ptr(),
-            )
-        };
-        (measure, TextBounds::new(&bounds))
-    }
-
-    /// Measures specified multi-text string.
-    /// Returns bounding box of measured multi-text.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to measure the text from.
-    /// `text` the string to measure.
-    /// `options` optional (`Default::default`) options that controls how the text is measured.
-    pub fn text_box_bounds<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) -> TextBounds {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        let mut bounds = [0.0f32; 4];
-        unsafe {
-            ffi::nvgTextBoxBounds(
-                self.raw(),
-                x,
-                y,
-                options.line_max_width,
-                text.into_raw(),
-                0 as *const _,
-                bounds.as_mut_ptr(),
-            )
-        }
-        TextBounds::new(&bounds)
-    }
-
-    /// Calculates and breaks text into series of glyph positions.
-    /// Returns iterator over all glyph positions in text.
-    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
-    /// `text` the text to break into glyph positions
-    pub fn text_glyph_positions<S: AsRef<str>>(
-        &self,
-        (x, y): (f32, f32),
-        text: S,
-    ) -> TextGlyphPositions {
-        TextGlyphPositions::new(
-            &self,
-            x,
-            y,
-            CString::new(text.as_ref()).unwrap()
-        )
-    }
-
-    /// Returns vertical text metrics based on given font and text options
-    /// Measured values are stored in TextMetrics struct in local coordinate space.
-    /// `options` the options specify how metrics should be calculated.
-    /// `font` the font for which to calculate metrics.
-    pub fn text_metrics(&self, font: Font, options: TextOptions) -> TextMetrics {
-        self.text_prepare(font, options);
-        let mut metrics = TextMetrics::new();
-        unsafe {
-            ffi::nvgTextMetrics(
-                self.raw(),
-                &mut metrics.ascender,
-                &mut metrics.descender,
-                &mut metrics.line_height
-            );
-        }
-        metrics
-    }
-
-    /// Breaks text into lines.
-    /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
-    /// Returns iterator over text lines.
-    /// `text` the text to break into lines
-    /// `break_row_width` maximum width of row
-    pub fn text_break_lines<S: AsRef<str>>(
-        &self,
-        text: S,
-        break_row_width: f32,
-    ) -> TextBreakLines {
-        TextBreakLines::new(
-            &self,
-            CString::new(text.as_ref()).unwrap(),
-            break_row_width
-        )
     }
 }
 
@@ -483,6 +313,176 @@ impl<'a> Frame<'a> {
         if options.transform.is_some() {
             unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
+    }
+
+    fn text_prepare(&self, font: Font, options: TextOptions) {
+        unsafe {
+            ffi::nvgFontFaceId(self.context.raw(), font.id());
+            ffi::nvgFillColor(self.context.raw(), options.color.into_raw());
+            ffi::nvgFontSize(self.context.raw(), options.size);
+            ffi::nvgFontBlur(self.context.raw(), options.blur);
+            ffi::nvgTextLetterSpacing(self.context.raw(), options.letter_spacing);
+            ffi::nvgTextLineHeight(self.context.raw(), options.line_height);
+            ffi::nvgTextAlign(self.context.raw(), options.align.into_raw().bits());
+        }
+        self.context.scissor(options.scissor);
+    }
+
+    /// Draw a single line on the screen. Newline characters are ignored.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe {
+            ffi::nvgText(self.context.raw(), x, y, text.into_raw(), 0 as *const _);
+        }
+    }
+
+    /// Draw multiline text on the screen.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text_box<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe {
+            ffi::nvgTextBox(
+                self.context.raw(),
+                x,
+                y,
+                options.line_max_width,
+                text.into_raw(),
+                0 as *const _,
+            );
+        }
+    }
+
+    /// Measures specified text string.
+    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
+    /// and the second element specifies the bounding box of measured text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> (f32, TextBounds) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        let measure = unsafe {
+            ffi::nvgTextBounds(
+                self.context.raw(),
+                x,
+                y,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        };
+        (measure, TextBounds::new(&bounds))
+    }
+
+    /// Measures specified multi-text string.
+    /// Returns bounding box of measured multi-text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_box_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> TextBounds {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        unsafe {
+            ffi::nvgTextBoxBounds(
+                self.context.raw(),
+                x,
+                y,
+                options.line_max_width,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        }
+        TextBounds::new(&bounds)
+    }
+
+    /// Calculates and breaks text into series of glyph positions.
+    /// Returns iterator over all glyph positions in text.
+    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
+    /// `text` the text to break into glyph positions
+    pub fn text_glyph_positions<S: AsRef<str>>(
+        &self,
+        (x, y): (f32, f32),
+        text: S,
+    ) -> TextGlyphPositions {
+        TextGlyphPositions::new(
+            self.context,
+            x,
+            y,
+            CString::new(text.as_ref()).unwrap()
+        )
+    }
+
+    /// Returns vertical text metrics based on given font and text options
+    /// Measured values are stored in TextMetrics struct in local coordinate space.
+    /// `options` the options specify how metrics should be calculated.
+    /// `font` the font for which to calculate metrics.
+    pub fn text_metrics(&self, font: Font, options: TextOptions) -> TextMetrics {
+        self.text_prepare(font, options);
+        let mut metrics = TextMetrics::new();
+        unsafe {
+            ffi::nvgTextMetrics(
+                self.context.raw(),
+                &mut metrics.ascender,
+                &mut metrics.descender,
+                &mut metrics.line_height
+            );
+        }
+        metrics
+    }
+
+    /// Breaks text into lines.
+    /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
+    /// Returns iterator over text lines.
+    /// `text` the text to break into lines
+    /// `break_row_width` maximum width of row
+    pub fn text_break_lines<S: AsRef<str>>(
+        &self,
+        text: S,
+        break_row_width: f32,
+    ) -> TextBreakLines {
+        TextBreakLines::new(
+            self.context,
+            CString::new(text.as_ref()).unwrap(),
+            break_row_width
+        )
     }
 }
 
