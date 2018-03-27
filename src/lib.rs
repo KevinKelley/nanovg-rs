@@ -110,7 +110,7 @@ impl Context {
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
     /// Basically, this is your hidpi factor.
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
-    pub fn frame<F: FnOnce(&Context)>(
+    pub fn frame<F: FnOnce(Frame)>(
         &self,
         (width, height): (i32, i32),
         device_pixel_ratio: f32,
@@ -125,33 +125,11 @@ impl Context {
             );
         }
         {
-            handler(self);
+            let frame = Frame::new(self);
+            handler(frame);
         }
         unsafe {
             ffi::nvgEndFrame(self.raw());
-        }
-    }
-
-    /// Draw a new path.
-    /// Needs to be invoked inside frame function.
-    ///
-    /// `handler` is the callback in which you operate the path.
-    /// `options` control how the path is rendered.
-    pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
-        self.global_composite_operation(options.composite_operation);
-        self.global_alpha(options.alpha);
-        self.scissor(options.scissor);
-
-        if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
-        }
-
-        unsafe { ffi::nvgBeginPath(self.raw()); }
-        handler(Path::new(self));
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.raw()); }
         }
     }
 
@@ -216,176 +194,6 @@ impl Context {
             }
         }
     }
-
-    fn text_prepare(&self, font: Font, options: TextOptions) {
-        unsafe {
-            ffi::nvgFontFaceId(self.raw(), font.id());
-            ffi::nvgFillColor(self.raw(), options.color.into_raw());
-            ffi::nvgFontSize(self.raw(), options.size);
-            ffi::nvgFontBlur(self.raw(), options.blur);
-            ffi::nvgTextLetterSpacing(self.raw(), options.letter_spacing);
-            ffi::nvgTextLineHeight(self.raw(), options.line_height);
-            ffi::nvgTextAlign(self.raw(), options.align.into_raw().bits());
-        }
-        self.scissor(options.scissor);
-    }
-
-    /// Draw a single line on the screen. Newline characters are ignored.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
-    /// `text` the string to draw.
-    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        unsafe {
-            ffi::nvgText(self.raw(), x, y, text.into_raw(), 0 as *const _);
-        }
-    }
-
-    /// Draw multiline text on the screen.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
-    /// `text` the string to draw.
-    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text_box<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        unsafe {
-            ffi::nvgTextBox(
-                self.raw(),
-                x,
-                y,
-                options.line_max_width,
-                text.into_raw(),
-                0 as *const _,
-            );
-        }
-    }
-
-    /// Measures specified text string.
-    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
-    /// and the second element specifies the bounding box of measured text.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to measure the text from.
-    /// `text` the string to measure.
-    /// `options` optional (`Default::default`) options that controls how the text is measured.
-    pub fn text_bounds<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) -> (f32, TextBounds) {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        let mut bounds = [0.0f32; 4];
-        let measure = unsafe {
-            ffi::nvgTextBounds(
-                self.raw(),
-                x,
-                y,
-                text.into_raw(),
-                0 as *const _,
-                bounds.as_mut_ptr(),
-            )
-        };
-        (measure, TextBounds::new(&bounds))
-    }
-
-    /// Measures specified multi-text string.
-    /// Returns bounding box of measured multi-text.
-    /// `font` the font face to use.
-    /// `(x, y)` the origin / position to measure the text from.
-    /// `text` the string to measure.
-    /// `options` optional (`Default::default`) options that controls how the text is measured.
-    pub fn text_box_bounds<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) -> TextBounds {
-        let text = CString::new(text.as_ref()).unwrap();
-        self.text_prepare(font, options);
-        let mut bounds = [0.0f32; 4];
-        unsafe {
-            ffi::nvgTextBoxBounds(
-                self.raw(),
-                x,
-                y,
-                options.line_max_width,
-                text.into_raw(),
-                0 as *const _,
-                bounds.as_mut_ptr(),
-            )
-        }
-        TextBounds::new(&bounds)
-    }
-
-    /// Calculates and breaks text into series of glyph positions.
-    /// Returns iterator over all glyph positions in text.
-    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
-    /// `text` the text to break into glyph positions
-    pub fn text_glyph_positions<S: AsRef<str>>(
-        &self,
-        (x, y): (f32, f32),
-        text: S,
-    ) -> TextGlyphPositions {
-        TextGlyphPositions::new(
-            &self,
-            x,
-            y,
-            CString::new(text.as_ref()).unwrap()
-        )
-    }
-
-    /// Returns vertical text metrics based on given font and text options
-    /// Measured values are stored in TextMetrics struct in local coordinate space.
-    /// `options` the options specify how metrics should be calculated.
-    /// `font` the font for which to calculate metrics.
-    pub fn text_metrics(&self, font: Font, options: TextOptions) -> TextMetrics {
-        self.text_prepare(font, options);
-        let mut metrics = TextMetrics::new();
-        unsafe {
-            ffi::nvgTextMetrics(
-                self.raw(),
-                &mut metrics.ascender,
-                &mut metrics.descender,
-                &mut metrics.line_height
-            );
-        }
-        metrics
-    }
-
-    /// Breaks text into lines.
-    /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
-    /// Returns iterator over text lines.
-    /// `text` the text to break into lines
-    /// `break_row_width` maximum width of row
-    pub fn text_break_lines<S: AsRef<str>>(
-        &self,
-        text: S,
-        break_row_width: f32,
-    ) -> TextBreakLines {
-        TextBreakLines::new(
-            &self,
-            CString::new(text.as_ref()).unwrap(),
-            break_row_width
-        )
-    }
 }
 
 impl Drop for Context {
@@ -446,7 +254,7 @@ pub enum Scissor {
 /// Options which control how a path is rendered.
 #[derive(Clone, Copy, Debug)]
 pub struct PathOptions {
-    /// The scissor defines the rectangular boundary in which the path is clipped into.
+    /// The scissor defines the rectangular boundary in which the frame is clipped into.
     /// All overflowing pixels will be discarded.
     pub scissor: Option<Scissor>,
     /// Defines how overlapping paths are composited together.
@@ -468,24 +276,237 @@ impl Default for PathOptions {
     }
 }
 
-/// A path, the main type for most NanoVG drawing operations.
+/// A frame which can draw paths.
+/// All NanoVG path drawing operations are done on a frame.
 #[derive(Debug)]
-pub struct Path<'a> {
+pub struct Frame<'a> {
     context: &'a Context,
 }
 
-impl<'a> Path<'a> {
+impl<'a> Frame<'a> {
     fn new(context: &'a Context) -> Self {
         Self { context }
     }
 
+    /// Get the underlying context this frame was created on.
+    pub fn context(&self) -> &'a Context {
+        self.context
+    }
+
+    /// Draw a new path.
+    ///
+    /// `handler` is the callback in which you operate the path.
+    /// `options` control how the path is rendered.
+    pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
+        self.context.global_composite_operation(options.composite_operation);
+        self.context.global_alpha(options.alpha);
+        self.context.scissor(options.scissor);
+
+        if let Some(t) = options.transform {
+            let t = t.matrix;
+            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+        }
+
+        unsafe { ffi::nvgBeginPath(self.context.raw()); }
+        handler(Path::new(self));
+
+        if options.transform.is_some() {
+            unsafe { ffi::nvgResetTransform(self.context.raw()); }
+        }
+    }
+
+    fn text_prepare(&self, font: Font, options: TextOptions) {
+        unsafe {
+            ffi::nvgFontFaceId(self.context.raw(), font.id());
+            ffi::nvgFillColor(self.context.raw(), options.color.into_raw());
+            ffi::nvgFontSize(self.context.raw(), options.size);
+            ffi::nvgFontBlur(self.context.raw(), options.blur);
+            ffi::nvgTextLetterSpacing(self.context.raw(), options.letter_spacing);
+            ffi::nvgTextLineHeight(self.context.raw(), options.line_height);
+            ffi::nvgTextAlign(self.context.raw(), options.align.into_raw().bits());
+        }
+        self.context.scissor(options.scissor);
+    }
+
+    /// Draw a single line on the screen. Newline characters are ignored.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe {
+            ffi::nvgText(self.context.raw(), x, y, text.into_raw(), 0 as *const _);
+        }
+    }
+
+    /// Draw multiline text on the screen.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
+    /// `text` the string to draw.
+    /// `options` optional (`Default::default`) options that control the visual appearance of the text.
+    pub fn text_box<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        unsafe {
+            ffi::nvgTextBox(
+                self.context.raw(),
+                x,
+                y,
+                options.line_max_width,
+                text.into_raw(),
+                0 as *const _,
+            );
+        }
+    }
+
+    /// Measures specified text string.
+    /// Returns tuple (f32, TextBounds) where the first element specifies horizontal advance of measured text
+    /// and the second element specifies the bounding box of measured text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> (f32, TextBounds) {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        let measure = unsafe {
+            ffi::nvgTextBounds(
+                self.context.raw(),
+                x,
+                y,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        };
+        (measure, TextBounds::new(&bounds))
+    }
+
+    /// Measures specified multi-text string.
+    /// Returns bounding box of measured multi-text.
+    /// `font` the font face to use.
+    /// `(x, y)` the origin / position to measure the text from.
+    /// `text` the string to measure.
+    /// `options` optional (`Default::default`) options that controls how the text is measured.
+    pub fn text_box_bounds<S: AsRef<str>>(
+        &self,
+        font: Font,
+        (x, y): (f32, f32),
+        text: S,
+        options: TextOptions,
+    ) -> TextBounds {
+        let text = CString::new(text.as_ref()).unwrap();
+        self.text_prepare(font, options);
+        let mut bounds = [0.0f32; 4];
+        unsafe {
+            ffi::nvgTextBoxBounds(
+                self.context.raw(),
+                x,
+                y,
+                options.line_max_width,
+                text.into_raw(),
+                0 as *const _,
+                bounds.as_mut_ptr(),
+            )
+        }
+        TextBounds::new(&bounds)
+    }
+
+    /// Calculates and breaks text into series of glyph positions.
+    /// Returns iterator over all glyph positions in text.
+    /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
+    /// `text` the text to break into glyph positions
+    pub fn text_glyph_positions<S: AsRef<str>>(
+        &self,
+        (x, y): (f32, f32),
+        text: S,
+    ) -> TextGlyphPositions {
+        TextGlyphPositions::new(
+            self.context,
+            x,
+            y,
+            CString::new(text.as_ref()).unwrap()
+        )
+    }
+
+    /// Returns vertical text metrics based on given font and text options
+    /// Measured values are stored in TextMetrics struct in local coordinate space.
+    /// `options` the options specify how metrics should be calculated.
+    /// `font` the font for which to calculate metrics.
+    pub fn text_metrics(&self, font: Font, options: TextOptions) -> TextMetrics {
+        self.text_prepare(font, options);
+        let mut metrics = TextMetrics::new();
+        unsafe {
+            ffi::nvgTextMetrics(
+                self.context.raw(),
+                &mut metrics.ascender,
+                &mut metrics.descender,
+                &mut metrics.line_height
+            );
+        }
+        metrics
+    }
+
+    /// Breaks text into lines.
+    /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
+    /// Returns iterator over text lines.
+    /// `text` the text to break into lines
+    /// `break_row_width` maximum width of row
+    pub fn text_break_lines<S: AsRef<str>>(
+        &self,
+        text: S,
+        break_row_width: f32,
+    ) -> TextBreakLines {
+        TextBreakLines::new(
+            self.context,
+            CString::new(text.as_ref()).unwrap(),
+            break_row_width
+        )
+    }
+}
+
+/// A path, the main type for most NanoVG drawing operations.
+#[derive(Debug)]
+pub struct Path<'a, 'b>
+where
+    'b: 'a,
+{
+    frame: &'a Frame<'b>,
+}
+
+impl<'a, 'b> Path<'a, 'b> {
+    fn new(frame: &'a Frame<'b>) -> Self {
+        Self { frame }
+    }
+
     fn ctx(&self) -> *mut ffi::NVGcontext {
-        self.context.raw()
+        self.frame.context.raw()
     }
 
     /// Get the underlying context this path was created on.
     pub fn context(&self) -> &'a Context {
-        self.context
+        self.frame.context()
     }
 
     /// Draw the current path by filling in it's shape.

@@ -69,9 +69,9 @@ fn main() {
 
         // Let's draw a frame!
 
-        context.frame((width, height), gl_window.hidpi_factor(), |context| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
             // Draw red-filled rectangle.
-            context.path(
+            frame.path(
                 |path| {
                     path.rect((100.0, 100.0), (300.0, 300.0));
                     path.fill(FillStyle {
@@ -88,7 +88,7 @@ fn main() {
             );
 
             // Draw custom yellow/blue shape.
-            context.path(
+            frame.path(
                 |path| {
                     let origin = (150.0, 140.0);
                     path.circle(origin, 64.0);
@@ -115,7 +115,7 @@ fn main() {
             );
 
             // Draw rolling image (with scissors)
-            context.path(
+            frame.path(
                 |path| {
                     let radius = 100.0;
                     let distance = 500.0; // Distance to roll
@@ -146,7 +146,7 @@ fn main() {
             );
 
             // Draw stroked rectangle.
-            context.path(
+            frame.path(
                 |path| {
                     path.rect((300.0, 310.0), (300.0, 300.0));
                     let color = Color::lerp(
@@ -166,47 +166,47 @@ fn main() {
                 },
                 Default::default(),
             );
+
+            // Draw some strings!
+
+            frame.text(
+                mechanic_font,
+                (50.0, 50.0),
+                "Hello world",
+                TextOptions {
+                    color: Color::new(1.0, 1.0, 1.0, 1.0),
+                    size: 24.0,
+                    letter_spacing: (elapsed.sin() * 0.5 + 0.5) * 30.0,
+                    ..Default::default()
+                },
+            );
+
+            frame.text_box(
+                mechanic_font,
+                (50.0, 74.0),
+                "Multi-\nline",
+                TextOptions {
+                    color: Color::new(1.0, 0.6, 1.0, 1.0),
+                    size: 24.0,
+                    ..Default::default()
+                },
+            );
+
+            frame.text_box(
+                mechanic_font,
+                (800.0, 50.0),
+                "This text is automatically wrapped.\nResize the window and try it out!",
+                TextOptions {
+                    color: Color::new(0.6, 1.0, 1.0, 1.0),
+                    size: 24.0,
+                    align: Alignment::new().right().baseline(),
+                    line_height: 1.2,
+                    line_max_width: gl_window.get_inner_size().unwrap_or(INIT_WINDOW_SIZE).0 as f32 -
+                        800.0,
+                    ..Default::default()
+                },
+            );
         });
-
-        // Draw some strings!
-
-        context.text(
-            mechanic_font,
-            (50.0, 50.0),
-            "Hello world",
-            TextOptions {
-                color: Color::new(1.0, 1.0, 1.0, 1.0),
-                size: 24.0,
-                letter_spacing: (elapsed.sin() * 0.5 + 0.5) * 30.0,
-                ..Default::default()
-            },
-        );
-
-        context.text_box(
-            mechanic_font,
-            (50.0, 74.0),
-            "Multi-\nline",
-            TextOptions {
-                color: Color::new(1.0, 0.6, 1.0, 1.0),
-                size: 24.0,
-                ..Default::default()
-            },
-        );
-
-        context.text_box(
-            mechanic_font,
-            (800.0, 50.0),
-            "This text is automatically wrapped.\nResize the window and try it out!",
-            TextOptions {
-                color: Color::new(0.6, 1.0, 1.0, 1.0),
-                size: 24.0,
-                align: Alignment::new().right().baseline(),
-                line_height: 1.2,
-                line_max_width: gl_window.get_inner_size().unwrap_or(INIT_WINDOW_SIZE).0 as f32 -
-                    800.0,
-                ..Default::default()
-            },
-        );
 
         gl_window.swap_buffers().unwrap();
     }

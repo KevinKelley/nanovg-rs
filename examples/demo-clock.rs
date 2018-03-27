@@ -103,7 +103,7 @@ fn main() {
 
 
 
-        context.frame((width, height), gl_window.hidpi_factor(), |context| {
+        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
 
             // hour/minute markers
 
@@ -113,7 +113,7 @@ fn main() {
                 let j = f64::from(h) as f32;
                 let x = dial_center.0 + (second_hand_len * (j*radians_per_hour).sin());
                 let y = dial_center.1 - (second_hand_len * (j*radians_per_hour).cos());
-                context.text(
+                frame.text(
                     roboto_font,
                     (x, y),
                     &sigils[h as usize],
@@ -131,7 +131,7 @@ fn main() {
                 let ticks_radius = dial_radius * 0.925;
                 let tick_len = 3.0;
                 let tick_width = 1.0;
-                context.path(
+                frame.path(
                     |path| {
                         path.move_to((0.0, -ticks_radius));
                         path.line_to((0.0, -ticks_radius-tick_len));
@@ -158,7 +158,7 @@ fn main() {
             // time-string
             let show_time_string = false;
             if show_time_string {
-                context.text(
+                frame.text(
                     roboto_font,
                     (dial_center.0, dial_center.1 + dial_radius * 0.7 - font_size),
                     format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM"}  else { "PM" }),
@@ -171,7 +171,7 @@ fn main() {
                     );
             }
             // date-string
-            context.text(
+            frame.text(
                 roboto_font,
                 (dial_center.0, dial_center.1 + dial_radius * 0.7),
                 format!("{:4}-{:02}-{:02}", year, month, day),
@@ -185,7 +185,7 @@ fn main() {
 
 
             //Draw the dial
-            context.path(
+            frame.path(
                 |path| {
                     path.circle(origin, dial_radius);
                     path.stroke(StrokeStyle {
@@ -207,7 +207,7 @@ fn main() {
             );
 
             let draw_hand = |theta: f32, length: f32, width: f32| {
-                context.path(
+                frame.path(
                     |path| {
                         path.move_to(origin);
                         path.line_to((0.0, -length));
@@ -244,7 +244,7 @@ fn main() {
 
 
             //Draw the boss
-            context.path(
+            frame.path(
                 |path| {
                     let boss_rad = 6.0;
                     path.circle(origin, boss_rad);
