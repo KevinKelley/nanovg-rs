@@ -49,3 +49,7 @@ required-features = ["gl3"]
 [[example]]
 name = "demo-cutout"
 required-features = ["gl3"]
+
+[[example]]
+name = "demo-text"
+required-features = ["gl3"]

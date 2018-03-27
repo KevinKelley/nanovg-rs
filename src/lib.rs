@@ -342,8 +342,18 @@ impl<'a> Frame<'a> {
     ) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
+
+        if let Some(t) = options.transform {
+            let t = t.matrix;
+            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+        }
+
         unsafe {
             ffi::nvgText(self.context.raw(), x, y, text.into_raw(), 0 as *const _);
+        }
+
+        if options.transform.is_some() {
+            unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
     }
 
@@ -361,6 +371,12 @@ impl<'a> Frame<'a> {
     ) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
+
+        if let Some(t) = options.transform {
+            let t = t.matrix;
+            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+        }
+
         unsafe {
             ffi::nvgTextBox(
                 self.context.raw(),
@@ -370,6 +386,10 @@ impl<'a> Frame<'a> {
                 text.into_raw(),
                 0 as *const _,
             );
+        }
+
+        if options.transform.is_some() {
+            unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
     }
 
@@ -1378,6 +1398,8 @@ pub struct TextOptions {
     /// The scissor defines the rectangular boundary in which the text is clipped into.
     /// All overflowing pixels will be discarded.
     pub scissor: Option<Scissor>,
+    /// A transformation which 'transforms' the coordinate system and consequently the text.
+    pub transform: Option<Transform>,
 }
 
 impl Default for TextOptions {
@@ -1391,6 +1413,7 @@ impl Default for TextOptions {
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
             scissor: None,
+            transform: None,
         }
     }
 }
@@ -1783,5 +1806,31 @@ impl Transform {
             ffi::nvgTransformPremultiply(new.matrix.as_mut_ptr(), t.as_mut_ptr());
         }
         new
+    }
+
+    /// Transforms a point with this transform.
+    /// Returns transformed point (x, y).
+    pub fn transform_point(&self, (x, y): (f32, f32)) -> (f32, f32) {
+        let mut transformed = (0.0f32, 0.0f32);
+        unsafe {
+            ffi::nvgTransformPoint(&mut transformed.0, &mut transformed.1, self.matrix.as_ptr(), x, y);
+        }
+        transformed
+    }
+
+    /// Inverses this transform.
+    /// Returns inversed copy or None if inversion fails.
+    pub fn try_inverse(&self) -> Option<Transform> {
+        let mut inv = Transform::new();
+        let result = unsafe {
+            ffi::nvgTransformInverse(inv.matrix.as_mut_ptr(), self.matrix.as_ptr())
+        };
+
+        if result == 1 {
+            Some(inv)
+        }
+        else {
+            None
+        }
     }
 }
