@@ -25,7 +25,7 @@ libc = "*"
 bitflags = "1.0"
 
 [build-dependencies]
-gcc = "0.3"
+cc = "1.0"
 
 [dev-dependencies]
 glutin = "0.13.0"
