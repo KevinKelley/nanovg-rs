@@ -1,7 +1,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 
-use libc::{c_char, c_uchar, c_int, c_float, c_void};
+use std::os::raw::{c_char, c_uchar, c_int, c_float, c_void};
 
 pub const FONS_INVALID: c_int = -1;
 

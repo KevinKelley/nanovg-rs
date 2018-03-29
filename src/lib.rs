@@ -1,13 +1,12 @@
 #[macro_use]
 extern crate bitflags;
-extern crate libc;
 
 pub mod ffi;
 
 use std::ops::Drop;
 use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
-use libc::{c_int, c_float, c_uchar, c_char};
+use std::os::raw::{c_int, c_float, c_uchar, c_char};
 
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {

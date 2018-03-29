@@ -21,7 +21,6 @@ gles2 = []
 gles3 = []
 
 [dependencies]
-libc = "0.2"
 bitflags = "1.0"
 
 [build-dependencies]
