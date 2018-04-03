@@ -1833,3 +1833,78 @@ impl Transform {
         }
     }
 }
+
+impl std::ops::Mul for Transform {
+    type Output = Transform;
+
+    fn mul(self, rhs: Transform) -> Self::Output {
+        let mut result = self.clone();
+        unsafe {
+            ffi::nvgTransformMultiply(result.matrix.as_mut_ptr(), rhs.matrix.as_ptr());
+        }
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! trans_eq_bool {
+        ($t1:expr, $t2:expr) => {
+            f32_eq!($t1.matrix[0], $t2.matrix[0]) &&
+            f32_eq!($t1.matrix[1], $t2.matrix[1]) &&
+            f32_eq!($t1.matrix[2], $t2.matrix[2]) &&
+            f32_eq!($t1.matrix[3], $t2.matrix[3]) &&
+            f32_eq!($t1.matrix[4], $t2.matrix[4]) &&
+            f32_eq!($t1.matrix[5], $t2.matrix[5])
+        };
+    }
+
+    macro_rules! trans_eq {
+        ($t1:expr, $t2:expr) => {
+            assert!(trans_eq_bool!($t1, $t2))
+        };
+    }
+
+    macro_rules! trans_not_eq {
+        ($t1:expr, $t2:expr) => {
+            assert!(!trans_eq_bool!($t1, $t2))
+        };
+    }
+
+    #[test]
+    fn test_transform() {
+        // Contructors
+        trans_eq!(Transform::new(), Transform {
+            matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        });
+
+        trans_eq!(Transform::new().with_translation(11.1, 22.2), Transform {
+            matrix: [1.0, 0.0, 0.0, 1.0, 11.1, 22.2],
+        });
+
+        trans_eq!(Transform::new().with_scale(11.1, 22.2), Transform {
+            matrix: [11.1, 0.0, 0.0, 22.2, 0.0, 0.0],
+        });
+
+        trans_eq!(Transform::new().with_skew(11.1, 22.2), Transform {
+            matrix: [1.0, 22.2, 11.1, 1.0, 0.0, 0.0],
+        });
+
+        let angle = 90f32.to_radians();
+        trans_eq!(Transform::new().with_rotation(angle), Transform {
+            matrix: [angle.cos(), angle.sin(), -angle.sin(), angle.cos(), 0.0, 0.0],
+        });
+
+        // Multiplication
+        let identity = Transform::new();
+        let trans = Transform::new().with_translation(10.0, 20.0);
+        trans_eq!(identity * trans, trans);
+        trans_eq!(trans * identity, trans);
+        trans_eq!(identity * identity, identity);
+        let a = Transform::new().with_rotation(123.0);
+        let b = Transform::new().with_skew(66.6, 1337.2);
+        trans_not_eq!(a * b, b * a);
+    }
+}
