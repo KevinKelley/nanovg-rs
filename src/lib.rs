@@ -124,7 +124,7 @@ impl Context {
             );
         }
         {
-            let frame = Frame::new(self);
+            let frame = Frame::new(self, Transform::new());
             handler(frame);
         }
         unsafe {
@@ -192,6 +192,15 @@ impl Context {
                 ffi::nvgResetScissor(self.raw());
             }
         }
+    }
+
+    fn transform(&self, transform: &Transform) {
+        let t = transform.matrix;
+        unsafe { ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+    }
+
+    fn reset_transform(&self) {
+        unsafe { ffi::nvgResetTransform(self.raw()); }
     }
 }
 
@@ -280,16 +289,33 @@ impl Default for PathOptions {
 #[derive(Debug)]
 pub struct Frame<'a> {
     context: &'a Context,
+    transform: Transform,
 }
 
 impl<'a> Frame<'a> {
-    fn new(context: &'a Context) -> Self {
-        Self { context }
+    fn new(context: &'a Context, transform: Transform) -> Self {
+        Self { context, transform }
     }
 
     /// Get the underlying context this frame was created on.
     pub fn context(&self) -> &'a Context {
         self.context
+    }
+
+    /// Get current transform which the frame is transformed by.
+    pub fn get_transform(&self) -> &Transform {
+        &self.transform
+    }
+
+    /// Transform current Frame by 'transform' and
+    /// call 'handler' with transformed Frame as its only parameter.
+    /// You can get the passed transform by calling get_transform on Frame instance.
+    ///
+    /// `transform` frame gets transformed by this Transform (it takes previous frame transform into account)
+    /// `handler` the callback where you use the new transformed Frame
+    pub fn transform<F: FnOnce(Frame)>(&self, transform: Transform, handler: F) {
+        let frame = Frame::new(self.context, transform * self.transform);
+        handler(frame);
     }
 
     /// Draw a new path.
@@ -299,19 +325,17 @@ impl<'a> Frame<'a> {
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
         self.context.global_composite_operation(options.composite_operation);
         self.context.global_alpha(options.alpha);
+
+        self.context.reset_transform();
         self.context.scissor(options.scissor);
+        self.context.transform(&self.transform);
 
         if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+            self.context.transform(&t);
         }
 
         unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
-        }
     }
 
     fn text_prepare(&self, font: Font, options: TextOptions) {
@@ -340,11 +364,12 @@ impl<'a> Frame<'a> {
         options: TextOptions,
     ) {
         let text = CString::new(text.as_ref()).unwrap();
+        self.context.reset_transform();
         self.text_prepare(font, options);
+        self.context.transform(&self.transform);
 
         if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+            self.context.transform(&t);
         }
 
         unsafe {
@@ -352,7 +377,7 @@ impl<'a> Frame<'a> {
         }
 
         if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
+            self.context.reset_transform();
         }
     }
 
@@ -369,11 +394,12 @@ impl<'a> Frame<'a> {
         options: TextOptions,
     ) {
         let text = CString::new(text.as_ref()).unwrap();
+        self.context.reset_transform();
         self.text_prepare(font, options);
+        self.context.transform(&self.transform);
 
         if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+            self.context.transform(&t);
         }
 
         unsafe {
@@ -385,10 +411,6 @@ impl<'a> Frame<'a> {
                 text.into_raw(),
                 0 as *const _,
             );
-        }
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
     }
 
@@ -1834,9 +1856,12 @@ impl Transform {
     }
 }
 
+/// Implementation of multiplication Trait for Transform.
+/// The order in which you multiplicate matters (you are multiplicating matrices)
 impl std::ops::Mul for Transform {
     type Output = Transform;
 
+    /// Multiplies transform with other transform (the order matters).
     fn mul(self, rhs: Transform) -> Self::Output {
         let mut result = self.clone();
         unsafe {
