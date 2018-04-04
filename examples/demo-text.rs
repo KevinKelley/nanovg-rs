@@ -3,7 +3,7 @@ extern crate glutin;
 extern crate nanovg;
 
 use glutin::GlContext;
-use nanovg::{Color, ColoringStyle, Font, Alignment, TextOptions, Scissor, FillStyle, Frame, Transform, PathOptions, StrokeStyle};
+use nanovg::{Color, ColoringStyle, Font, Alignment, TextOptions, Scissor, FillStyle, Frame, Transform, PathOptions, StrokeStyle, Clip};
 use std::time::Instant;
 use std::f32::consts::PI;
 
@@ -90,11 +90,12 @@ fn get_elapsed(instant: &Instant) -> f32 {
 
 fn render_text(frame: &Frame, font: Font, text: &str, clip: (f32, f32, f32, f32), transform: Transform) {
     let (cx, cy, cw, ch) = clip;
-    let scissor = Scissor::Rect {
+    let scissor = Scissor {
         x: cx,
         y: cy,
         width: cw,
         height: ch,
+        transform: None,
     };
 
     // draw clipping area
@@ -120,7 +121,7 @@ fn render_text(frame: &Frame, font: Font, text: &str, clip: (f32, f32, f32, f32)
             });
         },
         PathOptions {
-            scissor: Some(scissor),
+            clip: Clip::Scissor(scissor),
             transform: Some(transform),
             ..Default::default()
         }
@@ -131,7 +132,7 @@ fn render_text(frame: &Frame, font: Font, text: &str, clip: (f32, f32, f32, f32)
             size: 28.0,
             color: Color::from_rgb(255, 255, 255),
             align: Alignment::new().bottom().right(),
-            scissor: Some(scissor),
+            clip: Clip::Scissor(scissor),
             transform: Some(transform),
             ..Default::default()
         }

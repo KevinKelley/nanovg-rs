@@ -124,7 +124,7 @@ impl Context {
             );
         }
         {
-            let frame = Frame::new(self);
+            let frame = Frame::new(self, Transform::new());
             handler(frame);
         }
         unsafe {
@@ -168,30 +168,71 @@ impl Context {
     }
 
     fn scissor(&self, scissor: Option<Scissor>) {
-        if let Some(scissor) = scissor {
-            match scissor {
-                Scissor::Rect {
-                    x,
-                    y,
-                    width,
-                    height,
-                } => unsafe {
-                    ffi::nvgScissor(self.raw(), x, y, width, height);
-                },
-                Scissor::Intersect {
-                    x,
-                    y,
-                    width,
-                    height,
-                } => unsafe {
-                    ffi::nvgIntersectScissor(self.raw(), x, y, width, height);
-                },
-            }
-        } else {
-            unsafe {
+        match scissor {
+            Some(ref scissor) =>  {
+                self.with_applied_transform(scissor.transform,
+                    || unsafe {
+                        ffi::nvgScissor(self.raw(), scissor.x, scissor.y, scissor.width, scissor.height);
+                    }
+                );
+            },
+            None => unsafe {
                 ffi::nvgResetScissor(self.raw());
             }
         }
+    }
+
+    fn intersect(&self, intersect: &Intersect) {
+        self.scissor(Some(intersect.with));
+
+        self.with_applied_transform(intersect.transform,
+            || unsafe {
+                ffi::nvgIntersectScissor(self.raw(), intersect.x, intersect.y, intersect.width, intersect.height);
+            }
+        );
+    }
+
+    fn clip(&self, clip: Clip) {
+        match clip {
+            Clip::Scissor(scissor) => self.scissor(Some(scissor)),
+            Clip::Intersect(ref intersect) => self.intersect(intersect),
+            Clip::None => (),
+        }
+    }
+
+    fn transform(&self, transform: Option<Transform>) {
+        match transform {
+            Some(ref transform) => {
+                let t = transform.matrix;
+                unsafe { ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+            },
+            None => unsafe { ffi::nvgResetTransform(self.raw()); }
+        }
+    }
+
+    fn current_transform(&self) -> Transform {
+        let mut current = Transform::new();
+        unsafe {
+            ffi::nvgCurrentTransform(self.raw(), current.matrix.as_mut_ptr());
+        }
+        current
+    }
+
+    fn with_applied_transform<F: FnOnce()>(&self, transform: Option<Transform>, handler: F) {
+        let current = self.current_transform();
+
+        if let Some(transform) = transform {
+            if transform.absolute {
+                self.transform(None);
+            }
+
+            self.transform(Some(transform));
+        }
+
+        handler();
+
+        self.transform(None);
+        self.transform(Some(current));
     }
 }
 
@@ -231,31 +272,41 @@ impl Drop for Context {
 /// A scissor defines a region on the screen in which drawing operations are allowed.
 /// Pixels drawn outside of this region are clipped.
 #[derive(Clone, Copy, Debug)]
-pub enum Scissor {
-    /// Defines a rectangular scissor.
-    Rect {
-        x: f32,
-        y: f32,
-        width: f32,
-        height: f32,
-    },
-    /// Define the scissor to be the intersection between the previous scissor rectangle
-    /// and the specified rectangle.
-    /// The previous and specified rectangles are always transformed to be in the previous transform space.
-    Intersect {
-        x: f32,
-        y: f32,
-        width: f32,
-        height: f32,
-    },
+pub struct Scissor {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub transform: Option<Transform>
+}
+
+/// Define intersection scissor which gets intersected with 'with' Scissor.
+/// Pixels drawn outside of this intersection are clipped.
+/// When 'with' Scissor or this Intersection have rotation, the intersection will be an approximation.
+#[derive(Clone, Copy, Debug)]
+pub struct Intersect {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+    pub with: Scissor,
+    pub transform: Option<Transform>
+}
+
+/// Define how to clip specified region.
+#[derive(Clone, Copy, Debug)]
+pub enum Clip {
+    Scissor(Scissor),
+    Intersect(Intersect),
+    None,
 }
 
 /// Options which control how a path is rendered.
 #[derive(Clone, Copy, Debug)]
 pub struct PathOptions {
-    /// The scissor defines the rectangular boundary in which the frame is clipped into.
+    /// The clip defines the rectangular region in which the frame is clipped into.
     /// All overflowing pixels will be discarded.
-    pub scissor: Option<Scissor>,
+    pub clip: Clip,
     /// Defines how overlapping paths are composited together.
     pub composite_operation: CompositeOperation,
     /// The alpha component of the path.
@@ -267,7 +318,7 @@ pub struct PathOptions {
 impl Default for PathOptions {
     fn default() -> Self {
         Self {
-            scissor: None,
+            clip: Clip::None,
             composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Atop),
             alpha: 1.0,
             transform: None,
@@ -280,16 +331,33 @@ impl Default for PathOptions {
 #[derive(Debug)]
 pub struct Frame<'a> {
     context: &'a Context,
+    transform: Transform,
 }
 
 impl<'a> Frame<'a> {
-    fn new(context: &'a Context) -> Self {
-        Self { context }
+    fn new(context: &'a Context, transform: Transform) -> Self {
+        Self { context, transform }
     }
 
     /// Get the underlying context this frame was created on.
     pub fn context(&self) -> &'a Context {
         self.context
+    }
+
+    /// Get current transform which the frame is transformed by.
+    pub fn get_transform(&self) -> &Transform {
+        &self.transform
+    }
+
+    /// Transform current Frame by 'transform' and
+    /// call 'handler' with transformed Frame as its only parameter.
+    /// You can get the passed transform by calling get_transform on Frame instance.
+    ///
+    /// `transform` frame gets transformed by this Transform (it takes previous frame transform into account)
+    /// `handler` the callback where you use the new transformed Frame
+    pub fn transform<F: FnOnce(Frame)>(&self, transform: Transform, handler: F) {
+        let frame = Frame::new(self.context, transform * self.transform);
+        handler(frame);
     }
 
     /// Draw a new path.
@@ -299,18 +367,25 @@ impl<'a> Frame<'a> {
     pub fn path<F: FnOnce(Path)>(&self, handler: F, options: PathOptions) {
         self.context.global_composite_operation(options.composite_operation);
         self.context.global_alpha(options.alpha);
-        self.context.scissor(options.scissor);
 
-        if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
-        }
+        self.draw_prepare(options.clip, options.transform);
 
         unsafe { ffi::nvgBeginPath(self.context.raw()); }
         handler(Path::new(self));
+    }
 
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
+    fn draw_prepare(&self, clip: Clip, transform: Option<Transform>) {
+        self.context.transform(None);
+        self.context.scissor(None);
+        self.context.transform(Some(self.transform));
+
+        self.context.clip(clip);
+
+        if let Some(transform) = transform {
+            if transform.absolute {
+                self.context.transform(None);
+            }
+            self.context.transform(Some(transform));
         }
     }
 
@@ -324,7 +399,6 @@ impl<'a> Frame<'a> {
             ffi::nvgTextLineHeight(self.context.raw(), options.line_height);
             ffi::nvgTextAlign(self.context.raw(), options.align.into_raw().bits());
         }
-        self.context.scissor(options.scissor);
     }
 
     /// Draw a single line on the screen. Newline characters are ignored.
@@ -342,17 +416,10 @@ impl<'a> Frame<'a> {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
 
-        if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
-        }
+        self.draw_prepare(options.clip, options.transform);
 
         unsafe {
             ffi::nvgText(self.context.raw(), x, y, text.into_raw(), 0 as *const _);
-        }
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
     }
 
@@ -371,10 +438,7 @@ impl<'a> Frame<'a> {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
 
-        if let Some(t) = options.transform {
-            let t = t.matrix;
-            unsafe { ffi::nvgTransform(self.context.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
-        }
+        self.draw_prepare(options.clip, options.transform);
 
         unsafe {
             ffi::nvgTextBox(
@@ -385,10 +449,6 @@ impl<'a> Frame<'a> {
                 text.into_raw(),
                 0 as *const _,
             );
-        }
-
-        if options.transform.is_some() {
-            unsafe { ffi::nvgResetTransform(self.context.raw()); }
         }
     }
 
@@ -1394,9 +1454,9 @@ pub struct TextOptions {
     pub align: Alignment,
     /// The fill color of the text.
     pub color: Color,
-    /// The scissor defines the rectangular boundary in which the text is clipped into.
+    /// The clip defines the rectangular region in which the text is clipped into.
     /// All overflowing pixels will be discarded.
-    pub scissor: Option<Scissor>,
+    pub clip: Clip,
     /// A transformation which 'transforms' the coordinate system and consequently the text.
     pub transform: Option<Transform>,
 }
@@ -1411,7 +1471,7 @@ impl Default for TextOptions {
             line_max_width: std::f32::MAX,
             align: Alignment::new(),
             color: Color::new(0.0, 0.0, 0.0, 0.0),
-            scissor: None,
+            clip: Clip::None,
             transform: None,
         }
     }
@@ -1708,6 +1768,12 @@ impl Alignment {
 #[derive(Clone, Copy, Debug)]
 pub struct Transform {
     pub matrix: [f32; 6],
+    /// Controls whether paths or texts that gets transformed by this Transform
+    /// are drawn in absolute coordinate space or coordinate space relative to the one
+    /// previously active (relative positioning is default)
+    /// This is just flag to tell drawing functions to use this Transform for drawing,
+    /// it does not modify the underlying matrix.
+    absolute: bool,
 }
 
 impl Transform {
@@ -1715,7 +1781,20 @@ impl Transform {
     pub fn new() -> Self {
         Self {
             matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            absolute: false,
         }
+    }
+
+    /// Set flag on this transform to use it in absolute coordinate space.
+    pub fn absolute(mut self) -> Self {
+        self.absolute = true;
+        self
+    }
+
+    /// Set flag on this transform to use it in local (relative) coordinate space.
+    pub fn relative(mut self) -> Self {
+        self.absolute = false;
+        self
     }
 
     /// Set the translation of the transform.
@@ -1831,5 +1910,83 @@ impl Transform {
         else {
             None
         }
+    }
+}
+
+/// Implementation of multiplication Trait for Transform.
+/// The order in which you multiplicate matters (you are multiplicating matrices)
+impl std::ops::Mul for Transform {
+    type Output = Transform;
+
+    /// Multiplies transform with other transform (the order matters).
+    fn mul(self, rhs: Transform) -> Self::Output {
+        let mut result = self.clone();
+        unsafe {
+            ffi::nvgTransformMultiply(result.matrix.as_mut_ptr(), rhs.matrix.as_ptr());
+        }
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! trans_eq_bool {
+        ($t1:expr, $t2:expr) => {
+            f32_eq!($t1.matrix[0], $t2.matrix[0]) &&
+            f32_eq!($t1.matrix[1], $t2.matrix[1]) &&
+            f32_eq!($t1.matrix[2], $t2.matrix[2]) &&
+            f32_eq!($t1.matrix[3], $t2.matrix[3]) &&
+            f32_eq!($t1.matrix[4], $t2.matrix[4]) &&
+            f32_eq!($t1.matrix[5], $t2.matrix[5])
+        };
+    }
+
+    macro_rules! trans_eq {
+        ($t1:expr, $t2:expr) => {
+            assert!(trans_eq_bool!($t1, $t2))
+        };
+    }
+
+    macro_rules! trans_not_eq {
+        ($t1:expr, $t2:expr) => {
+            assert!(!trans_eq_bool!($t1, $t2))
+        };
+    }
+
+    #[test]
+    fn test_transform() {
+        // Contructors
+        trans_eq!(Transform::new(), Transform {
+            matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+        });
+
+        trans_eq!(Transform::new().with_translation(11.1, 22.2), Transform {
+            matrix: [1.0, 0.0, 0.0, 1.0, 11.1, 22.2],
+        });
+
+        trans_eq!(Transform::new().with_scale(11.1, 22.2), Transform {
+            matrix: [11.1, 0.0, 0.0, 22.2, 0.0, 0.0],
+        });
+
+        trans_eq!(Transform::new().with_skew(11.1, 22.2), Transform {
+            matrix: [1.0, 22.2, 11.1, 1.0, 0.0, 0.0],
+        });
+
+        let angle = 90f32.to_radians();
+        trans_eq!(Transform::new().with_rotation(angle), Transform {
+            matrix: [angle.cos(), angle.sin(), -angle.sin(), angle.cos(), 0.0, 0.0],
+        });
+
+        // Multiplication
+        let identity = Transform::new();
+        let trans = Transform::new().with_translation(10.0, 20.0);
+        trans_eq!(identity * trans, trans);
+        trans_eq!(trans * identity, trans);
+        trans_eq!(identity * identity, identity);
+        let a = Transform::new().with_rotation(123.0);
+        let b = Transform::new().with_skew(66.6, 1337.2);
+        trans_not_eq!(a * b, b * a);
     }
 }
