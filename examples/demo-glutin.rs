@@ -5,7 +5,7 @@ extern crate nanovg;
 use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation,
+use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation, Clip,
              BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font, Transform};
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1024, 720);
@@ -135,12 +135,15 @@ fn main() {
                     })
                 },
                 PathOptions {
-                    scissor: Some(Scissor::Rect {
-                        x: 150.0,
-                        y: 600.0,
-                        width: 1000.0,
-                        height: 200.0,
-                    }),
+                    clip: Clip::Scissor(
+                        Scissor {
+                            x: 150.0,
+                            y: 600.0,
+                            width: 1000.0,
+                            height: 200.0,
+                            transform: None,
+                        }
+                    ),
                     ..Default::default()
                 },
             );

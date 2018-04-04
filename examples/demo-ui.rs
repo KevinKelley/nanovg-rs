@@ -9,7 +9,7 @@ use rand::Rng;
 use glutin::GlContext;
 use nanovg::{Direction, Alignment, Color, ColoringStyle, FillStyle, Font, Frame,
              LineCap, LineJoin, Paint, PathOptions, Scissor, Solidity, StrokeStyle,
-             TextOptions, Transform, Winding, Image, Context};
+             TextOptions, Transform, Winding, Image, Context, Clip, Intersect};
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1000, 600);
 
@@ -192,7 +192,8 @@ fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32,
     draw_lines(frame, 120.0, height - 50.0, 600.0, 50.0, t);
     draw_widths(frame, 10.0, 50.0, 30.0);
     draw_caps(frame, 10.0, 300.0, 30.0);
-    draw_scissor(frame, 50.0, height - 80.0, t);
+
+    draw_scissor(&frame, 50.0, height - 80.0, t);
 
     let mut x = 50.0;
     let mut y = 50.0;
@@ -960,23 +961,10 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
 }
 
 fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
-    let first_transform = Transform::new().translate(x, y).rotate(5.0f32.to_radians());
+    let first_transform = Transform::new()
+        .translate(x, y)
+        .rotate(5.0f32.to_radians());
 
-    // let scissor_rect = Scissor::Rect {
-    //     x: -20.0,
-    //     y: -20.0,
-    //     width: 60.0,
-    //     height: 60.0,
-    // };
-
-    let scissor_intersect = Scissor::Intersect {
-        x: -20.0,
-        y: -10.0,
-        width: 60.0,
-        height: 30.0,
-    };
-
-    // draw scissor area as a rect
     frame.path(
         |path| {
             path.rect((-20.0, -20.0), (60.0, 40.0));
@@ -987,13 +975,13 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
         },
         PathOptions {
             transform: Some(first_transform),
-            //scissor: Some(scissor_rect),
             ..Default::default()
-        },
+        }
     );
 
-    // let transform = transform.translate(40.0, 0.0).rotate(t);
-    let second_transform = first_transform.translate(40.0, 0.0).rotate(t);
+    let second_transform = first_transform
+        .translate(40.0, 0.0)
+        .rotate(t);
 
     frame.path(
         |path| {
@@ -1005,9 +993,8 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
         },
         PathOptions {
             transform: Some(second_transform),
-            scissor: None,
             ..Default::default()
-        },
+        }
     );
 
     frame.path(
@@ -1019,10 +1006,25 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
             });
         },
         PathOptions {
-            transform: Some(first_transform),
-            scissor: Some(scissor_intersect),
+            clip: Clip::Intersect(
+                Intersect {
+                    x: -20.0,
+                    y: -10.0,
+                    width: 60.0,
+                    height: 30.0,
+                    with: Scissor {
+                        x: -20.0,
+                        y: -20.0,
+                        width: 60.0,
+                        height: 40.0,
+                        transform: Some(first_transform)
+                    },
+                    transform: Some(second_transform),
+                }
+            ),
+            transform: Some(second_transform),
             ..Default::default()
-        },
+        }
     );
 }
 
@@ -1629,12 +1631,15 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         let a = clamp((u2 - v) / dv, 0.0, 1.0);
 
         let path_opts = PathOptions {
-            scissor: Some(Scissor::Rect {
-                x,
-                y,
-                width: w,
-                height: h,
-            }),
+            clip: Clip::Scissor(
+                Scissor{
+                    x,
+                    y,
+                    width: w,
+                    height: h,
+                    transform: None,
+                }
+            ),
             transform: Some(Transform::new().translate(0.0, -(stackh - h) * u)),
             ..Default::default()
         };
