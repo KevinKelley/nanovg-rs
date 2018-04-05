@@ -1,7 +1,4 @@
-#[macro_use]
-extern crate bitflags;
-
-pub mod ffi;
+extern crate nanovg_sys as ffi;
 
 use std::ops::Drop;
 use std::path::Path as IoPath;

@@ -1,0 +1,28 @@
+[package]
+name = "nanovg-sys"
+version = "0.1.0"
+authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
+build = "build.rs"
+links = "nanovg"
+description = "Native bindings to the NanoVG library"
+homepage = "https://github.com/KevinKelley/nanovg-rs"
+repository = "https://github.com/KevinKelley/nanovg-rs"
+keywords = ["nanovg", "bindings", "vector", "graphics", "opengl", "ffi", "native"]
+categories = ["rendering::graphics-api", "games", "gui"]
+license = "MIT/Zlib"
+
+[lib]
+name = "nanovg_sys"
+path = "lib.rs"
+
+[features]
+gl2 = []
+gl3 = []
+gles2 = []
+gles3 = []
+
+[dependencies]
+bitflags = "1.0"
+
+[build-dependencies]
+cc = "1.0"
