@@ -586,31 +586,35 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 
     /// Draw the current path by filling in it's shape.
-    pub fn fill(&self, style: FillStyle) {
+    /// 'fill' specifies in which color/paint should fill be drawn.
+    /// 'options' specifies how filling should be done.
+    pub fn fill(&self, fill: Style, options: FillOptions) {
         let ctx = self.ctx();
         unsafe {
-            ffi::nvgShapeAntiAlias(ctx, style.antialias as c_int);
-            match style.coloring_style {
-                ColoringStyle::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
-                ColoringStyle::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
+            ffi::nvgShapeAntiAlias(ctx, options.antialias as c_int);
+            match fill {
+                Style::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
+                Style::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
             }
             ffi::nvgFill(ctx);
         }
     }
 
     /// Draw the current path by stroking it's perimeter.
-    pub fn stroke(&self, style: StrokeStyle) {
+    /// 'stroke' specifies in which color/paint should stroke be drawn.
+    /// 'options' specifies how stroking should be done.
+    pub fn stroke(&self, stroke: Style, options: StrokeOptions) {
         let ctx = self.ctx();
         unsafe {
-            ffi::nvgShapeAntiAlias(ctx, style.antialias as c_int);
-            match style.coloring_style {
-                ColoringStyle::Color(color) => ffi::nvgStrokeColor(ctx, color.into_raw()),
-                ColoringStyle::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
+            ffi::nvgShapeAntiAlias(ctx, options.antialias as c_int);
+            ffi::nvgStrokeWidth(ctx, options.width as c_float);
+            ffi::nvgLineCap(ctx, options.line_cap.into_raw() as c_int);
+            ffi::nvgLineJoin(ctx, options.line_join.into_raw() as c_int);
+            ffi::nvgMiterLimit(ctx, options.miter_limit as c_float);
+            match stroke {
+                Style::Color(color) => ffi::nvgStrokeColor(ctx, color.into_raw()),
+                Style::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
             }
-            ffi::nvgStrokeWidth(ctx, style.width as c_float);
-            ffi::nvgLineCap(ctx, style.line_cap.into_raw() as c_int);
-            ffi::nvgLineJoin(ctx, style.line_join.into_raw() as c_int);
-            ffi::nvgMiterLimit(ctx, style.miter_limit as c_float);
             ffi::nvgStroke(ctx);
         }
     }
@@ -756,15 +760,13 @@ impl<'a, 'b> Path<'a, 'b> {
 
 /// Controls how filling in a path should look.
 #[derive(Debug)]
-pub struct FillStyle {
-    pub coloring_style: ColoringStyle,
+pub struct FillOptions {
     pub antialias: bool,
 }
 
-impl Default for FillStyle {
+impl Default for FillOptions {
     fn default() -> Self {
         Self {
-            coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
             antialias: true,
         }
     }
@@ -772,8 +774,7 @@ impl Default for FillStyle {
 
 /// Controls how stroking a path should look.
 #[derive(Debug)]
-pub struct StrokeStyle {
-    pub coloring_style: ColoringStyle,
+pub struct StrokeOptions {
     pub width: f32,
     pub line_cap: LineCap,
     pub line_join: LineJoin,
@@ -781,10 +782,9 @@ pub struct StrokeStyle {
     pub antialias: bool,
 }
 
-impl Default for StrokeStyle {
+impl Default for StrokeOptions {
     fn default() -> Self {
         Self {
-            coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
             width: 1.0,
             line_cap: LineCap::Butt,
             line_join: LineJoin::Miter,
@@ -833,7 +833,7 @@ impl LineJoin {
 /// Controls how something should be colored.
 /// Either through a single, flat color; or a more complex paint.
 #[derive(Debug)]
-pub enum ColoringStyle {
+pub enum Style {
     Color(Color),
     Paint(Paint),
 }
