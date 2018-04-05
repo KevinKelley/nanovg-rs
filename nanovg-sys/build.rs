@@ -1,6 +1,8 @@
 extern crate cc;
 
 use std::env;
+use std::path::Path;
+use std::process::Command;
 
 fn build_library(backend_macro: &str) {
     let target = env::var("TARGET").unwrap();
@@ -31,6 +33,12 @@ fn main() {
         .expect(
             "Unable to determine the backend / implementation. Have you enabled one of the features?",
         );
+
+    // Initialize nanovg submodule if user forgot to clone parent repository with --recursive.
+    if !Path::new("nanovg/.git").exists() {
+        let _ = Command::new("git").args(&["submodule", "update", "--init"])
+                                   .status();
+    }
 
     build_library(&backend_macro);
 }
