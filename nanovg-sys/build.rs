@@ -5,6 +5,7 @@ use std::env;
 fn build_library(backend_macro: &str) {
     let target = env::var("TARGET").unwrap();
     let mut config = cc::Build::new();
+    config.warnings(false); // Hide the nanovg warnings. Not really relevant to us.
     config.include("nanovg/src");
     config.file("nanovg/src/nanovg.c");
     config.file("nanovg_shim.c");
@@ -16,12 +17,6 @@ fn build_library(backend_macro: &str) {
     } else if target.contains("windows") {
         config.file("glad/glad.c");
         config.include("glad");
-    }
-
-    // Hide the nanovg warnings. Not really relevant to us.
-    // MSVC get's passed a `/W4` by default.
-    if !target.contains("msvc") {
-        config.flag("-w");
     }
 
     config.compile("libnanovg.a")
