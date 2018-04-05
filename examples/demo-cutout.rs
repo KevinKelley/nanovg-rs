@@ -8,7 +8,7 @@ extern crate lazy_static;
 
 use std::time::Instant;
 use glutin::GlContext;
-use nanovg::{Color, ColoringStyle, FillStyle, Frame, Solidity, Winding, Transform, PathOptions, StrokeStyle};
+use nanovg::{Color, Style, Frame, Solidity, Winding, Transform, PathOptions, StrokeOptions};
 use rand::{Rng, Rand, thread_rng};
 use std::collections::HashMap;
 use std::f32::consts::PI;
@@ -17,9 +17,9 @@ const INIT_WINDOW_SIZE: (u32, u32) = (1200, 825);
 
 lazy_static! {
     static ref COLORS: [Color; 4] = [
-        Color::from_rgb(0x00, 0xBF, 0xA8), 
-        Color::from_rgb(0x99, 0x66, 0xFF), 
-        Color::from_rgb(0xFF, 0x64, 0x64), 
+        Color::from_rgb(0x00, 0xBF, 0xA8),
+        Color::from_rgb(0x99, 0x66, 0xFF),
+        Color::from_rgb(0xFF, 0x64, 0x64),
         Color::from_rgb(0x00, 0xC8, 0xFF)
     ];
 }
@@ -231,10 +231,7 @@ impl Shape {
                     path.line_to(Shape::get_polygon_point(i, num_sides, radius));
                 }
                 path.close();
-                path.fill(FillStyle {
-                    coloring_style: ColoringStyle::Color(color),
-                    ..Default::default()
-                });
+                path.fill(Style::Color(color), Default::default());
             },
             PathOptions {
                 transform: Some(Transform::new().with_translation(cx, cy).rotate(rotation)),
@@ -264,11 +261,13 @@ impl Shape {
                 for point in points.iter().skip(1) {
                     path.line_to(*point);
                 }
-                path.stroke(StrokeStyle {
-                    coloring_style: ColoringStyle::Color(color),
-                    width: 3.0,
-                    ..Default::default()
-                });
+                path.stroke(
+                    Style::Color(color),
+                    StrokeOptions {
+                        width: 3.0,
+                        ..Default::default()
+                    }
+                );
             },
             PathOptions {
                 transform: Some(Transform::new().with_translation(cx, cy).rotate(rotation)),
@@ -311,10 +310,7 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
             path.circle((mx, my), base_circle_size);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.close();
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgba(255, 255, 255, 255)),
-                ..Default::default()
-            });
+            path.fill(Style::Color(Color::from_rgba(255, 255, 255, 255)), Default::default());
         },
         Default::default()
     );
@@ -326,10 +322,7 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
             path.circle((mx, my), base_circle_size);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.close();
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgba(90, 94, 100, 25)),
-                ..Default::default()
-            });
+            path.fill(Style::Color(Color::from_rgba(90, 94, 100, 25)), Default::default());
         },
         Default::default()
     );
@@ -341,11 +334,8 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
             path.circle((mx, my), base_circle_size - circle_thickness);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.close();
-            
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 25)),
-                ..Default::default()
-            });
+
+            path.fill(Style::Color(Color::from_rgba(0, 0, 0, 25)), Default::default());
         },
         Default::default()
     );
@@ -356,10 +346,7 @@ fn render_rectangle(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), color
     frame.path(
         |path| {
             path.rect((x, y), (w, h));
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(color),
-                ..Default::default()
-            });
+            path.fill(Style::Color(color), Default::default());
         },
         Default::default()
     );
