@@ -3,6 +3,7 @@ name = "nanovg-sys"
 version = "0.1.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "build.rs"
+links = "nanovg"
 description = "Native bindings to the NanoVG library"
 homepage = "https://github.com/KevinKelley/nanovg-rs"
 repository = "https://github.com/KevinKelley/nanovg-rs"

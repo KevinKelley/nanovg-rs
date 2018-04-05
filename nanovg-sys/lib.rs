@@ -147,7 +147,6 @@ pub struct NVGtextRow {
     pub maxx: c_float,
 }
 
-#[link(name = "nanovg", kind = "static")]
 extern "C" {
 	#[cfg(target_os = "windows")]
     pub fn gladLoadGL() -> i32;

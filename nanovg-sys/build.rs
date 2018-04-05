@@ -19,7 +19,7 @@ fn build_library(backend_macro: &str) {
         config.include("glad");
     }
 
-    config.compile("libnanovg.a")
+    config.compile("nanovg")
 }
 
 fn main() {
