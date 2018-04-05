@@ -7,7 +7,7 @@ fn build_library(backend_macro: &str) {
     let mut config = cc::Build::new();
     config.include("nanovg/src");
     config.file("nanovg/src/nanovg.c");
-    config.file("src/nanovg_shim.c");
+    config.file("nanovg_shim.c");
     config.define(backend_macro, None);
     if target.contains("linux") {
         println!("cargo:rustc-link-lib=GL");
