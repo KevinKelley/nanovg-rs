@@ -52,7 +52,3 @@ required-features = ["gl3"]
 [[example]]
 name = "demo-transform"
 required-features = ["gl3"]
-
-[[example]]
-name = "demo-paint-trait"
-required-features = ["gl3"]

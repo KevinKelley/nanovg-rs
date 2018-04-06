@@ -5,7 +5,7 @@ extern crate nanovg;
 use std::time::Instant;
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{StrokeOptions, Style, Color, Paint, CompositeOperation, Clip,
+use nanovg::{StrokeOptions, Color, CompositeOperation, Clip, Gradient, ImagePattern,
              BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font, Transform};
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1024, 720);
@@ -75,14 +75,12 @@ fn main() {
                 |path| {
                     path.rect((100.0, 100.0), (300.0, 300.0));
                     path.fill(
-                        Style::Paint(
-                            Paint::with_linear_gradient(
-                                (100.0, 100.0),
-                                (400.0, 400.0),
-                                Color::from_rgb(0xAA, 0x6C, 0x39),
-                                Color::from_rgb(0x88, 0x2D, 0x60),
-                            )
-                        ),
+                        Gradient::Linear {
+                            start: (100.0, 100.0),
+                            end: (400.0, 400.0),
+                            start_color: Color::from_rgb(0xAA, 0x6C, 0x39),
+                            end_color: Color::from_rgb(0x88, 0x2D, 0x60),
+                        },
                         Default::default()
                     );
                 },
@@ -99,13 +97,13 @@ fn main() {
                     path.quad_bezier_to((origin.0 + 500.0, origin.1 + 100.0), (300.0, 100.0));
                     path.close();
                     path.stroke(
-                        Style::Color(Color::new(1.0, 1.0, 0.0, 1.0)),
+                        Color::new(1.0, 1.0, 0.0, 1.0),
                         StrokeOptions {
                             width: 3.0,
                             ..Default::default()
                         }
                     );
-                    path.fill(Style::Color(Color::new(0.2, 0.0, 0.8, 1.0)), Default::default());
+                    path.fill(Color::new(0.2, 0.0, 0.8, 1.0), Default::default());
                 },
                 PathOptions {
                     composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
@@ -122,15 +120,15 @@ fn main() {
                     let distance = 500.0; // Distance to roll
                     let rolled = ((elapsed / 5.0).sin() * 0.5 + 0.5) * distance; // Distance currently rolled
                     let origin = (rolled + 100.0, 600.0);
-                    let paint = Paint::with_image_pattern(
-                        &img,
-                        origin,
-                        (100.0, 100.0),
-                        rolled / (2.0 * PI * radius) * 2.0 * PI,
-                        1.0,
-                    );
+                    let paint = ImagePattern {
+                        image: &img,
+                        origin: origin,
+                        size: (100.0, 100.0),
+                        angle: rolled / (2.0 * PI * radius) * 2.0 * PI,
+                        alpha: 1.0,
+                    };
                     path.circle(origin, radius);
-                    path.fill(Style::Paint(paint), Default::default());
+                    path.fill(paint, Default::default());
                 },
                 PathOptions {
                     clip: Clip::Scissor(
@@ -155,9 +153,9 @@ fn main() {
                         Color::from_rgb(0xff, 0xca, 0x77),
                         elapsed.sin() * 0.5 + 0.5,
                     );
-                    path.fill(Style::Color(Color::new(0.2, 0.2, 0.2, 0.7)), Default::default());
+                    path.fill(Color::new(0.2, 0.2, 0.2, 0.7), Default::default());
                     path.stroke(
-                        Style::Color(color),
+                        color,
                         StrokeOptions {
                             width: 5.0,
                             ..Default::default()

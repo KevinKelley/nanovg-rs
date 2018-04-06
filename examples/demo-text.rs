@@ -3,7 +3,7 @@ extern crate glutin;
 extern crate nanovg;
 
 use glutin::GlContext;
-use nanovg::{Color, Style, Font, Alignment, TextOptions, Scissor, Frame, Transform, PathOptions, Clip};
+use nanovg::{Color, Font, Alignment, TextOptions, Scissor, Frame, Transform, PathOptions, Clip};
 use std::time::Instant;
 use std::f32::consts::PI;
 
@@ -102,7 +102,7 @@ fn render_text(frame: &Frame, font: Font, text: &str, clip: (f32, f32, f32, f32)
     frame.path(
         |path| {
             path.rect((cx, cy), (cw, ch));
-            path.stroke(Style::Color(Color::from_rgb(0, 0, 0)), Default::default());
+            path.stroke(Color::from_rgb(0, 0, 0), Default::default());
         },
         PathOptions::default()
     );
@@ -112,7 +112,7 @@ fn render_text(frame: &Frame, font: Font, text: &str, clip: (f32, f32, f32, f32)
     frame.path(
         |path| {
             path.rect((-50.0, -50.0), (50.0, 50.0));
-            path.fill(Style::Color(Color::from_rgb(50, 50, 50)), Default::default());
+            path.fill(Color::from_rgb(50, 50, 50), Default::default());
         },
         PathOptions {
             clip: Clip::Scissor(scissor),
@@ -168,7 +168,7 @@ fn draw_paragraph(frame: &Frame, font: Font, x: f32, y: f32, width: f32, _height
         frame.path(
             |path| {
                 path.rect((x, y), (row.width, metrics.line_height));
-                path.fill(Style::Color(Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 })), Default::default());
+                path.fill(Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 }), Default::default());
             },
             PathOptions {
                 transform: Some(transform),
@@ -206,7 +206,7 @@ fn draw_paragraph(frame: &Frame, font: Font, x: f32, y: f32, width: f32, _height
             frame.path(
                 |path| {
                     path.rect((caretx, y), (1.0, metrics.line_height));
-                    path.fill(Style::Color(Color::from_rgba(255, 192, 0, 255)), Default::default());
+                    path.fill(Color::from_rgba(255, 192, 0, 255), Default::default());
                 },
                 PathOptions {
                     transform: Some(transform),
@@ -258,7 +258,7 @@ fn draw_tooltip(frame: &Frame, (x, y): (f32, f32), mouse: (f32, f32), font: Font
             path.move_to((px, py - 10.0));
             path.line_to((px + 7.0, py + 1.0));
             path.line_to((px - 7.0, py + 1.0));
-            path.fill(Style::Color(Color::from_rgba(220, 220, 220, 255)), Default::default());
+            path.fill(Color::from_rgba(220, 220, 220, 255), Default::default());
         },
         PathOptions {
             alpha,

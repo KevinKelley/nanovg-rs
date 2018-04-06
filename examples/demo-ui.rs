@@ -7,8 +7,8 @@ use std::time::Instant;
 use std::f32::consts;
 use rand::Rng;
 use glutin::GlContext;
-use nanovg::{Direction, Alignment, Color, Style, Font, Frame,
-             LineCap, LineJoin, Paint, PathOptions, Scissor, Solidity, StrokeOptions,
+use nanovg::{Direction, Alignment, Color, Font, Frame, Gradient, ImagePattern,
+             LineCap, LineJoin, PathOptions, Scissor, Solidity, StrokeOptions,
              TextOptions, Transform, Winding, Image, Context, Clip, Intersect};
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1000, 600);
@@ -256,14 +256,12 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
             path.ellipse((rx + 3.0, ry + 16.0), ex, ey);
 
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y + h * 0.5),
-                        (x + w * 0.1, y + h),
-                        Color::from_rgba(0, 0, 0, 32),
-                        Color::from_rgba(0, 0, 0, 16),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y + h * 0.5),
+                    end: (x + w * 0.1, y + h),
+                    start_color: Color::from_rgba(0, 0, 0, 32),
+                    end_color: Color::from_rgba(0, 0, 0, 16),
+                },
                 Default::default()
             );
         },
@@ -277,14 +275,12 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
             path.ellipse((rx, ry), ex, ey);
 
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y + h * 0.25),
-                        (x + w * 0.1, y + h),
-                        Color::from_rgba(220, 220, 220, 255),
-                        Color::from_rgba(128, 128, 128, 255),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y + h * 0.25),
+                    end: (x + w * 0.1, y + h),
+                    start_color: Color::from_rgba(220, 220, 220, 255),
+                    end_color: Color::from_rgba(128, 128, 128, 255),
+                },
                 Default::default()
             );
         },
@@ -316,7 +312,7 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
                 br,
                 br * blink,
             );
-            path.fill(Style::Color(Color::from_rgba(32, 32, 32, 255)), Default::default());
+            path.fill(Color::from_rgba(32, 32, 32, 255), Default::default());
         },
         Default::default(),
     );
@@ -326,15 +322,13 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
         |path| {
             path.ellipse((lx, ly), ex, ey);
             path.fill(
-                Style::Paint(
-                    Paint::with_radial_gradient(
-                        (lx - ex * 0.25, ly - ey * 0.5),
-                        ex * 0.1,
-                        ex * 0.75,
-                        Color::from_rgba(255, 255, 255, 128),
-                        Color::from_rgba(255, 255, 255, 0),
-                    )
-                ),
+                Gradient::Radial {
+                    center: (lx - ex * 0.25, ly - ey * 0.5),
+                    inner_radius: ex * 0.1,
+                    outer_radius: ex * 0.75,
+                    start_color: Color::from_rgba(255, 255, 255, 128),
+                    end_color: Color::from_rgba(255, 255, 255, 0),
+                },
                 Default::default()
             );
         },
@@ -346,15 +340,13 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
         |path| {
             path.ellipse((rx, ry), ex, ey);
             path.fill(
-                Style::Paint(
-                    Paint::with_radial_gradient(
-                        (rx - ex * 0.25, ry - ey * 0.5),
-                        ex * 0.1,
-                        ex * 0.75,
-                        Color::from_rgba(255, 255, 255, 128),
-                        Color::from_rgba(255, 255, 255, 0),
-                    )
-                ),
+                Gradient::Radial {
+                    center: (rx - ex * 0.25, ry - ey * 0.5),
+                    inner_radius: ex * 0.1,
+                    outer_radius: ex * 0.75,
+                    start_color: Color::from_rgba(255, 255, 255, 128),
+                    end_color: Color::from_rgba(255, 255, 255, 0),
+                },
                 Default::default()
             );
         },
@@ -386,7 +378,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         frame.path(
             |path| {
                 path.rect((x, y), (row.width, metrics.line_height));
-                path.fill(Style::Color(Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 })), Default::default());
+                path.fill(Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 }), Default::default());
             },
             Default::default()
         );
@@ -421,7 +413,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             frame.path(
                 |path| {
                     path.rect((caretx, y), (1.0, metrics.line_height));
-                    path.fill(Style::Color(Color::from_rgba(255, 192, 0, 255)), Default::default());
+                    path.fill(Color::from_rgba(255, 192, 0, 255), Default::default());
                 },
                 Default::default()
             );
@@ -455,7 +447,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
                     (bounds.max_y - bounds.min_y + 4.0) / 2.0 - 1.0
                 );
 
-                path.fill(Style::Color(Color::from_rgba(255, 192, 0, 255)), Default::default());
+                path.fill(Color::from_rgba(255, 192, 0, 255), Default::default());
             },
             Default::default()
         );
@@ -492,7 +484,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             path.move_to((px, py - 10.0));
             path.line_to((px + 7.0, py + 1.0));
             path.line_to((px - 7.0, py + 1.0));
-            path.fill(Style::Color(Color::from_rgba(220, 220, 220, 255)), Default::default());
+            path.fill(Color::from_rgba(220, 220, 220, 255), Default::default());
         },
         PathOptions {
             alpha,
@@ -537,14 +529,12 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.line_to((x, y + h));
 
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y),
-                        (x, y + h),
-                        Color::from_rgba(0, 160, 192, 0),
-                        Color::from_rgba(0, 160, 192, 64),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (x, y + h),
+                    start_color: Color::from_rgba(0, 160, 192, 0),
+                    end_color: Color::from_rgba(0, 160, 192, 64),
+                },
                 Default::default()
             );
         },
@@ -564,7 +554,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             }
 
             path.stroke(
-                Style::Color(Color::from_rgba(0, 0, 0, 32)),
+                Color::from_rgba(0, 0, 0, 32),
                 StrokeOptions {
                     width: 3.0,
                     ..Default::default()
@@ -587,7 +577,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             }
 
             path.stroke(
-                Style::Color(Color::from_rgba(0, 160, 192, 255)),
+                Color::from_rgba(0, 160, 192, 255),
                 StrokeOptions {
                     width: 3.0,
                     ..Default::default()
@@ -603,15 +593,13 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             |path| {
                 path.rect((sx[i] - 10.0, sy[i] - 10.0 + 2.0), (20.0, 20.0));
                 path.fill(
-                    Style::Paint(
-                        Paint::with_radial_gradient(
-                            (sx[i], sy[i] + 2.0),
-                            3.0,
-                            8.0,
-                            Color::from_rgba(0, 0, 0, 32),
-                            Color::from_rgba(0, 0, 0, 0),
-                        )
-                    ),
+                    Gradient::Radial {
+                        center: (sx[i], sy[i] + 2.0),
+                        inner_radius: 3.0,
+                        outer_radius: 8.0,
+                        start_color: Color::from_rgba(0, 0, 0, 32),
+                        end_color: Color::from_rgba(0, 0, 0, 0),
+                    },
                     Default::default()
                 );
             },
@@ -626,7 +614,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 path.circle((sx[i], sy[i]), 4.0);
             }
 
-            path.fill(Style::Color(Color::from_rgba(0, 160, 192, 255)), Default::default());
+            path.fill(Color::from_rgba(0, 160, 192, 255), Default::default());
         },
         Default::default(),
     );
@@ -638,7 +626,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 path.circle((sx[i], sy[i]), 2.0);
             }
 
-            path.fill(Style::Color(Color::from_rgba(220, 220, 220, 255)), Default::default());
+            path.fill(Color::from_rgba(220, 220, 220, 255), Default::default());
         },
         Default::default(),
     );
@@ -666,14 +654,12 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 let bx = cx + f32::cos(a1) * (r0 + r1) * 0.5;
                 let by = cy + f32::sin(a1) * (r0 + r1) * 0.5;
                 path.fill(
-                    Style::Paint(
-                        Paint::with_linear_gradient(
-                            (ax, ay),
-                            (bx, by),
-                            Color::from_hsla(a0 / (consts::PI * 2.0), 1.0, 0.55, 255),
-                            Color::from_hsla(a1 / (consts::PI * 2.0), 1.0, 0.55, 255),
-                        )
-                    ),
+                    Gradient::Linear {
+                        start: (ax, ay),
+                        end: (bx, by),
+                        start_color: Color::from_hsla(a0 / (consts::PI * 2.0), 1.0, 0.55, 255),
+                        end_color: Color::from_hsla(a1 / (consts::PI * 2.0), 1.0, 0.55, 255),
+                    },
                     Default::default()
                 );
             },
@@ -687,7 +673,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.circle((cx, cy), r0 - 0.5);
             path.circle((cx, cy), r1 + 0.5);
             path.stroke(
-                Style::Color(Color::from_rgba(0, 0, 0, 64)),
+                Color::from_rgba(0, 0, 0, 64),
                 StrokeOptions {
                     width: 1.0,
                     ..Default::default()
@@ -704,7 +690,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
         |path| {
             path.rect((r0 - 1.0, -3.0), (r1 - r0 + 2.0, 6.0));
             path.stroke(
-                Style::Color(Color::from_rgba(255, 255, 255, 192)),
+                Color::from_rgba(255, 255, 255, 192),
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
@@ -725,16 +711,14 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.rect((r0 - 2.0, -4.0), (r1 - r0 + 4.0, 8.0));
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (r0 - 3.0, -5.0),
-                        (r1 - r0 + 6.0, 10.0),
-                        2.0,
-                        4.0,
-                        Color::from_rgba(0, 0, 0, 128),
-                        Color::from_rgba(0, 0, 0, 0)
-                    )
-                ),
+                Gradient::Box {
+                    position: (r0 - 3.0, -5.0),
+                    size: (r1 - r0 + 6.0, 10.0),
+                    radius: 2.0,
+                    feather: 4.0,
+                    start_color: Color::from_rgba(0, 0, 0, 128),
+                    end_color: Color::from_rgba(0, 0, 0, 0)
+                },
                 Default::default()
             );
         },
@@ -759,29 +743,25 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.line_to((bx, by));
             path.close();
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (r, 0.0),
-                        (ax, ay),
-                        Color::from_hsla(hue, 1.0, 0.5, 255),
-                        Color::from_rgba(255, 255, 255, 255),
-                    ),
-                ),
+                Gradient::Linear {
+                    start: (r, 0.0),
+                    end: (ax, ay),
+                    start_color: Color::from_hsla(hue, 1.0, 0.5, 255),
+                    end_color: Color::from_rgba(255, 255, 255, 255),
+                },
                 Default::default()
             );
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        ((r + ax) * 0.5, ((0.0 + ay) * 0.5)),
-                        (bx, by),
-                        Color::from_rgba(0, 0, 0, 0),
-                        Color::from_rgba(0, 0, 0, 255),
-                    )
-                ),
+                Gradient::Linear {
+                    start: ((r + ax) * 0.5, ((0.0 + ay) * 0.5)),
+                    end: (bx, by),
+                    start_color: Color::from_rgba(0, 0, 0, 0),
+                    end_color: Color::from_rgba(0, 0, 0, 255),
+                },
                 Default::default()
             );
             path.stroke(
-                Style::Color(Color::from_rgba(0, 0, 0, 64)),
+                Color::from_rgba(0, 0, 0, 64),
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
@@ -803,7 +783,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
         |path| {
             path.circle((ax, ay), 5.0);
             path.stroke(
-                Style::Color(Color::from_rgba(255, 255, 255, 192)),
+                Color::from_rgba(255, 255, 255, 192),
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
@@ -824,15 +804,13 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
             path.circle((ax, ay), 7.0);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(
-                Style::Paint(
-                    Paint::with_radial_gradient(
-                        (ax, ay),
-                        7.0,
-                        9.0,
-                        Color::from_rgba(0, 0, 0, 64),
-                        Color::from_rgba(0, 0, 0, 0),
-                    )
-                ),
+                Gradient::Radial {
+                    center: (ax, ay),
+                    inner_radius: 7.0,
+                    outer_radius: 9.0,
+                    start_color: Color::from_rgba(0, 0, 0, 64),
+                    end_color: Color::from_rgba(0, 0, 0, 0),
+                },
                 Default::default()
             );
         },
@@ -875,7 +853,7 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
                     path.line_to((fx + pts[6], fy + pts[7]));
 
                     path.stroke(
-                        Style::Color(Color::from_rgba(0, 0, 0, 160)),
+                        Color::from_rgba(0, 0, 0, 160),
                         StrokeOptions {
                             width: s * 0.3,
                             line_cap: cap,
@@ -895,7 +873,7 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
                     path.line_to((fx + pts[6], fy + pts[7]));
 
                     path.stroke(
-                        Style::Color(Color::from_rgba(0, 192, 255, 255)),
+                        Color::from_rgba(0, 192, 255, 255),
                         StrokeOptions {
                             width: 1.0,
                             line_cap: cap,
@@ -921,7 +899,7 @@ fn draw_widths(frame: &Frame, x: f32, y: f32, width: f32) {
                 path.line_to((x + width, y + width * 0.3));
 
                 path.stroke(
-                    Style::Color(Color::from_rgba(0, 0, 0, 255)),
+                    Color::from_rgba(0, 0, 0, 255),
                     StrokeOptions {
                         width: w,
                         ..Default::default()
@@ -942,7 +920,7 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
     frame.path(
         |path| {
             path.rect((x - line_width / 2.0, y), (width + line_width, 40.0));
-            path.fill(Style::Color(Color::from_rgba(255, 255, 255, 32)), Default::default());
+            path.fill(Color::from_rgba(255, 255, 255, 32), Default::default());
         },
         Default::default(),
     );
@@ -950,7 +928,7 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
     frame.path(
         |path| {
             path.rect((x, y), (width, 40.0));
-            path.fill(Style::Color(Color::from_rgba(255, 255, 255, 32)), Default::default());
+            path.fill(Color::from_rgba(255, 255, 255, 32), Default::default());
         },
         Default::default(),
     );
@@ -962,7 +940,7 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
                 path.line_to((x + width, y + i as f32 * 10.0 + 5.0));
 
                 path.stroke(
-                    Style::Color(Color::from_rgba(0, 0, 0, 255)),
+                    Color::from_rgba(0, 0, 0, 255),
                     StrokeOptions {
                         width: line_width,
                         line_cap: caps[i],
@@ -983,7 +961,7 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((-20.0, -20.0), (60.0, 40.0));
-            path.fill(Style::Color(Color::from_rgba(255, 0, 0, 255)), Default::default());
+            path.fill(Color::from_rgba(255, 0, 0, 255), Default::default());
         },
         PathOptions {
             transform: Some(first_transform),
@@ -998,7 +976,7 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((-20.0, -10.0), (60.0, 30.0));
-            path.fill(Style::Color(Color::from_rgba(255, 128, 0, 64)), Default::default());
+            path.fill(Color::from_rgba(255, 128, 0, 64), Default::default());
         },
         PathOptions {
             transform: Some(second_transform),
@@ -1009,7 +987,7 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((-20.0, -10.0), (60.0, 30.0));
-            path.fill(Style::Color(Color::from_rgba(255, 128, 0, 255)), Default::default());
+            path.fill(Color::from_rgba(255, 128, 0, 255), Default::default());
         },
         PathOptions {
             clip: Clip::Intersect(
@@ -1041,7 +1019,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
     frame.path(
         |path| {
             path.rounded_rect((x, y), (w, h), corner_radius);
-            path.fill(Style::Color(Color::from_rgba(28, 30, 34, 192)), Default::default());
+            path.fill(Color::from_rgba(28, 30, 34, 192), Default::default());
         },
         Default::default(),
     );
@@ -1054,16 +1032,14 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x, y + 2.0),
-                        (w, h),
-                        corner_radius * 2.0,
-                        10.0,
-                        Color::from_rgba(0, 0, 0, 128),
-                        Color::from_rgba(0, 0, 0, 0),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x, y + 2.0),
+                    size: (w, h),
+                    radius: corner_radius * 2.0,
+                    feather: 10.0,
+                    start_color: Color::from_rgba(0, 0, 0, 128),
+                    end_color: Color::from_rgba(0, 0, 0, 0),
+                },
                 Default::default()
             );
         },
@@ -1075,14 +1051,12 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, 30.0), corner_radius - 1.0);
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y),
-                        (x, y + 15.0),
-                        Color::from_rgba(255, 255, 255, 8),
-                        Color::from_rgba(0, 0, 0, 16),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (x, y + 15.0),
+                    start_color: Color::from_rgba(255, 255, 255, 8),
+                    end_color: Color::from_rgba(0, 0, 0, 16),
+                },
                 Default::default()
             );
         },
@@ -1095,7 +1069,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
             path.move_to((x + 0.5, y + 0.5 + 30.0));
             path.line_to((x + 0.5 + w - 1.0, y + 0.5 + 30.0));
 
-            path.stroke(Style::Color(Color::from_rgba(0, 0, 0, 32)), Default::default());
+            path.stroke(Color::from_rgba(0, 0, 0, 32), Default::default());
         },
         Default::default(),
     );
@@ -1136,16 +1110,14 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
         |path| {
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x, y + 1.5),
-                        (w, h),
-                        h / 2.0,
-                        5.0,
-                        Color::from_rgba(0, 0, 0, 16),
-                        Color::from_rgba(0, 0, 0, 92),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x, y + 1.5),
+                    size: (w, h),
+                    radius: h / 2.0,
+                    feather: 5.0,
+                    start_color: Color::from_rgba(0, 0, 0, 16),
+                    end_color: Color::from_rgba(0, 0, 0, 92),
+                },
                 Default::default()
             );
         },
@@ -1197,14 +1169,12 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y),
-                        (x, y + h),
-                        Color::from_rgba(255, 255, 255, 16),
-                        Color::from_rgba(0, 0, 0, 16),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (x, y + h),
+                    start_color: Color::from_rgba(255, 255, 255, 16),
+                    end_color: Color::from_rgba(0, 0, 0, 16),
+                },
                 Default::default()
             );
         },
@@ -1215,7 +1185,7 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
-            path.stroke(Style::Color(Color::from_rgba(0, 0, 0, 48)), Default::default());
+            path.stroke(Color::from_rgba(0, 0, 0, 48), Default::default());
         },
         Default::default(),
     );
@@ -1269,16 +1239,14 @@ fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 1.0);
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x + 1.0, y + 1.0 + 1.5),
-                        (w - 2.0, h - 2.0),
-                        3.0,
-                        4.0,
-                        Color::from_rgba(255, 255, 255, 32),
-                        Color::from_rgba(32, 32, 32, 32),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x + 1.0, y + 1.0 + 1.5),
+                    size: (w - 2.0, h - 2.0),
+                    radius: 3.0,
+                    feather: 4.0,
+                    start_color: Color::from_rgba(255, 255, 255, 32),
+                    end_color: Color::from_rgba(32, 32, 32, 32),
+                },
                 Default::default()
             );
         },
@@ -1289,7 +1257,7 @@ fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
     frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
-            path.stroke(Style::Color(Color::from_rgba(0, 0, 0, 48)), Default::default());
+            path.stroke(Color::from_rgba(0, 0, 0, 48), Default::default());
         },
         Default::default(),
     );
@@ -1357,16 +1325,14 @@ fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
         |path| {
             path.rounded_rect((x + 1.0, y + h * 0.5 - 9.0), (18.0, 18.0), 3.0);
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x + 1.0, y + h * 0.5 - 9.0 + 1.0),
-                        (18.0, 18.0),
-                        3.0,
-                        3.0,
-                        Color::from_rgba(0, 0, 0, 32),
-                        Color::from_rgba(0, 0, 0, 92),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x + 1.0, y + h * 0.5 - 9.0 + 1.0),
+                    size: (18.0, 18.0),
+                    radius: 3.0,
+                    feather: 3.0,
+                    start_color: Color::from_rgba(0, 0, 0, 32),
+                    end_color: Color::from_rgba(0, 0, 0, 92),
+                },
                 Default::default()
             );
         },
@@ -1396,18 +1362,16 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 0.5);
             if !color_is_black {
-                path.fill(Style::Color(color), Default::default());
+                path.fill(color, Default::default());
             }
 
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y),
-                        (x, y + h),
-                        Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
-                        Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (x, y + h),
+                    start_color: Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
+                    end_color: Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
+                },
                 Default::default()
             );
         },
@@ -1418,7 +1382,7 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
     frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
-            path.stroke(Style::Color(Color::from_rgba(0, 0, 0, 48)), Default::default());
+            path.stroke(Color::from_rgba(0, 0, 0, 48), Default::default());
         },
         Default::default(),
     );
@@ -1489,16 +1453,14 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
         |path| {
             path.rounded_rect((x, cy - 2.0), (w, 4.0), corner_radius);
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x, cy - 2.0 + 1.0),
-                        (w, 4.0),
-                        2.0,
-                        2.0,
-                        Color::from_rgba(0, 0, 0, 32),
-                        Color::from_rgba(0, 0, 0, 128),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x, cy - 2.0 + 1.0),
+                    size: (w, 4.0),
+                    radius: 2.0,
+                    feather: 2.0,
+                    start_color: Color::from_rgba(0, 0, 0, 32),
+                    end_color: Color::from_rgba(0, 0, 0, 128),
+                },
                 Default::default()
             );
         },
@@ -1517,15 +1479,13 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
             path.winding(Winding::Solidity(Solidity::Hole));
 
             path.fill(
-                Style::Paint(
-                    Paint::with_radial_gradient(
-                        (x + value * w, cy + 1.0),
-                        kr - 3.0,
-                        kr + 3.0,
-                        Color::from_rgba(0, 0, 0, 64),
-                        Color::from_rgba(0, 0, 0, 0),
-                    )
-                ),
+                Gradient::Radial {
+                    center: (x + value * w, cy + 1.0),
+                    inner_radius: kr - 3.0,
+                    outer_radius: kr + 3.0,
+                    start_color: Color::from_rgba(0, 0, 0, 64),
+                    end_color: Color::from_rgba(0, 0, 0, 0),
+                },
                 Default::default()
             );
         },
@@ -1536,17 +1496,15 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
     frame.path(
         |path| {
             path.circle((x + (value * w), cy), kr - 1.0);
-            path.fill(Style::Color(Color::from_rgba(40, 43, 48, 255)), Default::default());
+            path.fill(Color::from_rgba(40, 43, 48, 255), Default::default());
 
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, cy - kr),
-                        (x, cy + kr),
-                        Color::from_rgba(255, 255, 255, 16),
-                        Color::from_rgba(0, 0, 0, 16),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, cy - kr),
+                    end: (x, cy + kr),
+                    start_color: Color::from_rgba(255, 255, 255, 16),
+                    end_color: Color::from_rgba(0, 0, 0, 16),
+                },
                 Default::default()
             );
         },
@@ -1557,7 +1515,7 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
     frame.path(
         |path| {
             path.circle((x + value * w, cy), kr - 0.5);
-            path.stroke(Style::Color(Color::from_rgba(0, 0, 0, 92)), Default::default());
+            path.stroke(Color::from_rgba(0, 0, 0, 92), Default::default());
         },
         Default::default(),
     );
@@ -1575,16 +1533,14 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.rounded_rect((x, y), (w, h), corner_radius);
             path.winding(Winding::Solidity(Solidity::Hole));
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x, y + 4.0),
-                        (w, h),
-                        corner_radius * 2.0,
-                        20.0,
-                        Color::from_rgba(0, 0, 0, 128),
-                        Color::from_rgba(0, 0, 0, 0),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x, y + 4.0),
+                    size: (w, h),
+                    radius: corner_radius * 2.0,
+                    feather: 20.0,
+                    start_color: Color::from_rgba(0, 0, 0, 128),
+                    end_color: Color::from_rgba(0, 0, 0, 0),
+                },
                 Default::default()
             );
         },
@@ -1599,7 +1555,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.move_to((x - 10.0, y + arry));
             path.line_to((x + 1.0, y + arry - 11.0));
             path.line_to((x + 1.0, y + arry + 11.0));
-            path.fill(Style::Color(Color::from_rgba(200, 200, 200, 255)), Default::default());
+            path.fill(Color::from_rgba(200, 200, 200, 255), Default::default());
         },
         Default::default()
     );
@@ -1654,15 +1610,13 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             |path| {
                 path.rounded_rect((tx, ty), (thumb, thumb), 5.0);
                 path.fill(
-                    Style::Paint(
-                        Paint::with_image_pattern(
-                            image,
-                            (tx + ix, ty + iy),
-                            (iw, ih),
-                            0.0 / 180.0 * consts::PI,
-                            a
-                        )
-                    ),
+                    ImagePattern {
+                        image: image,
+                        origin: (tx + ix, ty + iy),
+                        size: (iw, ih),
+                        angle: 0.0 / 180.0 * consts::PI,
+                        alpha: a
+                    },
                     Default::default()
                 );
             },
@@ -1677,16 +1631,14 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                 path.rounded_rect((tx, ty), (thumb, thumb), 6.0);
                 path.winding(Winding::Solidity(Solidity::Hole));
                 path.fill(
-                    Style::Paint(
-                        Paint::with_box_gradient(
-                            (tx - 1.0, ty),
-                            (thumb + 2.0, thumb + 2.0),
-                            5.0,
-                            3.0,
-                            Color::from_rgba(0, 0, 0, 128),
-                            Color::from_rgba(0, 0, 0, 0),
-                        )
-                    ),
+                    Gradient::Box {
+                        position: (tx - 1.0, ty),
+                        size: (thumb + 2.0, thumb + 2.0),
+                        radius: 5.0,
+                        feather: 3.0,
+                        start_color: Color::from_rgba(0, 0, 0, 128),
+                        end_color: Color::from_rgba(0, 0, 0, 0),
+                    },
                     Default::default()
                 );
             },
@@ -1698,7 +1650,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             |path| {
                 path.rounded_rect((tx + 0.5, ty + 0.5), (thumb - 1.0, thumb - 1.0), 4.0 - 0.5);
                 path.stroke(
-                    Style::Color(Color::from_rgba(255, 255, 255, 192)),
+                    Color::from_rgba(255, 255, 255, 192),
                     StrokeOptions {
                         width: 1.0,
                         ..Default::default()
@@ -1714,13 +1666,12 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         |path| {
             path.rect((x + 4.0, y), (w - 8.0, 6.0));
             path.fill(
-                Style::Paint(Paint::with_linear_gradient(
-                        (x, y),
-                        (x, y + 6.0),
-                        Color::from_rgba(200, 200, 200, 255),
-                        Color::from_rgba(200, 200, 200, 0),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (x, y + 6.0),
+                    start_color: Color::from_rgba(200, 200, 200, 255),
+                    end_color: Color::from_rgba(200, 200, 200, 0),
+                },
                 Default::default()
             );
         },
@@ -1732,14 +1683,12 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         |path| {
             path.rect((x + 4.0, y + h - 6.0), (w - 8.0, 6.0));
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (x, y + h),
-                        (x, y + h - 6.0),
-                        Color::from_rgba(200, 200, 200, 255),
-                        Color::from_rgba(200, 200, 200, 0),
-                    )
-                ),
+                Gradient::Linear {
+                    start: (x, y + h),
+                    end: (x, y + h - 6.0),
+                    start_color: Color::from_rgba(200, 200, 200, 255),
+                    end_color: Color::from_rgba(200, 200, 200, 0),
+                },
                 Default::default()
             );
         },
@@ -1751,16 +1700,14 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         |path| {
             path.rounded_rect((x + w - 12.0, y + 4.0), (8.0, h - 8.0), 3.0);
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x + w - 12.0 + 1.0, y + 4.0 + 1.0),
-                        (8.0, h - 8.0),
-                        3.0,
-                        4.0,
-                        Color::from_rgba(0, 0, 0, 32),
-                        Color::from_rgba(0, 0, 0, 92),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x + w - 12.0 + 1.0, y + 4.0 + 1.0),
+                    size: (8.0, h - 8.0),
+                    radius: 3.0,
+                    feather: 4.0,
+                    start_color: Color::from_rgba(0, 0, 0, 32),
+                    end_color: Color::from_rgba(0, 0, 0, 92),
+                },
                 Default::default()
             );
         },
@@ -1777,16 +1724,14 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                 2.0
             );
             path.fill(
-                Style::Paint(
-                    Paint::with_box_gradient(
-                        (x + w - 12.0 - 1.0, y + 4.0 + (h - 8.0 - scrollh) * u - 1.0),
-                        (8.0, scrollh),
-                        3.0,
-                        4.0,
-                        Color::from_rgba(220, 220, 220, 255),
-                        Color::from_rgba(128, 128, 128, 255),
-                    )
-                ),
+                Gradient::Box {
+                    position: (x + w - 12.0 - 1.0, y + 4.0 + (h - 8.0 - scrollh) * u - 1.0),
+                    size: (8.0, scrollh),
+                    radius: 3.0,
+                    feather: 4.0,
+                    start_color: Color::from_rgba(220, 220, 220, 255),
+                    end_color: Color::from_rgba(128, 128, 128, 255),
+                },
                 Default::default()
             );
         },
@@ -1809,14 +1754,12 @@ fn draw_spinner(frame: &Frame, options: PathOptions, cx: f32, cy: f32, r: f32, t
             path.arc((cx, cy), r0, a0, a1, Winding::Direction(Direction::Clockwise));
             path.arc((cx, cy), r1, a1, a0, Winding::Direction(Direction::CounterClockwise));
             path.fill(
-                Style::Paint(
-                    Paint::with_linear_gradient(
-                        (ax, ay),
-                        (bx, by),
-                        Color::from_rgba(0, 0, 0, 0),
-                        Color::from_rgba(0, 0, 0, 128)
-                    )
-                ),
+                Gradient::Linear {
+                    start: (ax, ay),
+                    end: (bx, by),
+                    start_color: Color::from_rgba(0, 0, 0, 0),
+                    end_color: Color::from_rgba(0, 0, 0, 128)
+                },
                 Default::default()
             );
         },
@@ -1860,7 +1803,7 @@ impl PerformanceGraph {
         frame.path(
             |path| {
                 path.rect((x, y), (w, h));
-                path.fill(Style::Color(Color::from_rgba(0, 0, 0, 128)), Default::default());
+                path.fill(Color::from_rgba(0, 0, 0, 128), Default::default());
             },
             Default::default()
         );
@@ -1900,7 +1843,7 @@ impl PerformanceGraph {
 
                 path.line_to((x + w, y + h));
 
-                path.fill(Style::Color(Color::from_rgba(255, 192, 0, 128)), Default::default());
+                path.fill(Color::from_rgba(255, 192, 0, 128), Default::default());
             },
             Default::default()
         );
