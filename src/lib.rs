@@ -231,6 +231,18 @@ impl Context {
         self.transform(None);
         self.transform(Some(current));
     }
+
+    fn fill_color(&self, color: &Color) {
+        unsafe {
+            ffi::nvgFillColor(self.raw(), color.into_raw());
+        }
+    }
+
+    fn stroke_color(&self, color: &Color) {
+        unsafe {
+            ffi::nvgStrokeColor(self.raw(), color.into_raw());
+        }
+    }
 }
 
 impl Drop for Context {
@@ -588,14 +600,16 @@ impl<'a, 'b> Path<'a, 'b> {
     /// Draw the current path by filling in it's shape.
     /// 'fill' specifies in which color/paint should fill be drawn.
     /// 'options' specifies how filling should be done.
-    pub fn fill(&self, fill: Style, options: FillOptions) {
+    pub fn fill<T: Paintable<T> + AsRef<T>>(&self, fill: T, options: FillOptions) {
         let ctx = self.ctx();
         unsafe {
             ffi::nvgShapeAntiAlias(ctx, options.antialias as c_int);
-            match fill {
-                Style::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
-                Style::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
-            }
+            fill.as_ref().fill(self.context());
+            //ffi::nvgFillColor(ctx, fill.as_ref().into_raw());
+            // match fill {
+            //     Style::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
+            //     Style::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
+            // }
             ffi::nvgFill(ctx);
         }
     }
@@ -842,6 +856,12 @@ pub enum Style {
 #[derive(Clone, Copy, Debug)]
 pub struct Color(ffi::NVGcolor);
 
+// impl AsRef<Color> for Color {
+//     fn as_ref(&self) -> &Color {
+//         &self
+//     }
+// }
+
 impl Color {
     /// Create a new color by setting all components manually.
     /// Values are in the range 0.0...1.0.
@@ -927,6 +947,69 @@ impl Color {
             ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float)
         })
     }
+}
+
+pub trait Paintable<T> {
+    fn fill(&self, context: &Context);
+    fn stroke(&self, context: &Context);
+}
+
+impl Paintable<Color> for Color {
+    fn fill(&self, context: &Context) {
+        context.fill_color(self);
+    }
+
+    fn stroke(&self, context: &Context) {
+        context.stroke_color(self);
+    }
+}
+
+impl AsRef<Color> for Color {
+    fn as_ref(&self) -> &Color {
+        &self
+    }
+}
+
+// impl Paintable for Color {
+
+// }
+
+// impl AsRef<Paintable> for Color {
+//     fn as_ref(&self) -> &Paintable {
+//         &(self as Paintable)
+//     }
+// }
+
+pub enum Gradient {
+    Linear {
+        start: (f32, f32),
+        end: (f32, f32),
+        start_color: Color,
+        end_color: Color,
+    },
+    Box {
+        position: (f32, f32),
+        size: (f32, f32),
+        radius: f32,
+        feather: f32,
+        start_color: Color,
+        end_color: Color,
+    },
+    Radial {
+        center: (f32, f32),
+        inner_radius: f32,
+        outer_radius: f32,
+        start_color: f32,
+        end_color: f32,
+    }
+}
+
+pub struct ImagePattern<'a> {
+    pub image: &'a Image<'a>,
+    pub origin: (f32, f32),
+    pub size: (f32, f32),
+    pub angle: f32,
+    pub alpha: f32,
 }
 
 /// A Paint is a more complex and powerful method of defining color.
