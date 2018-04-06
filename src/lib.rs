@@ -586,7 +586,9 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 
     /// Draw the current path by filling in it's shape.
-    /// 'fill' specifies in which color/paint should fill be drawn.
+    /// 'paint' specifies in which color/paint should fill be drawn.
+    ///         pass variables that implement Paint trait
+    ///         for now these are: Color, Gradient, ImagePattern
     /// 'options' specifies how filling should be done.
     pub fn fill<T: Paint>(&self, paint: T, options: FillOptions) {
         let ctx = self.ctx();
@@ -598,7 +600,9 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 
     /// Draw the current path by stroking it's perimeter.
-    /// 'stroke' specifies in which color/paint should stroke be drawn.
+    /// 'paint' specifies in which color/paint should stroke be drawn.
+    ///         pass variables that implement Paint trait
+    ///         for now these are: Color, Gradient, ImagePattern
     /// 'options' specifies how stroking should be done.
     pub fn stroke<T: Paint>(&self, paint: T, options: StrokeOptions) {
         let ctx = self.ctx();
@@ -830,6 +834,7 @@ pub trait Paint {
 }
 
 /// A 32-bit color value.
+/// Used to fill or stroke paths with solid color.
 #[derive(Clone, Copy, Debug)]
 pub struct Color(ffi::NVGcolor);
 
@@ -950,6 +955,7 @@ impl Paint for Gradient {
     }
 }
 
+/// Gradient paint used to fill or stroke paths with gradient.
 #[derive(Copy, Clone, Debug)]
 pub enum Gradient {
     Linear {
@@ -1046,6 +1052,7 @@ impl Gradient {
     }
 }
 
+/// Image pattern paint used to fill or stroke paths with image pattern.
 #[derive(Copy, Clone, Debug)]
 pub struct ImagePattern<'a> {
     pub image: &'a Image<'a>,
