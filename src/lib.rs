@@ -231,18 +231,6 @@ impl Context {
         self.transform(None);
         self.transform(Some(current));
     }
-
-    fn fill_color(&self, color: &Color) {
-        unsafe {
-            ffi::nvgFillColor(self.raw(), color.into_raw());
-        }
-    }
-
-    fn stroke_color(&self, color: &Color) {
-        unsafe {
-            ffi::nvgStrokeColor(self.raw(), color.into_raw());
-        }
-    }
 }
 
 impl Drop for Context {
@@ -600,16 +588,11 @@ impl<'a, 'b> Path<'a, 'b> {
     /// Draw the current path by filling in it's shape.
     /// 'fill' specifies in which color/paint should fill be drawn.
     /// 'options' specifies how filling should be done.
-    pub fn fill<T: Paintable<T> + AsRef<T>>(&self, fill: T, options: FillOptions) {
+    pub fn fill<T: Paint>(&self, paint: T, options: FillOptions) {
         let ctx = self.ctx();
         unsafe {
             ffi::nvgShapeAntiAlias(ctx, options.antialias as c_int);
-            fill.as_ref().fill(self.context());
-            //ffi::nvgFillColor(ctx, fill.as_ref().into_raw());
-            // match fill {
-            //     Style::Color(color) => ffi::nvgFillColor(ctx, color.into_raw()),
-            //     Style::Paint(paint) => ffi::nvgFillPaint(ctx, paint.into_raw()),
-            // }
+            paint.fill(self.context());
             ffi::nvgFill(ctx);
         }
     }
@@ -617,7 +600,7 @@ impl<'a, 'b> Path<'a, 'b> {
     /// Draw the current path by stroking it's perimeter.
     /// 'stroke' specifies in which color/paint should stroke be drawn.
     /// 'options' specifies how stroking should be done.
-    pub fn stroke(&self, stroke: Style, options: StrokeOptions) {
+    pub fn stroke<T: Paint>(&self, paint: T, options: StrokeOptions) {
         let ctx = self.ctx();
         unsafe {
             ffi::nvgShapeAntiAlias(ctx, options.antialias as c_int);
@@ -625,10 +608,7 @@ impl<'a, 'b> Path<'a, 'b> {
             ffi::nvgLineCap(ctx, options.line_cap.into_raw() as c_int);
             ffi::nvgLineJoin(ctx, options.line_join.into_raw() as c_int);
             ffi::nvgMiterLimit(ctx, options.miter_limit as c_float);
-            match stroke {
-                Style::Color(color) => ffi::nvgStrokeColor(ctx, color.into_raw()),
-                Style::Paint(paint) => ffi::nvgStrokePaint(ctx, paint.into_raw()),
-            }
+            paint.stroke(self.context());
             ffi::nvgStroke(ctx);
         }
     }
@@ -844,23 +824,14 @@ impl LineJoin {
     }
 }
 
-/// Controls how something should be colored.
-/// Either through a single, flat color; or a more complex paint.
-#[derive(Debug)]
-pub enum Style {
-    Color(Color),
-    Paint(Paint),
+pub trait Paint {
+    fn fill(&self, context: &Context);
+    fn stroke(&self, context: &Context);
 }
 
 /// A 32-bit color value.
 #[derive(Clone, Copy, Debug)]
 pub struct Color(ffi::NVGcolor);
-
-// impl AsRef<Color> for Color {
-//     fn as_ref(&self) -> &Color {
-//         &self
-//     }
-// }
 
 impl Color {
     /// Create a new color by setting all components manually.
@@ -949,37 +920,37 @@ impl Color {
     }
 }
 
-pub trait Paintable<T> {
-    fn fill(&self, context: &Context);
-    fn stroke(&self, context: &Context);
-}
-
-impl Paintable<Color> for Color {
+impl Paint for Color {
     fn fill(&self, context: &Context) {
-        context.fill_color(self);
+        unsafe {
+            ffi::nvgFillColor(context.raw(), self.into_raw());
+        }
     }
 
     fn stroke(&self, context: &Context) {
-        context.stroke_color(self);
+        unsafe {
+            ffi::nvgStrokeColor(context.raw(), self.into_raw());
+        }
     }
 }
 
-impl AsRef<Color> for Color {
-    fn as_ref(&self) -> &Color {
-        &self
+impl Paint for Gradient {
+    fn fill(&self, context: &Context) {
+        let raw = self.create_raw();
+        unsafe {
+            ffi::nvgFillPaint(context.raw(), raw);
+        }
+    }
+
+    fn stroke(&self, context: &Context) {
+        let raw = self.create_raw();
+        unsafe {
+            ffi::nvgStrokePaint(context.raw(), raw);
+        }
     }
 }
 
-// impl Paintable for Color {
-
-// }
-
-// impl AsRef<Paintable> for Color {
-//     fn as_ref(&self) -> &Paintable {
-//         &(self as Paintable)
-//     }
-// }
-
+#[derive(Copy, Clone, Debug)]
 pub enum Gradient {
     Linear {
         start: (f32, f32),
@@ -999,11 +970,83 @@ pub enum Gradient {
         center: (f32, f32),
         inner_radius: f32,
         outer_radius: f32,
-        start_color: f32,
-        end_color: f32,
+        start_color: Color,
+        end_color: Color,
     }
 }
 
+impl Gradient {
+    fn create_raw(&self) -> ffi::NVGpaint {
+        match self {
+            &Gradient::Linear {
+                start,
+                end,
+                start_color,
+                end_color,
+            } => {
+                let (sx, sy) = start;
+                let (ex, ey) = end;
+                unsafe {
+                    ffi::nvgLinearGradient(
+                        0 as *mut _,
+                        sx,
+                        sy,
+                        ex,
+                        ey,
+                        start_color.into_raw(),
+                        end_color.into_raw(),
+                    )
+                }
+            },
+            &Gradient::Box {
+                position,
+                size,
+                radius,
+                feather,
+                start_color,
+                end_color,
+            } => {
+                unsafe {
+                    let (x, y) = position;
+                    let (w, h) = size;
+                    ffi::nvgBoxGradient(
+                        0 as *mut _,
+                        x,
+                        y,
+                        w,
+                        h,
+                        radius,
+                        feather,
+                        start_color.into_raw(),
+                        end_color.into_raw(),
+                    )
+                }
+            },
+            &Gradient::Radial {
+                center,
+                inner_radius,
+                outer_radius,
+                start_color,
+                end_color,
+            } => {
+                unsafe {
+                    let (cx, cy) = center;
+                    ffi::nvgRadialGradient(
+                        0 as *mut _,
+                        cx,
+                        cy,
+                        inner_radius,
+                        outer_radius,
+                        start_color.into_raw(),
+                        end_color.into_raw(),
+                    )
+                }
+            },
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct ImagePattern<'a> {
     pub image: &'a Image<'a>,
     pub origin: (f32, f32),
@@ -1012,91 +1055,29 @@ pub struct ImagePattern<'a> {
     pub alpha: f32,
 }
 
-/// A Paint is a more complex and powerful method of defining color.
-/// With it you can draw images and gradients.
-#[derive(Copy, Clone, Debug)]
-pub struct Paint(ffi::NVGpaint);
+impl<'a> ImagePattern<'a> {
+    fn create_raw(&self) -> ffi::NVGpaint {
+        let (ox, oy) = self.origin;
+        let (ex, ey) = self.size;
+        unsafe {
+            ffi::nvgImagePattern(0 as *mut _, ox, oy, ex, ey, self.angle, self.image.raw(), self.alpha)
+        }
+    }
+}
 
-impl Paint {
-    pub fn with_linear_gradient(
-        start: (f32, f32),
-        end: (f32, f32),
-        start_color: Color,
-        end_color: Color,
-    ) -> Self {
-        let ((sx, sy), (ex, ey)) = (start, end);
-        Paint(unsafe {
-            ffi::nvgLinearGradient(
-                0 as *mut _,
-                sx,
-                sy,
-                ex,
-                ey,
-                start_color.into_raw(),
-                end_color.into_raw(),
-            )
-        })
+impl<'a> Paint for ImagePattern<'a> {
+    fn fill(&self, context: &Context) {
+        let raw = self.create_raw();
+        unsafe {
+            ffi::nvgFillPaint(context.raw(), raw);
+        }
     }
 
-    pub fn with_box_gradient(
-        (x, y): (f32, f32),
-        (w, h): (f32, f32),
-        radius: f32,
-        feather: f32,
-        start_color: Color,
-        end_color: Color,
-    ) -> Self {
-        Paint(unsafe {
-            ffi::nvgBoxGradient(
-                0 as *mut _,
-                x,
-                y,
-                w,
-                h,
-                radius,
-                feather,
-                start_color.into_raw(),
-                end_color.into_raw(),
-            )
-        })
-    }
-
-    pub fn with_radial_gradient(
-        center: (f32, f32),
-        inner_radius: f32,
-        outer_radius: f32,
-        start_color: Color,
-        end_color: Color,
-    ) -> Self {
-        let (cx, cy) = center;
-        Paint(unsafe {
-            ffi::nvgRadialGradient(
-                0 as *mut _,
-                cx,
-                cy,
-                inner_radius,
-                outer_radius,
-                start_color.into_raw(),
-                end_color.into_raw(),
-            )
-        })
-    }
-
-    pub fn with_image_pattern(
-        image: &Image,
-        origin: (f32, f32),
-        size: (f32, f32),
-        angle: f32,
-        alpha: f32,
-    ) -> Self {
-        let ((ox, oy), (ex, ey)) = (origin, size);
-        Paint(unsafe {
-            ffi::nvgImagePattern(0 as *mut _, ox, oy, ex, ey, angle, image.raw(), alpha)
-        })
-    }
-
-    fn into_raw(self) -> ffi::NVGpaint {
-        self.0
+    fn stroke(&self, context: &Context) {
+        let raw = self.create_raw();
+        unsafe {
+            ffi::nvgStrokePaint(context.raw(), raw);
+        }
     }
 }
 
