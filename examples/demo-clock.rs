@@ -5,7 +5,7 @@ extern crate chrono;
 
 use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{FillStyle, StrokeStyle, ColoringStyle, Color, Paint, CompositeOperation,
+use nanovg::{StrokeOptions, Color, CompositeOperation, Gradient,
              BasicCompositeOperation, PathOptions, TextOptions, Font, Transform, Alignment };
 use chrono::prelude::*;
 
@@ -136,15 +136,14 @@ fn main() {
                         path.move_to((0.0, -ticks_radius));
                         path.line_to((0.0, -ticks_radius-tick_len));
                         path.close();
-                        path.stroke(StrokeStyle {
-                            coloring_style: ColoringStyle::Color(white),
-                            width: tick_width,
-                            ..Default::default()
-                        });
-                        path.fill(FillStyle {
-                            coloring_style: ColoringStyle::Color(white),
-                            ..Default::default()
-                        });
+                        path.stroke(
+                            white,
+                            StrokeOptions {
+                                width: tick_width,
+                                ..Default::default()
+                            }
+                        );
+                        path.fill(white, Default::default());
                     },
                     PathOptions {
                         composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
@@ -188,15 +187,14 @@ fn main() {
             frame.path(
                 |path| {
                     path.circle(origin, dial_radius);
-                    path.stroke(StrokeStyle {
-                        coloring_style: ColoringStyle::Color(silver),
-                        width: 3.0,
-                        ..Default::default()
-                    });
-                    path.fill(FillStyle {
-                        coloring_style: ColoringStyle::Color(dial_color),
-                        ..Default::default()
-                    });
+                    path.stroke(
+                        silver,
+                        StrokeOptions {
+                            width: 3.0,
+                            ..Default::default()
+                        }
+                    );
+                    path.fill(dial_color, Default::default());
                 },
                 PathOptions {
                     composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
@@ -212,15 +210,14 @@ fn main() {
                         path.move_to(origin);
                         path.line_to((0.0, -length));
                         path.close();
-                        path.stroke(StrokeStyle {
-                            coloring_style: ColoringStyle::Color(white),
-                            width: width,
-                            ..Default::default()
-                        });
-                        path.fill(FillStyle {
-                            coloring_style: ColoringStyle::Color(white),
-                            ..Default::default()
-                        });
+                        path.stroke(
+                            white,
+                            StrokeOptions {
+                                width: width,
+                                ..Default::default()
+                            }
+                        );
+                        path.fill(white, Default::default());
                     },
                     PathOptions {
                         composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
@@ -248,20 +245,23 @@ fn main() {
                 |path| {
                     let boss_rad = 6.0;
                     path.circle(origin, boss_rad);
-                    path.stroke(StrokeStyle {
-                        coloring_style: ColoringStyle::Color(darkgray),
-                        width: 1.0,
-                        ..Default::default()
-                    });
-                    path.fill(FillStyle {
-                        coloring_style: ColoringStyle::Paint(Paint::with_radial_gradient(
-                            origin,
-                            0.0, boss_rad,
-                            silver,
-                            darksilver,
-                        )),
-                        ..Default::default()
-                    });
+                    path.stroke(
+                        darkgray,
+                        StrokeOptions {
+                            width: 1.0,
+                            ..Default::default()
+                        }
+                    );
+                    path.fill(
+                        Gradient::Radial {
+                            center: origin,
+                            inner_radius: 0.0,
+                            outer_radius: boss_rad,
+                            start_color: silver,
+                            end_color: darksilver,
+                        },
+                        Default::default()
+                    );
                 },
                 PathOptions {
                     composite_operation: CompositeOperation::Basic(BasicCompositeOperation::SourceOver),

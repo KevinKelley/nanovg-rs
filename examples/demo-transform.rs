@@ -3,8 +3,8 @@ extern crate glutin;
 extern crate nanovg;
 
 use glutin::GlContext;
-use nanovg::{Color, ColoringStyle, Font, Alignment, TextOptions, FillStyle,
-             Frame, Transform, PathOptions, StrokeStyle, Paint, Scissor, Clip};
+use nanovg::{Color, Font, Alignment, TextOptions, Gradient,
+             Frame, Transform, PathOptions, StrokeOptions, Scissor, Clip};
 use std::time::Instant;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (300, 300);
@@ -96,10 +96,7 @@ fn main() {
                 frame.path(
                     |path| {
                         path.rect((0.0, 0.0), (50.0, 50.0));
-                        path.fill(FillStyle {
-                            coloring_style: ColoringStyle::Color(Color::from_rgb(0, 255, 0)),
-                            ..Default::default()
-                        });
+                        path.fill(Color::from_rgb(0, 255, 0), Default::default());
                     },
                     PathOptions {
                         transform: Some(rotate),
@@ -115,11 +112,13 @@ fn main() {
             frame.path(
                 |path| {
                     path.rect((0.0, 0.0), (50.0, 50.0));
-                    path.stroke(StrokeStyle {
-                        coloring_style: ColoringStyle::Color(Color::from_rgb(255, 255, 255)),
-                        width: 5.0,
-                        ..Default::default()
-                    });
+                    path.stroke(
+                        Color::from_rgb(255, 255, 255),
+                        StrokeOptions {
+                            width: 5.0,
+                            ..Default::default()
+                        }
+                    );
                 },
                 PathOptions {
                     transform: Some(transform),
@@ -137,7 +136,7 @@ fn main() {
             let mouse_transform = Transform::new().with_translation(mouse.0, mouse.1).rotate(elapsed * 4.0);
             frame.transform(Transform::new().rotate(10.0f32.to_radians()),
                 |frame| {
-                    render_area(&frame, font, clip, mouse_transform.absolute()); // the absolute is here because we do not want 
+                    render_area(&frame, font, clip, mouse_transform.absolute()); // the absolute is here because we do not want
                                                                                  // our mouse to be translated in frame's local coordinate space,
                                                                                  // we want to use it as it is
                                                                                  // if you we to remove it, the rectangle inside area that is
@@ -160,10 +159,7 @@ fn rotating_red_rect(frame: &Frame, w: f32, h: f32, t: f32) {
     frame.path(
         |path| {
             path.rect((-w / 2.0, -h / 2.0), (w, h));
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgb(255, 0, 0)),
-                ..Default::default()
-            });
+            path.fill(Color::from_rgb(255, 0, 0), Default::default());
         },
         PathOptions {
             transform: Some(Transform::new().rotate(t * 2.0)),
@@ -191,21 +187,18 @@ fn draw_button(frame: &Frame, font: Font, text: &str, x: f32, y: f32, w: f32, h:
         |path| {
             path.rounded_rect((x + 1.0, y + 1.0), (w - 2.0, h - 2.0), corner_radius - 0.5);
             if !color_is_black {
-                path.fill(FillStyle {
-                    coloring_style: ColoringStyle::Color(color),
-                    ..Default::default()
-                })
+                path.fill(color, Default::default());
             }
 
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Paint(Paint::with_linear_gradient(
-                    (x, y),
-                    (w, h),
-                    Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
-                    Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
-                )),
-                ..Default::default()
-            })
+            path.fill(
+                Gradient::Linear {
+                    start: (x, y),
+                    end: (w, h),
+                    start_color: Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
+                    end_color: Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
+                },
+                Default::default()
+            );
         },
         Default::default(),
     );
@@ -214,10 +207,7 @@ fn draw_button(frame: &Frame, font: Font, text: &str, x: f32, y: f32, w: f32, h:
     frame.path(
         |path| {
             path.rounded_rect((x + 0.5, y + 0.5), (w - 1.0, h - 1.0), corner_radius - 0.5);
-            path.stroke(StrokeStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgba(0, 0, 0, 48)),
-                ..Default::default()
-            });
+            path.stroke(Color::from_rgba(0, 0, 0, 48), Default::default());
         },
         Default::default(),
     );
@@ -261,15 +251,9 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
     frame.path(
         |path| {
             path.rect((cx, cy), (cw, ch));
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgba(255, 255, 255, 20)),
-                ..Default::default()
-            });
-            path.stroke(StrokeStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgb(0, 0, 0)),
-                ..Default::default()
-            });
-        }, 
+            path.fill(Color::from_rgba(255, 255, 255, 20), Default::default());
+            path.stroke(Color::from_rgb(0, 0, 0), Default::default());
+        },
         PathOptions::default()
     );
 
@@ -278,10 +262,7 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
     frame.path(
         |path| {
             path.rect((-50.0, -50.0), (50.0, 50.0));
-            path.fill(FillStyle {
-                coloring_style: ColoringStyle::Color(Color::from_rgb(50, 50, 50)),
-                ..Default::default()
-            });
+            path.fill(Color::from_rgb(50, 50, 50), Default::default());
         },
         PathOptions {
             clip: Clip::Scissor(scissor),
@@ -290,7 +271,7 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
         }
     );
 
-    frame.text(font, (0.0, 0.0), "text", 
+    frame.text(font, (0.0, 0.0), "text",
         TextOptions {
             size: 28.0,
             color: Color::from_rgb(255, 255, 255),
