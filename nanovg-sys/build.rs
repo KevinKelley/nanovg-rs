@@ -7,7 +7,12 @@ use std::process::Command;
 fn build_library(backend_macro: &str) {
     let target = env::var("TARGET").unwrap();
     let mut config = cc::Build::new();
-    config.warnings(false); // Hide the nanovg warnings. Not really relevant to us.
+
+    // Hide the nanovg warnings. Not really relevant to us.
+    // cc::Build::warnings(false); // this does not disable warnings, it can be used only for enabling them
+    config.flag_if_supported("-w"); // disable warnings for msvc and gcc
+                                    // (msvc accepts /w or -w, gcc and clang only -w)
+
     config.include("nanovg/src");
     config.file("nanovg/src/nanovg.c");
     config.file("nanovg_shim.c");
@@ -21,7 +26,7 @@ fn build_library(backend_macro: &str) {
         config.include("glad");
     }
 
-    config.compile("nanovg")
+    config.compile("nanovg");
 }
 
 fn main() {
