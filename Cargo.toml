@@ -14,10 +14,10 @@ license = "MIT/Zlib"
 name = "nanovg"
 
 [features]
-gl2 = ["nanovg-sys/gl2"]
-gl3 = ["nanovg-sys/gl3"]
-gles2 = ["nanovg-sys/gles2"]
-gles3 = ["nanovg-sys/gles3"]
+gl2 = []
+gl3 = []
+gles2 = []
+gles3 = []
 default = ["gl3"]
 
 [dependencies]
