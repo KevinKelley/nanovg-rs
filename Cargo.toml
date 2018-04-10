@@ -1,6 +1,6 @@
 [package]
 name = "nanovg"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 readme = "README.md"
 description = "Idiomatic bindings to the NanoVG library"
