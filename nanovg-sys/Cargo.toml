@@ -20,7 +20,7 @@ gl2 = []
 gl3 = []
 gles2 = []
 gles3 = []
-#default = ["gl3"]
+default = ["gl3"]
 
 [dependencies]
 bitflags = "1.0"
