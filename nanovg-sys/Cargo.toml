@@ -7,7 +7,7 @@ links = "nanovg"
 description = "Native bindings to the NanoVG library"
 homepage = "https://github.com/KevinKelley/nanovg-rs"
 repository = "https://github.com/KevinKelley/nanovg-rs"
-keywords = ["nanovg", "bindings", "vector", "graphics", "opengl", "ffi", "native"]
+keywords = ["nanovg", "bindings", "vector", "graphics", "opengl"]
 categories = ["rendering::graphics-api", "games", "gui"]
 license = "MIT/Zlib"
 
