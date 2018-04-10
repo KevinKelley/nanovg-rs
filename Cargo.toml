@@ -18,7 +18,7 @@ gl2 = []
 gl3 = []
 gles2 = []
 gles3 = []
-default = ["gl3"]
+#default = ["gl3"]
 
 [dependencies]
 nanovg-sys = { path = "nanovg-sys", version = "0.1.0" }
