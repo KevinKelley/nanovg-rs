@@ -1,6 +1,6 @@
 [package]
 name = "nanovg-sys"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "build.rs"
 links = "nanovg"
@@ -20,7 +20,6 @@ gl2 = []
 gl3 = []
 gles2 = []
 gles3 = []
-default = ["gl3"]
 
 [dependencies]
 bitflags = "1.0"
