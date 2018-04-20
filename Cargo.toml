@@ -21,7 +21,7 @@ gles3 = ["nanovg-sys/gles3"]
 default = ["gl3"]
 
 [dependencies]
-nanovg-sys = { path = "nanovg-sys", version = "0.1.*" }
+nanovg-sys = { path = "nanovg-sys" }
 
 [dev-dependencies]
 glutin = "0.13.0"
