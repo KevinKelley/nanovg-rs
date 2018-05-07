@@ -415,8 +415,11 @@ impl<'a> Frame<'a> {
 
         self.draw_prepare(options.clip, options.transform);
 
+        let ptr = text.into_raw();
         unsafe {
-            ffi::nvgText(self.context.raw(), x, y, text.into_raw(), 0 as *const _);
+            ffi::nvgText(self.context.raw(), x, y, ptr, 0 as *const _);
+            // retake pointer to free memory
+            let _ = CString::from_raw(ptr);
         }
     }
 
@@ -437,15 +440,19 @@ impl<'a> Frame<'a> {
 
         self.draw_prepare(options.clip, options.transform);
 
+        let ptr = text.into_raw();
+
         unsafe {
             ffi::nvgTextBox(
                 self.context.raw(),
                 x,
                 y,
                 options.line_max_width,
-                text.into_raw(),
+                ptr,
                 0 as *const _,
             );
+            // retake pointer to free memory
+            let _ = CString::from_raw(ptr);
         }
     }
 
@@ -464,17 +471,21 @@ impl<'a> Frame<'a> {
         options: TextOptions,
     ) -> (f32, TextBounds) {
         let text = CString::new(text.as_ref()).unwrap();
+        let ptr = text.into_raw();
         self.text_prepare(font, options);
         let mut bounds = [0.0f32; 4];
         let measure = unsafe {
-            ffi::nvgTextBounds(
+            let measure = ffi::nvgTextBounds(
                 self.context.raw(),
                 x,
                 y,
-                text.into_raw(),
+                ptr,
                 0 as *const _,
                 bounds.as_mut_ptr(),
-            )
+            );
+            // retake pointer to free memory
+            let _ = CString::from_raw(ptr);
+            measure
         };
         (measure, TextBounds::new(&bounds))
     }
@@ -492,7 +503,7 @@ impl<'a> Frame<'a> {
         text: S,
         options: TextOptions,
     ) -> TextBounds {
-        let text = CString::new(text.as_ref()).unwrap();
+        let ptr = CString::new(text.as_ref()).unwrap().into_raw();
         self.text_prepare(font, options);
         let mut bounds = [0.0f32; 4];
         unsafe {
@@ -501,10 +512,13 @@ impl<'a> Frame<'a> {
                 x,
                 y,
                 options.line_max_width,
-                text.into_raw(),
+                ptr,
                 0 as *const _,
                 bounds.as_mut_ptr(),
-            )
+            );
+            // retake pointer to free memory
+            let _ = CString::from_raw(ptr);
+
         }
         TextBounds::new(&bounds)
     }
@@ -1449,9 +1463,14 @@ impl<'a> Font<'a> {
         name: S,
         path: P,
     ) -> CreateFontResult {
-        let name = CString::new(name.as_ref())?;
-        let path = CString::new(path.as_ref().to_str().ok_or(CreateFontError::InvalidPath)?)?;
-        let handle = unsafe { ffi::nvgCreateFont(context.raw(), name.into_raw(), path.into_raw()) };
+        let name_ptr = CString::new(name.as_ref())?.into_raw();
+        let path_ptr = CString::new(path.as_ref().to_str().ok_or(CreateFontError::InvalidPath)?)?.into_raw();
+        let handle = unsafe { 
+            let handle = ffi::nvgCreateFont(context.raw(), name_ptr, path_ptr);
+            let _ = CString::from_raw(name_ptr);
+            let _ = CString::from_raw(path_ptr);
+            handle            
+        };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
@@ -1466,15 +1485,17 @@ impl<'a> Font<'a> {
         name: S,
         memory: &'b [u8],
     ) -> CreateFontResult<'a> {
-        let name = CString::new(name.as_ref())?;
+        let name_ptr = CString::new(name.as_ref())?.into_raw();
         let handle = unsafe {
-            ffi::nvgCreateFontMem(
+            let handle = ffi::nvgCreateFontMem(
                 context.raw(),
-                name.into_raw(),
+                name_ptr,
                 memory.as_ptr() as *mut _,
                 memory.len() as c_int,
                 0,
-            )
+            );
+            let _ = CString::from_raw(name_ptr);
+            handle            
         };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
@@ -1485,8 +1506,12 @@ impl<'a> Font<'a> {
 
     /// Try to find a already loaded font with the given `name`.
     pub fn find<S: AsRef<str>>(context: &'a Context, name: S) -> CreateFontResult {
-        let handle =
-            unsafe { ffi::nvgFindFont(context.raw(), CString::new(name.as_ref())?.into_raw()) };
+        let name_ptr = CString::new(name.as_ref())?.into_raw();
+        let handle = unsafe { 
+            let handle = ffi::nvgFindFont(context.raw(), name_ptr);
+            let _ = CString::from_raw(name_ptr);
+            handle            
+        };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
