@@ -8,6 +8,8 @@ use glutin::GlContext;
 use nanovg::{StrokeOptions, Color, CompositeOperation, Gradient,
              BasicCompositeOperation, PathOptions, TextOptions, Font, Transform, Alignment };
 use chrono::prelude::*;
+use std::{thread, time};
+
 
 const INIT_WINDOW_SIZE: (u32, u32) = (480, 480);
 
@@ -37,7 +39,8 @@ fn main() {
 
     let mut prev_second = -1.0;
 
-    while running {
+    while running 
+    {
         events_loop.poll_events(|event| match event {
             glutin::Event::WindowEvent { event, .. } => {
                 match event {
@@ -48,6 +51,7 @@ fn main() {
             }
             _ => {}
         });
+
 
         let dt: DateTime<Local> = Local::now(); // e.g. `2014-11-28T21:45:59.324310806+09:00`
         let hour = dt.hour();
@@ -61,7 +65,8 @@ fn main() {
 
         // don't bother re-draw unless time has changed
         if second == prev_second {
-            continue;
+            let frame_time = time::Duration::from_millis(33);
+            thread::sleep(frame_time);
         }
         else {
             prev_second = second;
