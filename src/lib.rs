@@ -4,6 +4,7 @@ use std::ops::Drop;
 use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
 use std::os::raw::{c_int, c_float, c_uchar, c_char};
+use std::ptr;
 
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {
@@ -416,7 +417,7 @@ impl<'a> Frame<'a> {
         self.draw_prepare(options.clip, options.transform);
 
         unsafe {
-            ffi::nvgText(self.context.raw(), x, y, text.as_ptr(), 0 as *const _);
+            ffi::nvgText(self.context.raw(), x, y, text.as_ptr(), ptr::null());
         }
     }
 
@@ -444,7 +445,7 @@ impl<'a> Frame<'a> {
                 y,
                 options.line_max_width,
                 text.as_ptr(),
-                0 as *const _,
+                ptr::null(),
             );
         }
     }
@@ -472,7 +473,7 @@ impl<'a> Frame<'a> {
                 x,
                 y,
                 text.as_ptr(),
-                0 as *const _,
+                ptr::null(),
                 bounds.as_mut_ptr(),
             )
         };
@@ -502,7 +503,7 @@ impl<'a> Frame<'a> {
                 y,
                 options.line_max_width,
                 text.as_ptr(),
-                0 as *const _,
+                ptr::null(),
                 bounds.as_mut_ptr(),
             );
         }
@@ -994,7 +995,7 @@ impl Gradient {
                 let (ex, ey) = end;
                 unsafe {
                     ffi::nvgLinearGradient(
-                        0 as *mut _,
+                        ptr::null_mut(),
                         sx,
                         sy,
                         ex,
@@ -1016,7 +1017,7 @@ impl Gradient {
                     let (x, y) = position;
                     let (w, h) = size;
                     ffi::nvgBoxGradient(
-                        0 as *mut _,
+                        ptr::null_mut(),
                         x,
                         y,
                         w,
@@ -1038,7 +1039,7 @@ impl Gradient {
                 unsafe {
                     let (cx, cy) = center;
                     ffi::nvgRadialGradient(
-                        0 as *mut _,
+                        ptr::null_mut(),
                         cx,
                         cy,
                         inner_radius,
@@ -1067,7 +1068,7 @@ impl<'a> ImagePattern<'a> {
         let (ox, oy) = self.origin;
         let (ex, ey) = self.size;
         unsafe {
-            ffi::nvgImagePattern(0 as *mut _, ox, oy, ex, ey, self.angle, self.image.raw(), self.alpha)
+            ffi::nvgImagePattern(ptr::null_mut(), ox, oy, ex, ey, self.angle, self.image.raw(), self.alpha)
         }
     }
 }
@@ -1588,7 +1589,7 @@ impl<'a> TextGlyphPositions<'a> {
             y: y,
             start: text.into_raw(),
             glyphs: [ffi::NVGglyphPosition {
-                s: 0 as *const _,
+                s: ptr::null(),
                 x: 0.0,
                 minx: 0.0,
                 maxx: 0.0,
@@ -1638,9 +1639,9 @@ impl<'a> TextBreakLines<'a> {
             start: text.into_raw(),
             break_row_width: break_row_width,
             row: ffi::NVGtextRow {
-                start: 0 as *const _,
-                end: 0 as *const _,
-                next: 0 as *const _,
+                start: ptr::null(),
+                end: ptr::null(),
+                next: ptr::null(),
                 width: 0.0,
                 minx: 0.0,
                 maxx: 0.0,
@@ -1660,7 +1661,7 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
                 self.x,
                 self.y,
                 self.start,
-                0 as *const _,
+                ptr::null(),
                 self.glyphs.as_mut_ptr(),
                 2
             )
@@ -1741,7 +1742,7 @@ impl<'a> Iterator for TextBreakLines<'a> {
     /// Returns next row in text
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
-            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, 0 as *const _, self.break_row_width, &mut self.row, 1);
+            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, ptr::null(), self.break_row_width, &mut self.row, 1);
             self.start = self.row.next;
 
             if nrows > 0 {
