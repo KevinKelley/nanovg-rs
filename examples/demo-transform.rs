@@ -71,7 +71,7 @@ fn main() {
             let (width, height) = (width as f32, height as f32);
 
             // position red rect that drawn rotated at offset with transform
-            frame.transform(Transform::new().translate(width / 2.0, height + 100.0),
+            frame.transformed(Transform::new().translate(width / 2.0, height + 100.0),
                 |frame| {
                     rotating_red_rect(&frame, 50.0, 50.0, elapsed);
                 }
@@ -81,7 +81,7 @@ fn main() {
             draw_button(&frame, font, "Button", 20.0, 150.0, 100.0, 40.0, Color::from_rgb(64, 64, 64));
 
             // position multiple buttons with transform
-            frame.transform(Transform::new().translate(width - 125.0, 20.0),
+            frame.transformed(Transform::new().translate(width - 125.0, 20.0),
                 |frame| {
                     button_container(&frame, font, 125.0);
                 }
@@ -92,7 +92,7 @@ fn main() {
 
             // here frame gets translated with transform,
             // green rectangle gets drawn, and then it gets rotated in PathOptions
-            frame.transform(translate, |frame| {
+            frame.transformed(translate, |frame| {
                 frame.path(
                     |path| {
                         path.rect((0.0, 0.0), (50.0, 50.0));
@@ -134,7 +134,7 @@ fn main() {
             let margin = 50.0;
             let clip = (margin, margin, width - margin * 2.0, height - margin * 2.0);
             let mouse_transform = Transform::new().with_translation(mouse.0, mouse.1).rotate(elapsed * 4.0);
-            frame.transform(Transform::new().rotate(10.0f32.to_radians()),
+            frame.transformed(Transform::new().rotate(10.0f32.to_radians()),
                 |frame| {
                     render_area(&frame, font, clip, mouse_transform.absolute()); // the absolute is here because we do not want
                                                                                  // our mouse to be translated in frame's local coordinate space,
