@@ -398,7 +398,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             // calculate mouse caret position
             for glyph in frame.text_glyph_positions((x, y), row.text) {
                 let x0 = glyph.x;
-                let x1 = if let Some(next) = *glyph.next { next.x } else { x + row.width };
+                let x1 = if let Some(next) = glyph.next { next.x } else { x + row.width };
                 let gx = x0 * 0.3 + x1 * 0.7;
 
                 if mx >= px && mx < gx {

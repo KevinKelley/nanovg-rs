@@ -1669,7 +1669,7 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
         match num_glyphs {
             1 => {
                 self.start = &('\0' as c_char);
-                Some(GlyphPosition::new(&self.glyphs[0], Box::new(None)))
+                Some(GlyphPosition::new(&self.glyphs[0], None))
             },
             2 => {
                 self.x = self.glyphs[1].x;
@@ -1678,11 +1678,10 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
                 Some(
                     GlyphPosition::new(
                         &self.glyphs[0],
-                        Box::new(
-                            Some(
+                        Some(Box::new(
                                 GlyphPosition::new(
                                     &self.glyphs[1],
-                                    Box::new(None)
+                                    None
                                 )
                             )
                         )
@@ -1701,14 +1700,14 @@ pub struct GlyphPosition {
     pub min_x: f32,
     pub max_x: f32,
     /// Next GlyphPosition for convenience (stores only one glyph position in advance)
-    pub next: Box<Option<GlyphPosition>>,
+    pub next: Option<Box<GlyphPosition>>,
 }
 
 impl GlyphPosition {
     /// Creates new GlyphPosition from raw nanovg glyph position.
     /// We can optionally pass next glyph position
     /// (there is usually some if it is not the last glyph in text, otherwise it is none for last glyph).
-    fn new(glyph: &ffi::NVGglyphPosition, next: Box<Option<GlyphPosition>>) -> GlyphPosition {
+    fn new(glyph: &ffi::NVGglyphPosition, next: Option<Box<GlyphPosition>>) -> GlyphPosition {
         GlyphPosition {
             x: glyph.x,
             min_x: glyph.minx,
