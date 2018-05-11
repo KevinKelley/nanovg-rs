@@ -4,7 +4,7 @@ use std::ops::Drop;
 use std::path::Path as IoPath;
 use std::ffi::{NulError, CString};
 use std::os::raw::{c_int, c_float, c_uchar, c_char};
-use std::ptr;
+use std::{mem, ptr};
 
 #[cfg(target_os = "windows")]
 fn init_gl() -> Result<(), ()> {
@@ -1588,12 +1588,7 @@ impl<'a> TextGlyphPositions<'a> {
             x: x,
             y: y,
             start: text.into_raw(),
-            glyphs: [ffi::NVGglyphPosition {
-                s: ptr::null(),
-                x: 0.0,
-                minx: 0.0,
-                maxx: 0.0,
-            }; 2]
+            glyphs: [unsafe { mem::zeroed() }; 2]
         }
     }
 }
@@ -1682,14 +1677,7 @@ impl<'a> TextBreakLines<'a> {
             context: context,
             start: text.into_raw(),
             break_row_width: break_row_width,
-            row: ffi::NVGtextRow {
-                start: ptr::null(),
-                end: ptr::null(),
-                next: ptr::null(),
-                width: 0.0,
-                minx: 0.0,
-                maxx: 0.0,
-            }
+            row: unsafe { mem::zeroed() },
         }
     }
 }
