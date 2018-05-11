@@ -1598,6 +1598,50 @@ impl<'a> TextGlyphPositions<'a> {
     }
 }
 
+impl<'a> Iterator for TextGlyphPositions<'a> {
+    type Item = GlyphPosition;
+
+    /// Returns next glyph in text
+    fn next(&mut self) -> Option<Self::Item> {
+        let num_glyphs = unsafe {
+             ffi::nvgTextGlyphPositions(
+                self.context.raw(),
+                self.x,
+                self.y,
+                self.start,
+                ptr::null(),
+                self.glyphs.as_mut_ptr(),
+                2
+            )
+        };
+
+        match num_glyphs {
+            1 => {
+                self.start = &('\0' as c_char);
+                Some(GlyphPosition::new(&self.glyphs[0], None))
+            },
+            2 => {
+                self.x = self.glyphs[1].x;
+                self.start = self.glyphs[1].s;
+
+                Some(
+                    GlyphPosition::new(
+                        &self.glyphs[0],
+                        Some(Box::new(
+                                GlyphPosition::new(
+                                    &self.glyphs[1],
+                                    None
+                                )
+                            )
+                        )
+                    )
+                )
+            },
+            _ => None
+        }
+    }
+}
+
 /// Holds computed values for given row.
 #[derive(Clone, Copy, Debug)]
 pub struct TextRow<'a> {
@@ -1650,46 +1694,23 @@ impl<'a> TextBreakLines<'a> {
     }
 }
 
-impl<'a> Iterator for TextGlyphPositions<'a> {
-    type Item = GlyphPosition;
+impl<'a> Iterator for TextBreakLines<'a> {
+    type Item = TextRow<'a>;
 
-    /// Returns next glyph in text
+    /// Returns next row in text
     fn next(&mut self) -> Option<Self::Item> {
-        let num_glyphs = unsafe {
-             ffi::nvgTextGlyphPositions(
-                self.context.raw(),
-                self.x,
-                self.y,
-                self.start,
-                ptr::null(),
-                self.glyphs.as_mut_ptr(),
-                2
-            )
-        };
+        unsafe {
+            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, ptr::null(), self.break_row_width, &mut self.row, 1);
+            self.start = self.row.next;
 
-        match num_glyphs {
-            1 => {
-                self.start = &('\0' as c_char);
-                Some(GlyphPosition::new(&self.glyphs[0], None))
-            },
-            2 => {
-                self.x = self.glyphs[1].x;
-                self.start = self.glyphs[1].s;
-
-                Some(
-                    GlyphPosition::new(
-                        &self.glyphs[0],
-                        Some(Box::new(
-                                GlyphPosition::new(
-                                    &self.glyphs[1],
-                                    None
-                                )
-                            )
-                        )
-                    )
-                )
-            },
-            _ => None
+            if nrows > 0 {
+                let string_length = self.row.end as usize - self.row.start as usize;
+                let string_slice = std::slice::from_raw_parts(self.row.start as *const u8, string_length);
+                let text_str = std::str::from_utf8(string_slice).unwrap();
+                Some(TextRow::new(&self.row, text_str))
+            } else {
+                None
+            }
         }
     }
 }
@@ -1732,27 +1753,6 @@ impl TextMetrics {
             ascender: 0.0,
             descender: 0.0,
             line_height: 0.0,
-        }
-    }
-}
-
-impl<'a> Iterator for TextBreakLines<'a> {
-    type Item = TextRow<'a>;
-
-    /// Returns next row in text
-    fn next(&mut self) -> Option<Self::Item> {
-        unsafe {
-            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, ptr::null(), self.break_row_width, &mut self.row, 1);
-            self.start = self.row.next;
-
-            if nrows > 0 {
-                let string_length = self.row.end as usize - self.row.start as usize;
-                let string_slice = std::slice::from_raw_parts(self.row.start as *const u8, string_length);
-                let text_str = std::str::from_utf8(string_slice).unwrap();
-                Some(TextRow::new(&self.row, text_str))
-            } else {
-                None
-            }
         }
     }
 }
