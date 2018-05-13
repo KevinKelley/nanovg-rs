@@ -109,15 +109,15 @@ impl Context {
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
     pub fn frame<'a, F: FnOnce(Frame<'a>)>(
         &'a self,
-        (width, height): (i32, i32),
+        (width, height): (f32, f32),
         device_pixel_ratio: f32,
         handler: F,
     ) {
         unsafe {
             ffi::nvgBeginFrame(
                 self.raw(),
-                width as c_int,
-                height as c_int,
+                width as c_float,
+                height as c_float,
                 device_pixel_ratio as c_float,
             );
         }

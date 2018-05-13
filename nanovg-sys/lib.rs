@@ -152,8 +152,8 @@ extern "C" {
     pub fn gladLoadGL() -> i32;
     pub fn nvgBeginFrame(
         ctx: *mut NVGcontext,
-        windowWidth: c_int,
-        windowHeight: c_int,
+        windowWidth: c_float,
+        windowHeight: c_float,
         devicePixelRatio: c_float,
     );
     pub fn nvgCancelFrame(ctx: *mut NVGcontext);

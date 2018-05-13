@@ -67,9 +67,8 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
+        let (width, height) = (width as f32, height as f32);
         context.frame((width, height), gl_window.hidpi_factor(), |frame| {
-            let (width, height) = (width as f32, height as f32);
-
             let margin = 50.0;
             let clip = (margin, margin, width - margin * 2.0, height - margin * 2.0);
             let transform = Transform::new().with_translation(mouse.0, mouse.1).rotate(elapsed * 4.0);

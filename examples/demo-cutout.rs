@@ -81,10 +81,10 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
+        let (width, height) = (width as f32, height as f32);
         smoothed_mouse = smooth_mouse(mouse, smoothed_mouse, delta_time, 7.0);
 
         context.frame((width, height), gl_window.hidpi_factor(), |frame| {
-            let (width, height) = (width as f32, height as f32);
             let block_size = 75.0;
             let offset = block_size / 2.0;
 

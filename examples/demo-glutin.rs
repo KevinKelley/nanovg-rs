@@ -62,6 +62,7 @@ fn main() {
             );
         }
 
+        let (width, height) = (width as f32, height as f32);
         let elapsed = {
             let elapsed = start_time.elapsed();
             elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 * 1e-9

@@ -108,7 +108,7 @@ fn main() {
 
 
 
-        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
+        context.frame((width as f32, height as f32), gl_window.hidpi_factor(), |frame| {
 
             // hour/minute markers
 
