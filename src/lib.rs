@@ -107,8 +107,8 @@ impl Context {
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
     /// Basically, this is your hidpi factor.
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
-    pub fn frame<F: FnOnce(Frame)>(
-        &self,
+    pub fn frame<'a, F: FnOnce(Frame<'a>)>(
+        &'a self,
         (width, height): (i32, i32),
         device_pixel_ratio: f32,
         handler: F,
@@ -353,7 +353,7 @@ impl<'a> Frame<'a> {
     ///
     /// `transform` frame gets transformed by this Transform (it takes previous frame transform into account)
     /// `handler` the callback where you use the new transformed Frame
-    pub fn transformed<F: FnOnce(Frame)>(&self, transform: Transform, handler: F) {
+    pub fn transformed<'b, F: FnOnce(Frame<'b>)>(&'b self, transform: Transform, handler: F) {
         let frame = Frame::new(self.context, transform * self.transform);
         handler(frame);
     }
