@@ -1222,7 +1222,7 @@ impl From<NulError> for ImageBuilderError {
 
 pub type ImageBuilderResult<'a> = Result<Image<'a>, ImageBuilderError>;
 
-/// Handle to an image.
+/// An owned image.
 #[derive(Debug)]
 pub struct Image<'a>(&'a Context, c_int);
 
@@ -1819,11 +1819,12 @@ impl Alignment {
 }
 
 /// Represents a transformation in 2D space.
-/// A transformation is a column-major matrix in the following form:
-/// [a c e] - indices [0 2 4]
-/// [b d f] - indices [1 3 5]
-/// [0 0 1] - not passed.
-/// The last row however is not specified; it is always [0 0 1] behind the scenes.
+/// 
+/// A transformation is a combination of translation (aka. position), skew and scale **or**
+/// translation and rotation; implemented as a column-major matrix in the following form:  
+/// **[a c e]** - indices [0 2 4]  
+/// **[b d f]** - indices [1 3 5]  
+/// **[0 0 1]** - only theoretical / does not really exist. Logically it is always [0 0 1].
 #[derive(Clone, Copy, Debug)]
 pub struct Transform {
     pub matrix: [f32; 6],
@@ -1844,13 +1845,13 @@ impl Transform {
         }
     }
 
-    /// Set flag on this transform to use it in absolute coordinate space.
+    /// Set flag on this transform to use it in absolute coordinate space. Only applies to text.
     pub fn absolute(mut self) -> Self {
         self.absolute = true;
         self
     }
 
-    /// Set flag on this transform to use it in local (relative) coordinate space.
+    /// Set flag on this transform to use it in local (relative) coordinate space. Only applies to text.
     pub fn relative(mut self) -> Self {
         self.absolute = false;
         self
