@@ -353,7 +353,7 @@ impl<'a> Frame<'a> {
     ///
     /// `transform` frame gets transformed by this Transform (it takes previous frame transform into account)
     /// `handler` the callback where you use the new transformed Frame
-    pub fn transformed<'b, F: FnOnce(Frame<'b>)>(&'b self, transform: Transform, handler: F) {
+    pub fn transformed<'b, F: FnOnce(Frame<'b>)>(&'b mut self, transform: Transform, handler: F) {
         let frame = Frame::new(self.context, transform * self.transform);
         handler(frame);
     }

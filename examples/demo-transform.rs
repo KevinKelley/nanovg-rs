@@ -67,7 +67,7 @@ fn main() {
             gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
-        context.frame((width, height), gl_window.hidpi_factor(), |frame| {
+        context.frame((width, height), gl_window.hidpi_factor(), |mut frame| {
             let (width, height) = (width as f32, height as f32);
 
             // position red rect that drawn rotated at offset with transform
