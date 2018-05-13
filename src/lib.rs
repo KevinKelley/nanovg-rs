@@ -347,12 +347,11 @@ impl<'a> Frame<'a> {
         &self.transform
     }
 
-    /// Transform current Frame by 'transform' and
-    /// call 'handler' with transformed Frame as its only parameter.
-    /// You can get the passed transform by calling get_transform on Frame instance.
-    ///
-    /// `transform` frame gets transformed by this Transform (it takes previous frame transform into account)
-    /// `handler` the callback where you use the new transformed Frame
+    /// Create a new frame where all drawing operations are transformed by `transform`.
+    /// 
+    /// `self` is passed as &mut because only one transformation at a time can be applied to a single frame.
+    /// Transforming a sub-frame however, is valid.  
+    /// The resulting transformation can be retrieved with [Frame::transform].
     pub fn transformed<'b, F: FnOnce(Frame<'b>)>(&'b mut self, transform: Transform, handler: F) {
         let frame = Frame::new(self.context, transform * self.transform);
         handler(frame);
