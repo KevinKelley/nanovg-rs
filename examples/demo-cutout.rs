@@ -226,7 +226,7 @@ impl Shape {
 
         frame.path(
             |path| {
-                path.move_to((Shape::get_polygon_point(0, num_sides, radius)));
+                path.move_to(Shape::get_polygon_point(0, num_sides, radius));
                 for i in 1..num_sides {
                     path.line_to(Shape::get_polygon_point(i, num_sides, radius));
                 }
