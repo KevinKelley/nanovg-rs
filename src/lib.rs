@@ -513,6 +513,7 @@ impl<'a> Frame<'a> {
     /// Returns iterator over all glyph positions in text.
     /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
     /// `text` the text to break into glyph positions
+    /// If you want to get current glyph and the next one, use .peekable() on this iterator.
     pub fn text_glyph_positions<S: AsRef<str>>(
         &self,
         (x, y): (f32, f32),
@@ -1612,24 +1613,13 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
         match num_glyphs {
             1 => {
                 self.start = &('\0' as c_char);
-                Some(GlyphPosition::new(&self.glyphs[0], None))
+                Some(GlyphPosition::new(&self.glyphs[0]))
             },
             2 => {
                 self.x = self.glyphs[1].x;
                 self.start = self.glyphs[1].s;
 
-                Some(
-                    GlyphPosition::new(
-                        &self.glyphs[0],
-                        Some(Box::new(
-                                GlyphPosition::new(
-                                    &self.glyphs[1],
-                                    None
-                                )
-                            )
-                        )
-                    )
-                )
+                Some(GlyphPosition::new(&self.glyphs[0]))
             },
             _ => None
         }
@@ -1708,20 +1698,15 @@ pub struct GlyphPosition {
     pub x: f32,
     pub min_x: f32,
     pub max_x: f32,
-    /// Next GlyphPosition for convenience (stores only one glyph position in advance)
-    pub next: Option<Box<GlyphPosition>>,
 }
 
 impl GlyphPosition {
     /// Creates new GlyphPosition from raw nanovg glyph position.
-    /// We can optionally pass next glyph position
-    /// (there is usually some if it is not the last glyph in text, otherwise it is none for last glyph).
-    fn new(glyph: &ffi::NVGglyphPosition, next: Option<Box<GlyphPosition>>) -> GlyphPosition {
+    fn new(glyph: &ffi::NVGglyphPosition) -> GlyphPosition {
         GlyphPosition {
             x: glyph.x,
             min_x: glyph.minx,
             max_x: glyph.maxx,
-            next: next
         }
     }
 }
