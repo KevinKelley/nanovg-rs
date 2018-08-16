@@ -22,7 +22,7 @@ gles2 = []
 gles3 = []
 
 [dependencies]
-bitflags = "1.0"
+bitflags = "1.0.3"
 
 [build-dependencies]
 cc = "1.0"
