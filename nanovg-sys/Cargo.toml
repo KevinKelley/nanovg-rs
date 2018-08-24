@@ -1,6 +1,6 @@
 [package]
 name = "nanovg-sys"
-version = "0.1.2"
+version = "1.0.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 build = "build.rs"
 links = "nanovg"
@@ -16,7 +16,6 @@ name = "nanovg_sys"
 path = "lib.rs"
 
 [features]
-default = ["gl3"]
 gl2 = []
 gl3 = []
 gles2 = []

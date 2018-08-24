@@ -1,6 +1,6 @@
 [package]
 name = "nanovg"
-version = "0.4.3"
+version = "1.0.0"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 readme = "README.md"
 description = "Idiomatic bindings to the NanoVG library"
@@ -20,7 +20,7 @@ gles2 = ["nanovg-sys/gles2"]
 gles3 = ["nanovg-sys/gles3"]
 
 [dependencies]
-nanovg-sys = { path = "nanovg-sys", version = "0.1.2", default-features = false }
+nanovg-sys = { path = "nanovg-sys", version = "1.0.0" }
 
 [dev-dependencies]
 glutin = "0.13.0"
@@ -31,24 +31,18 @@ lazy_static = "1.0"
 
 [[example]]
 name = "demo-glutin"
-required-features = ["gl3"]
 
 [[example]]
 name = "demo-clock"
-required-features = ["gl3"]
 
 [[example]]
 name = "demo-ui"
-required-features = ["gl3"]
 
 [[example]]
 name = "demo-cutout"
-required-features = ["gl3"]
 
 [[example]]
 name = "demo-text"
-required-features = ["gl3"]
 
 [[example]]
 name = "demo-transform"
-required-features = ["gl3"]
