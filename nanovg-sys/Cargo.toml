@@ -11,6 +11,9 @@ keywords = ["nanovg", "bindings", "vector", "graphics", "opengl"]
 categories = ["rendering::graphics-api", "games", "gui"]
 license = "MIT/Zlib"
 
+[package.metadata.docs.rs]
+features = ["gl3"]
+
 [lib]
 name = "nanovg_sys"
 path = "lib.rs"
