@@ -16,6 +16,7 @@ name = "nanovg_sys"
 path = "lib.rs"
 
 [features]
+default = ["gl3"]
 gl2 = []
 gl3 = []
 gles2 = []
