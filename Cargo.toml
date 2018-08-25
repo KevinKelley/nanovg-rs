@@ -1,6 +1,6 @@
 [package]
 name = "nanovg"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 readme = "README.md"
 description = "Idiomatic bindings to the NanoVG library"
@@ -9,6 +9,9 @@ repository = "https://github.com/KevinKelley/nanovg-rs"
 keywords = ["nanovg", "bindings", "vector", "graphics", "opengl"]
 categories = ["rendering::graphics-api", "games", "gui"]
 license = "MIT/Zlib"
+
+[package.metadata.docs.rs]
+features = ["gl3"]
 
 [lib]
 name = "nanovg"
