@@ -1,6 +1,6 @@
 [package]
 name = "nanovg"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Kevin Kelley <kevin@kelleysoft.com>"]
 readme = "README.md"
 description = "Idiomatic bindings to the NanoVG library"
@@ -23,7 +23,7 @@ gles2 = ["nanovg-sys/gles2"]
 gles3 = ["nanovg-sys/gles3"]
 
 [dependencies]
-nanovg-sys = { path = "nanovg-sys", version = "1.0.0" }
+nanovg-sys = { path = "nanovg-sys", version = "1.0.2" }
 
 [dev-dependencies]
 glutin = "0.13.0"
