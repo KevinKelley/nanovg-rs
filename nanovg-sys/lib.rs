@@ -13,7 +13,7 @@ pub type NVGcontext = c_void;
 // No reason to use a union here, since the nanovg guys
 // only used it for convenience.
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct NVGcolor {
     pub rgba: [c_float; 4],
 }

@@ -269,7 +269,7 @@ impl Drop for Context {
 
 /// A scissor defines a region on the screen in which drawing operations are allowed.
 /// Pixels drawn outside of this region are clipped.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Scissor {
     pub x: f32,
     pub y: f32,
@@ -281,7 +281,7 @@ pub struct Scissor {
 /// Define intersection scissor which gets intersected with 'with' Scissor.
 /// Pixels drawn outside of this intersection are clipped.
 /// When 'with' Scissor or this Intersection have rotation, the intersection will be an approximation.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Intersect {
     pub x: f32,
     pub y: f32,
@@ -292,7 +292,7 @@ pub struct Intersect {
 }
 
 /// Define how to clip specified region.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Clip {
     Scissor(Scissor),
     Intersect(Intersect),
@@ -300,7 +300,7 @@ pub enum Clip {
 }
 
 /// Options which control how a path is rendered.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PathOptions {
     /// The clip defines the rectangular region in which the frame is clipped into.
     /// All overflowing pixels will be discarded.
@@ -772,7 +772,7 @@ impl Default for FillOptions {
 }
 
 /// Controls how stroking a path should look.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct StrokeOptions {
     pub width: f32,
     pub line_cap: LineCap,
@@ -794,7 +794,7 @@ impl Default for StrokeOptions {
 }
 
 /// Controls how the end of line is drawn.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LineCap {
     Butt,
     Round,
@@ -812,7 +812,7 @@ impl LineCap {
 }
 
 /// Controls how lines are joined together.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LineJoin {
     Miter,
     Round,
@@ -836,7 +836,7 @@ pub trait Paint {
 
 /// A 32-bit color value.
 /// Used to fill or stroke paths with solid color.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Color(ffi::NVGcolor);
 
 impl Color {
@@ -957,7 +957,7 @@ impl Paint for Gradient {
 }
 
 /// Gradient paint used to fill or stroke paths with gradient.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Gradient {
     Linear {
         start: (f32, f32),
@@ -1274,7 +1274,7 @@ impl<'a> Drop for Image<'a> {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Direction {
     Clockwise,
     CounterClockwise,
@@ -1289,7 +1289,7 @@ impl Direction {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Solidity {
     Hole,
     Solid,
@@ -1307,7 +1307,7 @@ impl Solidity {
 /// Winding enum that holds either Direction or Solidity enum
 /// These two are identical aliases.
 /// They are here for different meanings in different contexts
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum Winding {
     Direction(Direction),
     Solidity(Solidity),
@@ -1322,7 +1322,7 @@ impl Winding {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum CompositeOperation {
     Basic(BasicCompositeOperation),
     BlendFunc {
@@ -1337,7 +1337,7 @@ pub enum CompositeOperation {
     },
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BasicCompositeOperation {
     SourceOver,
     SourceIn,
@@ -1372,7 +1372,7 @@ impl BasicCompositeOperation {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum BlendFactor {
     Zero,
     One,
@@ -1510,7 +1510,7 @@ impl<'a> Font<'a> {
 }
 
 /// Options which control the visual appearance of a text.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TextOptions {
     /// The size of the text in points.
     pub size: f32,
@@ -1551,7 +1551,7 @@ impl Default for TextOptions {
 }
 
 /// Struct to store min and max bounds when measuring text with text_bounds or text_box_bounds
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TextBounds {
     pub min_x: f32,
     pub min_y: f32,
@@ -1693,7 +1693,7 @@ impl<'a> Iterator for TextBreakLines<'a> {
 }
 
 // Stores position of glyph returned by iterator Context::text_glyph_positions
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct GlyphPosition {
     pub x: f32,
     pub min_x: f32,
@@ -1712,7 +1712,7 @@ impl GlyphPosition {
 }
 
 /// Struct to store measured text metrics computed with Context::text_metrics
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TextMetrics {
     pub ascender: f32,
     pub descender: f32,
@@ -1729,7 +1729,7 @@ impl TextMetrics {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Alignment(ffi::NVGalign);
 
 impl Alignment {
@@ -1810,7 +1810,7 @@ impl Alignment {
 /// **[a c e]** - indices [0 2 4]  
 /// **[b d f]** - indices [1 3 5]  
 /// **[0 0 1]** - only theoretical / does not really exist. Logically it is always [0 0 1].
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Transform {
     pub matrix: [f32; 6],
     /// Controls whether paths or texts that gets transformed by this Transform
