@@ -548,13 +548,18 @@ impl<'a> Frame<'a> {
     /// Breaks text into lines.
     /// Text is split at word boundaries, new-line character or when row width exceeds break_row_width.
     /// Returns iterator over text lines.
+    /// `font` the font face to use.
     /// `text` the text to break into lines
     /// `break_row_width` maximum width of row
+    /// `options` optional (`Default::default`) options that controls how the text is broken into lines.
     pub fn text_break_lines<S: AsRef<str>>(
         &self,
+        font: Font,
         text: S,
         break_row_width: f32,
+        options: TextOptions,
     ) -> TextBreakLines {
+        self.text_prepare(font, options);
         TextBreakLines::new(
             self.context,
             CString::new(text.as_ref()).unwrap(),
