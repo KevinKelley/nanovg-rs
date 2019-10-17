@@ -371,7 +371,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
 
     let mut y = y;
     let mut line_number = 0;
-    for row in frame.text_break_lines(text, width) {
+    for row in frame.text_break_lines(fonts.sans, text, width, text_options) {
         line_number += 1;
         let hit = mx > x && mx < (x + width) && my >= y && my < (y + metrics.line_height);
 

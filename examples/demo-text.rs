@@ -160,7 +160,7 @@ fn draw_paragraph(frame: &Frame, font: Font, x: f32, y: f32, width: f32, _height
         mouse
     };
 
-    for row in frame.text_break_lines(text, width) {
+    for row in frame.text_break_lines(font, text, width, text_options) {
         let hit = mx > x && mx < (x + width) && my >= y && my < (y + metrics.line_height);
 
         // draw line background
