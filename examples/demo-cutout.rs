@@ -96,7 +96,7 @@ fn main() {
 
             for x in 0..max_cols {
                 for y in 0..max_rows {
-                    let mut shape = shapes.get((x, y), &mut rng);
+                    let shape = shapes.get((x, y), &mut rng);
                     shape.update(delta_time);
                     let x = x as f32 * block_size - offset;
                     let y = y as f32 * block_size - offset;

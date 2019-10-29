@@ -1284,8 +1284,8 @@ pub enum BasicCompositeOperation {
 
 impl BasicCompositeOperation {
     fn into_raw(self) -> ffi::NVGcompositeOperation {
-        use ffi::NVGcompositeOperation::*;
-        use BasicCompositeOperation::*;
+        use crate::ffi::NVGcompositeOperation::*;
+        use crate::BasicCompositeOperation::*;
         match self {
             SourceOver => NVG_SOURCE_OVER,
             SourceIn => NVG_SOURCE_IN,
@@ -1319,7 +1319,7 @@ pub enum BlendFactor {
 
 impl BlendFactor {
     fn into_raw(self) -> ffi::NVGblendFactor {
-        use BlendFactor::*;
+        use crate::BlendFactor::*;
         match self {
             Zero => ffi::NVGblendFactor::NVG_ZERO,
             One => ffi::NVGblendFactor::NVG_ONE,
