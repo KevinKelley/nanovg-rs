@@ -1901,12 +1901,12 @@ mod tests {
 
     macro_rules! trans_eq_bool {
         ($t1:expr, $t2:expr) => {
-            f32_eq!($t1.matrix[0], $t2.matrix[0])
-                && f32_eq!($t1.matrix[1], $t2.matrix[1])
-                && f32_eq!($t1.matrix[2], $t2.matrix[2])
-                && f32_eq!($t1.matrix[3], $t2.matrix[3])
-                && f32_eq!($t1.matrix[4], $t2.matrix[4])
-                && f32_eq!($t1.matrix[5], $t2.matrix[5])
+            ($t1.matrix[0] - $t2.matrix[0]).abs() < 0.01
+                && ($t1.matrix[1] - $t2.matrix[1]).abs() < 0.01
+                && ($t1.matrix[2] - $t2.matrix[2]).abs() < 0.01
+                && ($t1.matrix[3] - $t2.matrix[3]).abs() < 0.01
+                && ($t1.matrix[4] - $t2.matrix[4]).abs() < 0.01
+                && ($t1.matrix[5] - $t2.matrix[5]).abs() < 0.01
         };
     }
 
@@ -1929,6 +1929,7 @@ mod tests {
             Transform::new(),
             Transform {
                 matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                absolute: false,
             }
         );
 
@@ -1936,6 +1937,7 @@ mod tests {
             Transform::new().with_translation(11.1, 22.2),
             Transform {
                 matrix: [1.0, 0.0, 0.0, 1.0, 11.1, 22.2],
+                absolute: false,
             }
         );
 
@@ -1943,6 +1945,7 @@ mod tests {
             Transform::new().with_scale(11.1, 22.2),
             Transform {
                 matrix: [11.1, 0.0, 0.0, 22.2, 0.0, 0.0],
+                absolute: false,
             }
         );
 
@@ -1950,6 +1953,7 @@ mod tests {
             Transform::new().with_skew(11.1, 22.2),
             Transform {
                 matrix: [1.0, 22.2, 11.1, 1.0, 0.0, 0.0],
+                absolute: false,
             }
         );
 
@@ -1958,6 +1962,7 @@ mod tests {
             Transform::new().with_rotation(angle),
             Transform {
                 matrix: [angle.cos(), angle.sin(), -angle.sin(), angle.cos(), 0.0, 0.0],
+                absolute: false,
             }
         );
 
