@@ -1,12 +1,14 @@
-extern crate glutin;
 extern crate gl;
+extern crate glutin;
 extern crate nanovg;
 
-use std::time::Instant;
-use std::f32::consts::PI;
 use glutin::GlContext;
-use nanovg::{StrokeOptions, Color, CompositeOperation, Clip, Gradient, ImagePattern,
-             BasicCompositeOperation, PathOptions, Scissor, TextOptions, Alignment, Image, Font, Transform};
+use nanovg::{
+    Alignment, BasicCompositeOperation, Clip, Color, CompositeOperation, Font, Gradient, Image, ImagePattern,
+    PathOptions, Scissor, StrokeOptions, TextOptions, Transform,
+};
+use std::f32::consts::PI;
+use std::time::Instant;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1024, 720);
 
@@ -27,28 +29,28 @@ fn main() {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
 
-    let context = nanovg::ContextBuilder::new().stencil_strokes().build().expect("Initialization of NanoVG failed!");
+    let context = nanovg::ContextBuilder::new()
+        .stencil_strokes()
+        .build()
+        .expect("Initialization of NanoVG failed!");
     let img = Image::new(&context)
         .repeat_x()
         .repeat_y()
         .build_from_file("resources/lenna.png")
         .expect("Couldn't load image");
-    let mechanic_font =
-        Font::from_file(&context, "Mechanic", "resources/Mechanic of the Heart.ttf")
-            .expect("Failed to load font 'Mechanic of the Heart.ttf'");
+    let mechanic_font = Font::from_file(&context, "Mechanic", "resources/Mechanic of the Heart.ttf")
+        .expect("Failed to load font 'Mechanic of the Heart.ttf'");
 
     let start_time = Instant::now();
     let mut running = true;
 
     while running {
         events_loop.poll_events(|event| match event {
-            glutin::Event::WindowEvent { event, .. } => {
-                match event {
-                    glutin::WindowEvent::Closed => running = false,
-                    glutin::WindowEvent::Resized(w, h) => gl_window.resize(w, h),
-                    _ => {}
-                }
-            }
+            glutin::Event::WindowEvent { event, .. } => match event {
+                glutin::WindowEvent::Closed => running = false,
+                glutin::WindowEvent::Resized(w, h) => gl_window.resize(w, h),
+                _ => {}
+            },
             _ => {}
         });
 
@@ -57,9 +59,7 @@ fn main() {
 
         unsafe {
             gl::Viewport(0, 0, width, height);
-            gl::Clear(
-                gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT,
-            );
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
 
         let (width, height) = (width as f32, height as f32);
@@ -82,7 +82,7 @@ fn main() {
                             start_color: Color::from_rgb(0xAA, 0x6C, 0x39),
                             end_color: Color::from_rgb(0x88, 0x2D, 0x60),
                         },
-                        Default::default()
+                        Default::default(),
                     );
                 },
                 Default::default(),
@@ -102,7 +102,7 @@ fn main() {
                         StrokeOptions {
                             width: 3.0,
                             ..Default::default()
-                        }
+                        },
                     );
                     path.fill(Color::new(0.2, 0.0, 0.8, 1.0), Default::default());
                 },
@@ -132,15 +132,13 @@ fn main() {
                     path.fill(paint, Default::default());
                 },
                 PathOptions {
-                    clip: Clip::Scissor(
-                        Scissor {
-                            x: 150.0,
-                            y: 600.0,
-                            width: 1000.0,
-                            height: 200.0,
-                            transform: None,
-                        }
-                    ),
+                    clip: Clip::Scissor(Scissor {
+                        x: 150.0,
+                        y: 600.0,
+                        width: 1000.0,
+                        height: 200.0,
+                        transform: None,
+                    }),
                     ..Default::default()
                 },
             );
@@ -160,7 +158,7 @@ fn main() {
                         StrokeOptions {
                             width: 5.0,
                             ..Default::default()
-                        }
+                        },
                     );
                 },
                 Default::default(),
@@ -200,8 +198,7 @@ fn main() {
                     size: 24.0,
                     align: Alignment::new().right().baseline(),
                     line_height: 1.2,
-                    line_max_width: gl_window.get_inner_size().unwrap_or(INIT_WINDOW_SIZE).0 as f32 -
-                        800.0,
+                    line_max_width: gl_window.get_inner_size().unwrap_or(INIT_WINDOW_SIZE).0 as f32 - 800.0,
                     ..Default::default()
                 },
             );

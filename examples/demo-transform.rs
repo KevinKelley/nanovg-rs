@@ -3,8 +3,9 @@ extern crate glutin;
 extern crate nanovg;
 
 use glutin::GlContext;
-use nanovg::{Color, Font, Alignment, TextOptions, Gradient,
-             Frame, Transform, PathOptions, StrokeOptions, Scissor, Clip};
+use nanovg::{
+    Alignment, Clip, Color, Font, Frame, Gradient, PathOptions, Scissor, StrokeOptions, TextOptions, Transform,
+};
 use std::time::Instant;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (300, 300);
@@ -31,10 +32,10 @@ fn main() {
         .expect("Initialization of NanoVG failed!");
 
     let font = Font::from_file(&context, "Roboto-Regular", "resources/Roboto-Regular.ttf")
-            .expect("Failed to load font 'Roboto-Regular.ttf'");
+        .expect("Failed to load font 'Roboto-Regular.ttf'");
 
     let emoji = Font::from_file(&context, "NotoEmoji", "resources/NotoEmoji-Regular.ttf")
-            .expect("Failed to load font 'NotoEmoji-Regular.ttf'");
+        .expect("Failed to load font 'NotoEmoji-Regular.ttf'");
 
     font.add_fallback(emoji);
 
@@ -72,21 +73,26 @@ fn main() {
             let (width, height) = (width as f32, height as f32);
 
             // position red rect that drawn rotated at offset with transform
-            frame.transformed(Transform::new().translate(width / 2.0, height + 100.0),
-                |frame| {
-                    rotating_red_rect(&frame, 50.0, 50.0, elapsed);
-                }
-            );
+            frame.transformed(Transform::new().translate(width / 2.0, height + 100.0), |frame| {
+                rotating_red_rect(&frame, 50.0, 50.0, elapsed);
+            });
 
             // position button with x and y
-            draw_button(&frame, font, "Button", 20.0, 150.0, 100.0, 40.0, Color::from_rgb(64, 64, 64));
+            draw_button(
+                &frame,
+                font,
+                "Button",
+                20.0,
+                150.0,
+                100.0,
+                40.0,
+                Color::from_rgb(64, 64, 64),
+            );
 
             // position multiple buttons with transform
-            frame.transformed(Transform::new().translate(width - 125.0, 20.0),
-                |frame| {
-                    button_container(&frame, font, 125.0);
-                }
-            );
+            frame.transformed(Transform::new().translate(width - 125.0, 20.0), |frame| {
+                button_container(&frame, font, 125.0);
+            });
 
             let translate = Transform::new().translate(60.0, 60.0);
             let rotate = Transform::new().rotate(elapsed);
@@ -102,7 +108,7 @@ fn main() {
                     PathOptions {
                         transform: Some(rotate),
                         ..Default::default()
-                    }
+                    },
                 );
             });
 
@@ -118,15 +124,14 @@ fn main() {
                         StrokeOptions {
                             width: 5.0,
                             ..Default::default()
-                        }
+                        },
                     );
                 },
                 PathOptions {
                     transform: Some(transform),
                     ..Default::default()
-                }
+                },
             );
-
 
             // this example renders rotated rectangular
             // area where rectangle gets drawn and rotated
@@ -134,16 +139,16 @@ fn main() {
             // out of this area it gets clipped
             let margin = 50.0;
             let clip = (margin, margin, width - margin * 2.0, height - margin * 2.0);
-            let mouse_transform = Transform::new().with_translation(mouse.0, mouse.1).rotate(elapsed * 4.0);
-            frame.transformed(Transform::new().rotate(10.0f32.to_radians()),
-                |frame| {
-                    render_area(&frame, font, clip, mouse_transform.absolute()); // the absolute is here because we do not want
-                                                                                 // our mouse to be translated in frame's local coordinate space,
-                                                                                 // we want to use it as it is
-                                                                                 // if you we to remove it, the rectangle inside area that is
-                                                                                 // dragged by mouse would get invalid coordinates
-                }
-            );
+            let mouse_transform = Transform::new()
+                .with_translation(mouse.0, mouse.1)
+                .rotate(elapsed * 4.0);
+            frame.transformed(Transform::new().rotate(10.0f32.to_radians()), |frame| {
+                render_area(&frame, font, clip, mouse_transform.absolute()); // the absolute is here because we do not want
+                                                                             // our mouse to be translated in frame's local coordinate space,
+                                                                             // we want to use it as it is
+                                                                             // if you we to remove it, the rectangle inside area that is
+                                                                             // dragged by mouse would get invalid coordinates
+            });
         });
 
         gl_window.swap_buffers().unwrap();
@@ -165,7 +170,7 @@ fn rotating_red_rect(frame: &Frame, w: f32, h: f32, t: f32) {
         PathOptions {
             transform: Some(Transform::new().rotate(t * 2.0)),
             ..Default::default()
-        }
+        },
     );
 }
 
@@ -198,7 +203,7 @@ fn draw_button(frame: &Frame, font: Font, text: &str, x: f32, y: f32, w: f32, h:
                     start_color: Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
                     end_color: Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -221,21 +226,11 @@ fn draw_button(frame: &Frame, font: Font, text: &str, x: f32, y: f32, w: f32, h:
 
     options.color = Color::from_rgba(0, 0, 0, 160);
 
-    frame.text(
-        font,
-        (x + w / 2.0, y + h / 2.0 - 1.0),
-        text,
-        options,
-    );
+    frame.text(font, (x + w / 2.0, y + h / 2.0 - 1.0), text, options);
 
     options.color = Color::from_rgba(255, 255, 255, 160);
 
-    frame.text(
-        font,
-        (x + w / 2.0 + 0.25, y + h / 2.0),
-        text,
-        options,
-    );
+    frame.text(font, (x + w / 2.0 + 0.25, y + h / 2.0), text, options);
 }
 
 fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform: Transform) {
@@ -255,7 +250,7 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
             path.fill(Color::from_rgba(255, 255, 255, 20), Default::default());
             path.stroke(Color::from_rgb(0, 0, 0), Default::default());
         },
-        PathOptions::default()
+        PathOptions::default(),
     );
 
     // draw small rectangle that is translated with transform
@@ -269,10 +264,13 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
             clip: Clip::Scissor(scissor),
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 
-    frame.text(font, (0.0, 0.0), "text",
+    frame.text(
+        font,
+        (0.0, 0.0),
+        "text",
         TextOptions {
             size: 28.0,
             color: Color::from_rgb(255, 255, 255),
@@ -280,6 +278,6 @@ fn render_area(frame: &Frame, font: Font, clip: (f32, f32, f32, f32), transform:
             clip: Clip::Scissor(scissor),
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 }

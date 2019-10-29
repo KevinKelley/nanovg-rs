@@ -1,9 +1,9 @@
 extern crate nanovg_sys as ffi;
 
+use std::ffi::{CString, NulError};
 use std::ops::Drop;
+use std::os::raw::{c_char, c_float, c_int, c_uchar};
 use std::path::Path as IoPath;
-use std::ffi::{NulError, CString};
-use std::os::raw::{c_int, c_float, c_uchar, c_char};
 use std::{mem, ptr};
 
 #[cfg(target_os = "windows")]
@@ -107,12 +107,7 @@ impl Context {
     /// `device_pixel_ratio` defines the pixel ratio. NanoVG doesn't guess this automatically to allow for Hi-DPI devices.
     /// Basically, this is your hidpi factor.
     /// `handler` is the callback in which you draw your paths. You cannot draw paths outside of this callback.
-    pub fn frame<'a, F: FnOnce(Frame<'a>)>(
-        &'a self,
-        (width, height): (f32, f32),
-        device_pixel_ratio: f32,
-        handler: F,
-    ) {
+    pub fn frame<'a, F: FnOnce(Frame<'a>)>(&'a self, (width, height): (f32, f32), device_pixel_ratio: f32, handler: F) {
         unsafe {
             ffi::nvgBeginFrame(
                 self.raw(),
@@ -167,27 +162,23 @@ impl Context {
 
     fn scissor(&self, scissor: Option<Scissor>) {
         match scissor {
-            Some(ref scissor) =>  {
-                self.with_applied_transform(scissor.transform,
-                    || unsafe {
-                        ffi::nvgScissor(self.raw(), scissor.x, scissor.y, scissor.width, scissor.height);
-                    }
-                );
-            },
+            Some(ref scissor) => {
+                self.with_applied_transform(scissor.transform, || unsafe {
+                    ffi::nvgScissor(self.raw(), scissor.x, scissor.y, scissor.width, scissor.height);
+                });
+            }
             None => unsafe {
                 ffi::nvgResetScissor(self.raw());
-            }
+            },
         }
     }
 
     fn intersect(&self, intersect: &Intersect) {
         self.scissor(Some(intersect.with));
 
-        self.with_applied_transform(intersect.transform,
-            || unsafe {
-                ffi::nvgIntersectScissor(self.raw(), intersect.x, intersect.y, intersect.width, intersect.height);
-            }
-        );
+        self.with_applied_transform(intersect.transform, || unsafe {
+            ffi::nvgIntersectScissor(self.raw(), intersect.x, intersect.y, intersect.width, intersect.height);
+        });
     }
 
     fn clip(&self, clip: Clip) {
@@ -202,9 +193,13 @@ impl Context {
         match transform {
             Some(ref transform) => {
                 let t = transform.matrix;
-                unsafe { ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]); }
+                unsafe {
+                    ffi::nvgTransform(self.raw(), t[0], t[1], t[2], t[3], t[4], t[5]);
+                }
+            }
+            None => unsafe {
+                ffi::nvgResetTransform(self.raw());
             },
-            None => unsafe { ffi::nvgResetTransform(self.raw()); }
         }
     }
 
@@ -275,7 +270,7 @@ pub struct Scissor {
     pub y: f32,
     pub width: f32,
     pub height: f32,
-    pub transform: Option<Transform>
+    pub transform: Option<Transform>,
 }
 
 /// Define intersection scissor which gets intersected with 'with' Scissor.
@@ -288,7 +283,7 @@ pub struct Intersect {
     pub width: f32,
     pub height: f32,
     pub with: Scissor,
-    pub transform: Option<Transform>
+    pub transform: Option<Transform>,
 }
 
 /// Define how to clip specified region.
@@ -348,7 +343,7 @@ impl<'a> Frame<'a> {
     }
 
     /// Create a new frame where all drawing operations are transformed by `transform`.
-    /// 
+    ///
     /// `self` is passed as &mut because only one transformation at a time can be applied to a single frame.
     /// Transforming a sub-frame however, is valid.  
     /// The resulting transformation can be retrieved with [Frame::transform].
@@ -367,7 +362,9 @@ impl<'a> Frame<'a> {
 
         self.draw_prepare(options.clip, options.transform);
 
-        unsafe { ffi::nvgBeginPath(self.context.raw()); }
+        unsafe {
+            ffi::nvgBeginPath(self.context.raw());
+        }
         handler(Path::new(self));
     }
 
@@ -403,13 +400,7 @@ impl<'a> Frame<'a> {
     /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
     /// `text` the string to draw.
     /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
+    pub fn text<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
 
@@ -425,13 +416,7 @@ impl<'a> Frame<'a> {
     /// `(x, y)` the origin / position to draw the text at. The origin is relative to the alignment of `options`.
     /// `text` the string to draw.
     /// `options` optional (`Default::default`) options that control the visual appearance of the text.
-    pub fn text_box<S: AsRef<str>>(
-        &self,
-        font: Font,
-        (x, y): (f32, f32),
-        text: S,
-        options: TextOptions,
-    ) {
+    pub fn text_box<S: AsRef<str>>(&self, font: Font, (x, y): (f32, f32), text: S, options: TextOptions) {
         let text = CString::new(text.as_ref()).unwrap();
         self.text_prepare(font, options);
 
@@ -514,17 +499,8 @@ impl<'a> Frame<'a> {
     /// `(x, y)` the coordinate space from which to offset coordinates in `GlyphPosition`
     /// `text` the text to break into glyph positions
     /// If you want to get current glyph and the next one, use .peekable() on this iterator.
-    pub fn text_glyph_positions<S: AsRef<str>>(
-        &self,
-        (x, y): (f32, f32),
-        text: S,
-    ) -> TextGlyphPositions {
-        TextGlyphPositions::new(
-            self.context,
-            x,
-            y,
-            CString::new(text.as_ref()).unwrap()
-        )
+    pub fn text_glyph_positions<S: AsRef<str>>(&self, (x, y): (f32, f32), text: S) -> TextGlyphPositions {
+        TextGlyphPositions::new(self.context, x, y, CString::new(text.as_ref()).unwrap())
     }
 
     /// Returns vertical text metrics based on given font and text options
@@ -539,7 +515,7 @@ impl<'a> Frame<'a> {
                 self.context.raw(),
                 &mut metrics.ascender,
                 &mut metrics.descender,
-                &mut metrics.line_height
+                &mut metrics.line_height,
             );
         }
         metrics
@@ -560,11 +536,7 @@ impl<'a> Frame<'a> {
         options: TextOptions,
     ) -> TextBreakLines {
         self.text_prepare(font, options);
-        TextBreakLines::new(
-            self.context,
-            CString::new(text.as_ref()).unwrap(),
-            break_row_width
-        )
+        TextBreakLines::new(self.context, CString::new(text.as_ref()).unwrap(), break_row_width)
     }
 }
 
@@ -624,37 +596,16 @@ impl<'a, 'b> Path<'a, 'b> {
     }
 
     /// Add an arc to the path.
-    pub fn arc(
-        &self,
-        (cx, cy): (f32, f32),
-        radius: f32,
-        start_angle: f32,
-        end_angle: f32,
-        winding: Winding,
-    ) {
+    pub fn arc(&self, (cx, cy): (f32, f32), radius: f32, start_angle: f32, end_angle: f32, winding: Winding) {
         unsafe {
-            ffi::nvgArc(
-                self.ctx(),
-                cx,
-                cy,
-                radius,
-                start_angle,
-                end_angle,
-                winding.into_raw(),
-            );
+            ffi::nvgArc(self.ctx(), cx, cy, radius, start_angle, end_angle, winding.into_raw());
         }
     }
 
     /// Add a rectangle to the path.
     pub fn rect(&self, (x, y): (f32, f32), (w, h): (f32, f32)) {
         unsafe {
-            ffi::nvgRect(
-                self.ctx(),
-                x as c_float,
-                y as c_float,
-                w as c_float,
-                h as c_float,
-            );
+            ffi::nvgRect(self.ctx(), x as c_float, y as c_float, w as c_float, h as c_float);
         }
     }
 
@@ -713,15 +664,7 @@ impl<'a, 'b> Path<'a, 'b> {
     /// Add a cubic bezier curve to the subpath.
     pub fn cubic_bezier_to(&self, (x, y): (f32, f32), control1: (f32, f32), control2: (f32, f32)) {
         unsafe {
-            ffi::nvgBezierTo(
-                self.ctx(),
-                control1.0,
-                control1.1,
-                control2.0,
-                control2.1,
-                x,
-                y,
-            );
+            ffi::nvgBezierTo(self.ctx(), control1.0, control1.1, control2.0, control2.1, x, y);
         }
     }
 
@@ -770,9 +713,7 @@ pub struct FillOptions {
 
 impl Default for FillOptions {
     fn default() -> Self {
-        Self {
-            antialias: true,
-        }
+        Self { antialias: true }
     }
 }
 
@@ -821,7 +762,7 @@ impl LineCap {
 pub enum LineJoin {
     Miter,
     Round,
-    Bevel
+    Bevel,
 }
 
 impl LineJoin {
@@ -853,30 +794,22 @@ impl Color {
 
     /// Create a new color from three 8-bit color channels.
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Color(unsafe {
-            ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar)
-        })
+        Color(unsafe { ffi::nvgRGB(r as c_uchar, g as c_uchar, b as c_uchar) })
     }
 
     /// Create a new color from three 8-bit color channels and an 8-bit alpha channel.
     pub fn from_rgba(r: u8, g: u8, b: u8, a: u8) -> Self {
-        Color(unsafe {
-            ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar)
-        })
+        Color(unsafe { ffi::nvgRGBA(r as c_uchar, g as c_uchar, b as c_uchar, a as c_uchar) })
     }
 
     /// Create a new color from three hsl channels.
     pub fn from_hsl(h: f32, s: f32, l: f32) -> Self {
-        Color(unsafe {
-            ffi::nvgHSL(h as c_float, s as c_float, l as c_float)
-        })
+        Color(unsafe { ffi::nvgHSL(h as c_float, s as c_float, l as c_float) })
     }
 
     /// Create a new color from three hsl channels and an 8-bit alpha channel.
     pub fn from_hsla(h: f32, s: f32, l: f32, a: u8) -> Self {
-        Color(unsafe {
-            ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar)
-        })
+        Color(unsafe { ffi::nvgHSLA(h as c_float, s as c_float, l as c_float, a as c_uchar) })
     }
 
     fn into_raw(self) -> ffi::NVGcolor {
@@ -925,9 +858,7 @@ impl Color {
 
     /// Create a new color by linearly interpolating between two existing colors.
     pub fn lerp(a: Color, b: Color, t: f32) -> Color {
-        Color(unsafe {
-            ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float)
-        })
+        Color(unsafe { ffi::nvgLerpRGBA(a.into_raw(), b.into_raw(), t as c_float) })
     }
 }
 
@@ -984,7 +915,7 @@ pub enum Gradient {
         outer_radius: f32,
         start_color: Color,
         end_color: Color,
-    }
+    },
 }
 
 impl Gradient {
@@ -1009,7 +940,7 @@ impl Gradient {
                         end_color.into_raw(),
                     )
                 }
-            },
+            }
             &Gradient::Box {
                 position,
                 size,
@@ -1017,22 +948,20 @@ impl Gradient {
                 feather,
                 start_color,
                 end_color,
-            } => {
-                unsafe {
-                    let (x, y) = position;
-                    let (w, h) = size;
-                    ffi::nvgBoxGradient(
-                        ptr::null_mut(),
-                        x,
-                        y,
-                        w,
-                        h,
-                        radius,
-                        feather,
-                        start_color.into_raw(),
-                        end_color.into_raw(),
-                    )
-                }
+            } => unsafe {
+                let (x, y) = position;
+                let (w, h) = size;
+                ffi::nvgBoxGradient(
+                    ptr::null_mut(),
+                    x,
+                    y,
+                    w,
+                    h,
+                    radius,
+                    feather,
+                    start_color.into_raw(),
+                    end_color.into_raw(),
+                )
             },
             &Gradient::Radial {
                 center,
@@ -1040,19 +969,17 @@ impl Gradient {
                 outer_radius,
                 start_color,
                 end_color,
-            } => {
-                unsafe {
-                    let (cx, cy) = center;
-                    ffi::nvgRadialGradient(
-                        ptr::null_mut(),
-                        cx,
-                        cy,
-                        inner_radius,
-                        outer_radius,
-                        start_color.into_raw(),
-                        end_color.into_raw(),
-                    )
-                }
+            } => unsafe {
+                let (cx, cy) = center;
+                ffi::nvgRadialGradient(
+                    ptr::null_mut(),
+                    cx,
+                    cy,
+                    inner_radius,
+                    outer_radius,
+                    start_color.into_raw(),
+                    end_color.into_raw(),
+                )
             },
         }
     }
@@ -1073,7 +1000,16 @@ impl<'a> ImagePattern<'a> {
         let (ox, oy) = self.origin;
         let (ex, ey) = self.size;
         unsafe {
-            ffi::nvgImagePattern(ptr::null_mut(), ox, oy, ex, ey, self.angle, self.image.raw(), self.alpha)
+            ffi::nvgImagePattern(
+                ptr::null_mut(),
+                ox,
+                oy,
+                ex,
+                ey,
+                self.angle,
+                self.image.raw(),
+                self.alpha,
+            )
         }
     }
 }
@@ -1156,8 +1092,7 @@ impl<'a> ImageBuilder<'a> {
             None => return Err(ImageBuilderError::CStringError),
         };
 
-        let handle =
-            unsafe { ffi::nvgCreateImage(self.context.raw(), (*path).as_ptr(), self.flags.bits()) };
+        let handle = unsafe { ffi::nvgCreateImage(self.context.raw(), (*path).as_ptr(), self.flags.bits()) };
         if handle > 0 {
             Ok(Image(self.context, handle))
         } else {
@@ -1183,12 +1118,7 @@ impl<'a> ImageBuilder<'a> {
     }
 
     /// Construct the image by filling it with pixel data from memory (always 32bit RGBA).
-    pub fn build_from_rgba(
-        self,
-        width: usize,
-        height: usize,
-        data: &[u32],
-    ) -> ImageBuilderResult<'a> {
+    pub fn build_from_rgba(self, width: usize, height: usize, data: &[u32]) -> ImageBuilderResult<'a> {
         if data.len() < width * height {
             return Err(ImageBuilderError::NotEnoughData);
         }
@@ -1245,12 +1175,7 @@ impl<'a> Image<'a> {
     pub fn size(&self) -> (usize, usize) {
         let (mut w, mut h): (c_int, c_int) = (0, 0);
         unsafe {
-            ffi::nvgImageSize(
-                self.ctx().raw(),
-                self.raw(),
-                &mut w as *mut _,
-                &mut h as *mut _,
-            );
+            ffi::nvgImageSize(self.ctx().raw(), self.raw(), &mut w as *mut _, &mut h as *mut _);
         }
         (w as usize, h as usize)
     }
@@ -1359,8 +1284,8 @@ pub enum BasicCompositeOperation {
 
 impl BasicCompositeOperation {
     fn into_raw(self) -> ffi::NVGcompositeOperation {
-        use BasicCompositeOperation::*;
         use ffi::NVGcompositeOperation::*;
+        use BasicCompositeOperation::*;
         match self {
             SourceOver => NVG_SOURCE_OVER,
             SourceIn => NVG_SOURCE_IN,
@@ -1450,16 +1375,10 @@ impl<'a> Font<'a> {
 
     /// Attempt to load a font from the file at `path`.
     /// Fonts are always named (specified with `name`).
-    pub fn from_file<S: AsRef<str>, P: AsRef<IoPath>>(
-        context: &'a Context,
-        name: S,
-        path: P,
-    ) -> CreateFontResult {
+    pub fn from_file<S: AsRef<str>, P: AsRef<IoPath>>(context: &'a Context, name: S, path: P) -> CreateFontResult {
         let name = CString::new(name.as_ref())?;
         let path = CString::new(path.as_ref().to_str().ok_or(CreateFontError::InvalidPath)?)?;
-        let handle = unsafe { 
-            ffi::nvgCreateFont(context.raw(), name.as_ptr(), path.as_ptr())
-        };
+        let handle = unsafe { ffi::nvgCreateFont(context.raw(), name.as_ptr(), path.as_ptr()) };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
@@ -1469,11 +1388,7 @@ impl<'a> Font<'a> {
 
     /// Attempt to load a font from memory.
     /// Fonts are always named (specified with `name`).
-    pub fn from_memory<'b, S: AsRef<str>>(
-        context: &'a Context,
-        name: S,
-        memory: &'b [u8],
-    ) -> CreateFontResult<'a> {
+    pub fn from_memory<'b, S: AsRef<str>>(context: &'a Context, name: S, memory: &'b [u8]) -> CreateFontResult<'a> {
         let name = CString::new(name.as_ref())?;
         let handle = unsafe {
             ffi::nvgCreateFontMem(
@@ -1482,7 +1397,7 @@ impl<'a> Font<'a> {
                 memory.as_ptr() as *mut _,
                 memory.len() as c_int,
                 0,
-            )         
+            )
         };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
@@ -1494,9 +1409,7 @@ impl<'a> Font<'a> {
     /// Try to find a already loaded font with the given `name`.
     pub fn find<S: AsRef<str>>(context: &'a Context, name: S) -> CreateFontResult {
         let name = CString::new(name.as_ref())?;
-        let handle = unsafe { 
-            ffi::nvgFindFont(context.raw(), name.as_ptr())
-        };
+        let handle = unsafe { ffi::nvgFindFont(context.raw(), name.as_ptr()) };
         if handle > ffi::FONS_INVALID {
             Ok(Font(context, handle))
         } else {
@@ -1593,7 +1506,7 @@ impl<'a> TextGlyphPositions<'a> {
             x: x,
             y: y,
             start: text.into_raw(),
-            glyphs: [unsafe { mem::zeroed() }; 2]
+            glyphs: [unsafe { mem::zeroed() }; 2],
         }
     }
 }
@@ -1604,14 +1517,14 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
     /// Returns next glyph in text
     fn next(&mut self) -> Option<Self::Item> {
         let num_glyphs = unsafe {
-             ffi::nvgTextGlyphPositions(
+            ffi::nvgTextGlyphPositions(
                 self.context.raw(),
                 self.x,
                 self.y,
                 self.start,
                 ptr::null(),
                 self.glyphs.as_mut_ptr(),
-                2
+                2,
             )
         };
 
@@ -1619,14 +1532,14 @@ impl<'a> Iterator for TextGlyphPositions<'a> {
             1 => {
                 self.start = &('\0' as c_char);
                 Some(GlyphPosition::new(&self.glyphs[0]))
-            },
+            }
             2 => {
                 self.x = self.glyphs[1].x;
                 self.start = self.glyphs[1].s;
 
                 Some(GlyphPosition::new(&self.glyphs[0]))
-            },
-            _ => None
+            }
+            _ => None,
         }
     }
 }
@@ -1682,7 +1595,14 @@ impl<'a> Iterator for TextBreakLines<'a> {
     /// Returns next row in text
     fn next(&mut self) -> Option<Self::Item> {
         unsafe {
-            let nrows = ffi::nvgTextBreakLines(self.context.raw(), self.start, ptr::null(), self.break_row_width, &mut self.row, 1);
+            let nrows = ffi::nvgTextBreakLines(
+                self.context.raw(),
+                self.start,
+                ptr::null(),
+                self.break_row_width,
+                &mut self.row,
+                1,
+            );
             self.start = self.row.next;
 
             if nrows > 0 {
@@ -1809,7 +1729,7 @@ impl Alignment {
 }
 
 /// Represents a transformation in 2D space.
-/// 
+///
 /// A transformation is a combination of translation (aka. position), skew and scale **or**
 /// translation and rotation; implemented as a column-major matrix in the following form:  
 /// **[a c e]** - indices [0 2 4]  
@@ -1950,14 +1870,11 @@ impl Transform {
     /// Returns inversed copy or None if inversion fails.
     pub fn try_inverse(&self) -> Option<Transform> {
         let mut inv = Transform::new();
-        let result = unsafe {
-            ffi::nvgTransformInverse(inv.matrix.as_mut_ptr(), self.matrix.as_ptr())
-        };
+        let result = unsafe { ffi::nvgTransformInverse(inv.matrix.as_mut_ptr(), self.matrix.as_ptr()) };
 
         if result == 1 {
             Some(inv)
-        }
-        else {
+        } else {
             None
         }
     }
@@ -1984,12 +1901,12 @@ mod tests {
 
     macro_rules! trans_eq_bool {
         ($t1:expr, $t2:expr) => {
-            f32_eq!($t1.matrix[0], $t2.matrix[0]) &&
-            f32_eq!($t1.matrix[1], $t2.matrix[1]) &&
-            f32_eq!($t1.matrix[2], $t2.matrix[2]) &&
-            f32_eq!($t1.matrix[3], $t2.matrix[3]) &&
-            f32_eq!($t1.matrix[4], $t2.matrix[4]) &&
-            f32_eq!($t1.matrix[5], $t2.matrix[5])
+            f32_eq!($t1.matrix[0], $t2.matrix[0])
+                && f32_eq!($t1.matrix[1], $t2.matrix[1])
+                && f32_eq!($t1.matrix[2], $t2.matrix[2])
+                && f32_eq!($t1.matrix[3], $t2.matrix[3])
+                && f32_eq!($t1.matrix[4], $t2.matrix[4])
+                && f32_eq!($t1.matrix[5], $t2.matrix[5])
         };
     }
 
@@ -2008,26 +1925,41 @@ mod tests {
     #[test]
     fn test_transform() {
         // Contructors
-        trans_eq!(Transform::new(), Transform {
-            matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
-        });
+        trans_eq!(
+            Transform::new(),
+            Transform {
+                matrix: [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+            }
+        );
 
-        trans_eq!(Transform::new().with_translation(11.1, 22.2), Transform {
-            matrix: [1.0, 0.0, 0.0, 1.0, 11.1, 22.2],
-        });
+        trans_eq!(
+            Transform::new().with_translation(11.1, 22.2),
+            Transform {
+                matrix: [1.0, 0.0, 0.0, 1.0, 11.1, 22.2],
+            }
+        );
 
-        trans_eq!(Transform::new().with_scale(11.1, 22.2), Transform {
-            matrix: [11.1, 0.0, 0.0, 22.2, 0.0, 0.0],
-        });
+        trans_eq!(
+            Transform::new().with_scale(11.1, 22.2),
+            Transform {
+                matrix: [11.1, 0.0, 0.0, 22.2, 0.0, 0.0],
+            }
+        );
 
-        trans_eq!(Transform::new().with_skew(11.1, 22.2), Transform {
-            matrix: [1.0, 22.2, 11.1, 1.0, 0.0, 0.0],
-        });
+        trans_eq!(
+            Transform::new().with_skew(11.1, 22.2),
+            Transform {
+                matrix: [1.0, 22.2, 11.1, 1.0, 0.0, 0.0],
+            }
+        );
 
         let angle = 90f32.to_radians();
-        trans_eq!(Transform::new().with_rotation(angle), Transform {
-            matrix: [angle.cos(), angle.sin(), -angle.sin(), angle.cos(), 0.0, 0.0],
-        });
+        trans_eq!(
+            Transform::new().with_rotation(angle),
+            Transform {
+                matrix: [angle.cos(), angle.sin(), -angle.sin(), angle.cos(), 0.0, 0.0],
+            }
+        );
 
         // Multiplication
         let identity = Transform::new();

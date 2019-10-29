@@ -3,13 +3,14 @@ extern crate glutin;
 extern crate nanovg;
 extern crate rand;
 
-use std::time::Instant;
-use std::f32::consts;
-use rand::Rng;
 use glutin::GlContext;
-use nanovg::{Direction, Alignment, Color, Font, Frame, Gradient, ImagePattern,
-             LineCap, LineJoin, PathOptions, Scissor, Solidity, StrokeOptions,
-             TextOptions, Transform, Winding, Image, Context, Clip, Intersect};
+use nanovg::{
+    Alignment, Clip, Color, Context, Direction, Font, Frame, Gradient, Image, ImagePattern, Intersect, LineCap,
+    LineJoin, PathOptions, Scissor, Solidity, StrokeOptions, TextOptions, Transform, Winding,
+};
+use rand::Rng;
+use std::f32::consts;
+use std::time::Instant;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1000, 600);
 
@@ -99,15 +100,7 @@ fn main() {
 
         let (width, height) = (width as f32, height as f32);
         context.frame((width, height), gl_window.hidpi_factor(), |frame| {
-            render_demo(
-                &frame,
-                mx,
-                my,
-                width as f32,
-                height as f32,
-                elapsed,
-                &demo_data,
-            );
+            render_demo(&frame, mx, my, width as f32, height as f32, elapsed, &demo_data);
 
             fps_graph.draw(&frame, demo_data.fonts.sans, 5.0, 5.0);
             cpu_graph.draw(&frame, demo_data.fonts.sans, 5.0 + 200.0 + 5.0, 5.0);
@@ -133,8 +126,7 @@ fn main() {
 
 fn load_demo_data(context: &Context) -> DemoData {
     let demo_fonts = DemoFonts {
-        icons: Font::from_file(context, "Entypo", "resources/entypo.ttf")
-            .expect("Failed to load font 'entypo.ttf'"),
+        icons: Font::from_file(context, "Entypo", "resources/entypo.ttf").expect("Failed to load font 'entypo.ttf'"),
 
         sans: Font::from_file(context, "Roboto-Regular", "resources/Roboto-Regular.ttf")
             .expect("Failed to load font 'Roboto-Regular.ttf'"),
@@ -144,24 +136,23 @@ fn load_demo_data(context: &Context) -> DemoData {
     };
 
     let emoji = Font::from_file(context, "NotoEmoji", "resources/NotoEmoji-Regular.ttf")
-            .expect("Failed to load font 'NotoEmoji-Regular.ttf'");
+        .expect("Failed to load font 'NotoEmoji-Regular.ttf'");
 
     let mut images = Vec::new();
     for i in 0..12 {
         let file_name = format!("resources/images/image{}.jpg", i + 1);
         let image = Image::new(context)
-                        .build_from_file(&file_name)
-                        .expect(&format!("Failed to load image {}", &file_name));
+            .build_from_file(&file_name)
+            .expect(&format!("Failed to load image {}", &file_name));
         images.push(image);
     }
-
 
     demo_fonts.sans.add_fallback(emoji);
     demo_fonts.sans_bold.add_fallback(emoji);
 
     DemoData {
         fonts: demo_fonts,
-        images: images
+        images: images,
     }
 }
 
@@ -206,7 +197,7 @@ fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32,
     draw_search_box(frame, &data.fonts, "Search", x, y, 280.0, 25.0);
     y += 40.0;
 
-    draw_drop_down(frame, &data.fonts, "Effects", x, y, 280.0,28.0);
+    draw_drop_down(frame, &data.fonts, "Effects", x, y, 280.0, 28.0);
     let popy = y + 14.0;
     y += 45.0;
 
@@ -221,21 +212,51 @@ fn render_demo(frame: &Frame, mx: f32, my: f32, width: f32, height: f32, t: f32,
     y += 38.0;
 
     draw_check_box(frame, &data.fonts, "Remember me", x, y, 140.0, 28.0);
-    draw_button(frame, &data.fonts, Some(ICON_LOGIN), "Sign in", x + 138.0, y, 140.0, 28.0, Color::from_rgba(0, 96, 128, 255));
+    draw_button(
+        frame,
+        &data.fonts,
+        Some(ICON_LOGIN),
+        "Sign in",
+        x + 138.0,
+        y,
+        140.0,
+        28.0,
+        Color::from_rgba(0, 96, 128, 255),
+    );
     y += 45.0;
 
     // slider
     draw_label(frame, &data.fonts, "Diameter", x, y, 280.0, 20.0);
     y += 25.0;
 
-    draw_edit_box_num(frame, &data.fonts, "128.00", "px", x + 180.0, y, 100.0, 28.0, );
+    draw_edit_box_num(frame, &data.fonts, "128.00", "px", x + 180.0, y, 100.0, 28.0);
 
     draw_slider(frame, 0.4, x, y, 170.0, 28.0);
     y += 55.0;
 
-    draw_button(frame, &data.fonts, Some(ICON_TRASH), "Delete", x, y, 160.0, 28.0, Color::from_rgba(128, 16, 8, 255));
+    draw_button(
+        frame,
+        &data.fonts,
+        Some(ICON_TRASH),
+        "Delete",
+        x,
+        y,
+        160.0,
+        28.0,
+        Color::from_rgba(128, 16, 8, 255),
+    );
 
-    draw_button(frame, &data.fonts, None, "Cancel", x + 170.0, y, 110.0, 28.0, Color::from_rgba(0, 0, 0, 0));
+    draw_button(
+        frame,
+        &data.fonts,
+        None,
+        "Cancel",
+        x + 170.0,
+        y,
+        110.0,
+        28.0,
+        Color::from_rgba(0, 0, 0, 0),
+    );
 
     draw_thumbnails(frame, &data.images, 365.0, popy - 30.0, 160.0, 300.0, t);
 }
@@ -263,7 +284,7 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
                     start_color: Color::from_rgba(0, 0, 0, 32),
                     end_color: Color::from_rgba(0, 0, 0, 16),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -282,7 +303,7 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
                     start_color: Color::from_rgba(220, 220, 220, 255),
                     end_color: Color::from_rgba(128, 128, 128, 255),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -303,16 +324,8 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
             dx *= ex * 0.4;
             dy *= ey * 0.5;
 
-            path.ellipse(
-                (lx + dx, ly + dy + ey * 0.25 * (1.0 - blink)),
-                br,
-                br * blink,
-            );
-            path.ellipse(
-                (rx + dx, ry + dy + ey * 0.25 * (1.0 - blink)),
-                br,
-                br * blink,
-            );
+            path.ellipse((lx + dx, ly + dy + ey * 0.25 * (1.0 - blink)), br, br * blink);
+            path.ellipse((rx + dx, ry + dy + ey * 0.25 * (1.0 - blink)), br, br * blink);
             path.fill(Color::from_rgba(32, 32, 32, 255), Default::default());
         },
         Default::default(),
@@ -330,7 +343,7 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
                     start_color: Color::from_rgba(255, 255, 255, 128),
                     end_color: Color::from_rgba(255, 255, 255, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -348,7 +361,7 @@ fn draw_eyes(frame: &Frame, x: f32, y: f32, w: f32, h: f32, mx: f32, my: f32, t:
                     start_color: Color::from_rgba(255, 255, 255, 128),
                     end_color: Color::from_rgba(255, 255, 255, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -379,18 +392,16 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         frame.path(
             |path| {
                 path.rect((x, y), (row.width, metrics.line_height));
-                path.fill(Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 }), Default::default());
+                path.fill(
+                    Color::from_rgba(255, 255, 255, if hit { 64 } else { 16 }),
+                    Default::default(),
+                );
             },
-            Default::default()
+            Default::default(),
         );
 
         // draw line text
-        frame.text(
-            fonts.sans,
-            (x, y),
-            row.text,
-            text_options,
-        );
+        frame.text(fonts.sans, (x, y), row.text, text_options);
 
         if hit {
             let mut caretx = if mx < x + row.width / 2.0 { x } else { x + row.width };
@@ -400,7 +411,11 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             let mut glyph_positions = frame.text_glyph_positions((x, y), row.text).peekable();
             while let Some(glyph) = glyph_positions.next() {
                 let x0 = glyph.x;
-                let x1 = if let Some(next) = glyph_positions.peek() { next.x } else { x + row.width };
+                let x1 = if let Some(next) = glyph_positions.peek() {
+                    next.x
+                } else {
+                    x + row.width
+                };
                 let gx = x0 * 0.3 + x1 * 0.7;
 
                 if mx >= px && mx < gx {
@@ -417,7 +432,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
                     path.rect((caretx, y), (1.0, metrics.line_height));
                     path.fill(Color::from_rgba(255, 192, 0, 255), Default::default());
                 },
-                Default::default()
+                Default::default(),
             );
 
             gutter_x = x - 10.0;
@@ -427,7 +442,6 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
 
         y += metrics.line_height;
     }
-
 
     // draw gutter
     if gutter_line != 0 {
@@ -446,12 +460,12 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
                 path.rounded_rect(
                     (bounds.min_x - 4.0, bounds.min_y - 2.0),
                     (bounds.max_x - bounds.min_x + 8.0, bounds.max_y - bounds.min_y + 4.0),
-                    (bounds.max_y - bounds.min_y + 4.0) / 2.0 - 1.0
+                    (bounds.max_y - bounds.min_y + 4.0) / 2.0 - 1.0,
                 );
 
                 path.fill(Color::from_rgba(255, 192, 0, 255), Default::default());
             },
-            Default::default()
+            Default::default(),
         );
         frame.text(fonts.sans, (gx, gy), &gutter_text, gutter_text_options);
     }
@@ -479,7 +493,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
             path.rounded_rect(
                 (bounds.min_x - 2.0, bounds.min_y - 2.0),
                 (bounds.max_x - bounds.min_x + 4.0, bounds.max_y - bounds.min_y + 4.0),
-                3.0
+                3.0,
             );
             let px = (bounds.max_x + bounds.min_x) / 2.0;
             let py = bounds.min_y;
@@ -491,7 +505,7 @@ fn draw_paragraph(frame: &Frame, fonts: &DemoFonts, x: f32, y: f32, width: f32, 
         PathOptions {
             alpha,
             ..Default::default()
-        }
+        },
     );
 
     frame.text_box(fonts.sans, (x, y), tooltip_text, tooltip_opts);
@@ -537,7 +551,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                     start_color: Color::from_rgba(0, 160, 192, 0),
                     end_color: Color::from_rgba(0, 160, 192, 64),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -560,7 +574,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 StrokeOptions {
                     width: 3.0,
                     ..Default::default()
-                }
+                },
             );
         },
         Default::default(),
@@ -583,7 +597,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 StrokeOptions {
                     width: 3.0,
                     ..Default::default()
-                }
+                },
             );
         },
         Default::default(),
@@ -602,7 +616,7 @@ fn draw_graph(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                         start_color: Color::from_rgba(0, 0, 0, 32),
                         end_color: Color::from_rgba(0, 0, 0, 0),
                     },
-                    Default::default()
+                    Default::default(),
                 );
             },
             Default::default(),
@@ -662,10 +676,10 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                         start_color: Color::from_hsla(a0 / (consts::PI * 2.0), 1.0, 0.55, 255),
                         end_color: Color::from_hsla(a1 / (consts::PI * 2.0), 1.0, 0.55, 255),
                     },
-                    Default::default()
+                    Default::default(),
                 );
             },
-            Default::default()
+            Default::default(),
         );
     }
 
@@ -679,10 +693,10 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 StrokeOptions {
                     width: 1.0,
                     ..Default::default()
-                }
+                },
             );
         },
-        Default::default()
+        Default::default(),
     );
 
     let transform = Transform::new().translate(cx, cy).rotate(hue * consts::PI * 2.0);
@@ -696,13 +710,13 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
-                }
+                },
             );
         },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 
     // color marker inside selector
@@ -719,15 +733,15 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                     radius: 2.0,
                     feather: 4.0,
                     start_color: Color::from_rgba(0, 0, 0, 128),
-                    end_color: Color::from_rgba(0, 0, 0, 0)
+                    end_color: Color::from_rgba(0, 0, 0, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 
     let r = r0 - 6.0;
@@ -751,7 +765,7 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                     start_color: Color::from_hsla(hue, 1.0, 0.5, 255),
                     end_color: Color::from_rgba(255, 255, 255, 255),
                 },
-                Default::default()
+                Default::default(),
             );
             path.fill(
                 Gradient::Linear {
@@ -760,22 +774,21 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                     start_color: Color::from_rgba(0, 0, 0, 0),
                     end_color: Color::from_rgba(0, 0, 0, 255),
                 },
-                Default::default()
+                Default::default(),
             );
             path.stroke(
                 Color::from_rgba(0, 0, 0, 64),
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
-                }
+                },
             );
         },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
-
 
     let ax = f32::cos(120.0 / 180.0 * consts::PI) * r * 0.3;
     let ay = f32::sin(120.0 / 180.0 * consts::PI) * r * 0.4;
@@ -789,13 +802,13 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                 StrokeOptions {
                     width: 2.0,
                     ..Default::default()
-                }
+                },
             );
         },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 
     // select circle outline
@@ -813,13 +826,13 @@ fn draw_color_wheel(frame: &Frame, x: f32, y: f32, w: f32, h: f32, t: f32) {
                     start_color: Color::from_rgba(0, 0, 0, 64),
                     end_color: Color::from_rgba(0, 0, 0, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         PathOptions {
             transform: Some(transform),
             ..Default::default()
-        }
+        },
     );
 }
 
@@ -861,7 +874,7 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
                             line_cap: cap,
                             line_join: join,
                             ..Default::default()
-                        }
+                        },
                     );
                 },
                 Default::default(),
@@ -881,7 +894,7 @@ fn draw_lines(frame: &Frame, x: f32, y: f32, w: f32, _h: f32, t: f32) {
                             line_cap: cap,
                             line_join: join,
                             ..Default::default()
-                        }
+                        },
                     );
                 },
                 Default::default(),
@@ -905,7 +918,7 @@ fn draw_widths(frame: &Frame, x: f32, y: f32, width: f32) {
                     StrokeOptions {
                         width: w,
                         ..Default::default()
-                    }
+                    },
                 );
 
                 y += 10.0;
@@ -947,7 +960,7 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
                         width: line_width,
                         line_cap: caps[i],
                         ..Default::default()
-                    }
+                    },
                 );
             },
             Default::default(),
@@ -956,9 +969,7 @@ fn draw_caps(frame: &Frame, x: f32, y: f32, width: f32) {
 }
 
 fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
-    let first_transform = Transform::new()
-        .translate(x, y)
-        .rotate(5.0f32.to_radians());
+    let first_transform = Transform::new().translate(x, y).rotate(5.0f32.to_radians());
 
     frame.path(
         |path| {
@@ -968,12 +979,10 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
         PathOptions {
             transform: Some(first_transform),
             ..Default::default()
-        }
+        },
     );
 
-    let second_transform = first_transform
-        .translate(40.0, 0.0)
-        .rotate(t);
+    let second_transform = first_transform.translate(40.0, 0.0).rotate(t);
 
     frame.path(
         |path| {
@@ -983,7 +992,7 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
         PathOptions {
             transform: Some(second_transform),
             ..Default::default()
-        }
+        },
     );
 
     frame.path(
@@ -992,25 +1001,23 @@ fn draw_scissor(frame: &Frame, x: f32, y: f32, t: f32) {
             path.fill(Color::from_rgba(255, 128, 0, 255), Default::default());
         },
         PathOptions {
-            clip: Clip::Intersect(
-                Intersect {
+            clip: Clip::Intersect(Intersect {
+                x: -20.0,
+                y: -10.0,
+                width: 60.0,
+                height: 30.0,
+                with: Scissor {
                     x: -20.0,
-                    y: -10.0,
+                    y: -20.0,
                     width: 60.0,
-                    height: 30.0,
-                    with: Scissor {
-                        x: -20.0,
-                        y: -20.0,
-                        width: 60.0,
-                        height: 40.0,
-                        transform: Some(first_transform)
-                    },
-                    transform: Some(second_transform),
-                }
-            ),
+                    height: 40.0,
+                    transform: Some(first_transform),
+                },
+                transform: Some(second_transform),
+            }),
             transform: Some(second_transform),
             ..Default::default()
-        }
+        },
     );
 }
 
@@ -1042,7 +1049,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
                     start_color: Color::from_rgba(0, 0, 0, 128),
                     end_color: Color::from_rgba(0, 0, 0, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1059,7 +1066,7 @@ fn draw_window(frame: &Frame, fonts: &DemoFonts, title: &str, x: f32, y: f32, w:
                     start_color: Color::from_rgba(255, 255, 255, 8),
                     end_color: Color::from_rgba(0, 0, 0, 16),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1120,7 +1127,7 @@ fn draw_search_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32,
                     start_color: Color::from_rgba(0, 0, 0, 16),
                     end_color: Color::from_rgba(0, 0, 0, 92),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1177,7 +1184,7 @@ fn draw_drop_down(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
                     start_color: Color::from_rgba(255, 255, 255, 16),
                     end_color: Color::from_rgba(0, 0, 0, 16),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1249,7 +1256,7 @@ fn draw_edit_box_base(frame: &Frame, x: f32, y: f32, w: f32, h: f32) {
                     start_color: Color::from_rgba(255, 255, 255, 32),
                     end_color: Color::from_rgba(32, 32, 32, 32),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1335,7 +1342,7 @@ fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
                     start_color: Color::from_rgba(0, 0, 0, 32),
                     end_color: Color::from_rgba(0, 0, 0, 92),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1355,7 +1362,17 @@ fn draw_check_box(frame: &Frame, fonts: &DemoFonts, text: &str, x: f32, y: f32, 
     );
 }
 
-fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &str, x: f32, y: f32, w: f32, h: f32, color: Color) {
+fn draw_button(
+    frame: &Frame,
+    fonts: &DemoFonts,
+    preicon: Option<&str>,
+    text: &str,
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+    color: Color,
+) {
     let corner_radius = 4.0;
     let color_is_black = is_black(color);
 
@@ -1374,7 +1391,7 @@ fn draw_button(frame: &Frame, fonts: &DemoFonts, preicon: Option<&str>, text: &s
                     start_color: Color::from_rgba(255, 255, 255, if color_is_black { 16 } else { 32 }),
                     end_color: Color::from_rgba(0, 0, 0, if color_is_black { 16 } else { 32 }),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1463,7 +1480,7 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
                     start_color: Color::from_rgba(0, 0, 0, 32),
                     end_color: Color::from_rgba(0, 0, 0, 128),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1488,7 +1505,7 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
                     start_color: Color::from_rgba(0, 0, 0, 64),
                     end_color: Color::from_rgba(0, 0, 0, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1507,7 +1524,7 @@ fn draw_slider(frame: &Frame, value: f32, x: f32, y: f32, w: f32, h: f32) {
                     start_color: Color::from_rgba(255, 255, 255, 16),
                     end_color: Color::from_rgba(0, 0, 0, 16),
                 },
-                Default::default()
+                Default::default(),
             );
         },
         Default::default(),
@@ -1543,10 +1560,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     start_color: Color::from_rgba(0, 0, 0, 128),
                     end_color: Color::from_rgba(0, 0, 0, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        Default::default()
+        Default::default(),
     );
 
     // left arrow
@@ -1559,7 +1576,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.line_to((x + 1.0, y + arry + 11.0));
             path.fill(Color::from_rgba(200, 200, 200, 255), Default::default());
         },
-        Default::default()
+        Default::default(),
     );
 
     let dv = 1.0 / (images.len() - 1) as f32;
@@ -1590,15 +1607,13 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
         let a = clamp((u2 - v) / dv, 0.0, 1.0);
 
         let path_opts = PathOptions {
-            clip: Clip::Scissor(
-                Scissor{
-                    x,
-                    y,
-                    width: w,
-                    height: h,
-                    transform: None,
-                }
-            ),
+            clip: Clip::Scissor(Scissor {
+                x,
+                y,
+                width: w,
+                height: h,
+                transform: None,
+            }),
             transform: Some(Transform::new().translate(0.0, -(stackh - h) * u)),
             ..Default::default()
         };
@@ -1617,12 +1632,12 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                         origin: (tx + ix, ty + iy),
                         size: (iw, ih),
                         angle: 0.0 / 180.0 * consts::PI,
-                        alpha: a
+                        alpha: a,
                     },
-                    Default::default()
+                    Default::default(),
                 );
             },
-            path_opts
+            path_opts,
         );
 
         // draw image background shade
@@ -1641,10 +1656,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                         start_color: Color::from_rgba(0, 0, 0, 128),
                         end_color: Color::from_rgba(0, 0, 0, 0),
                     },
-                    Default::default()
+                    Default::default(),
                 );
             },
-            path_opts
+            path_opts,
         );
 
         // draw image border
@@ -1656,10 +1671,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     StrokeOptions {
                         width: 1.0,
                         ..Default::default()
-                    }
+                    },
                 );
             },
-            path_opts
+            path_opts,
         );
     }
 
@@ -1674,10 +1689,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     start_color: Color::from_rgba(200, 200, 200, 255),
                     end_color: Color::from_rgba(200, 200, 200, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        Default::default()
+        Default::default(),
     );
 
     // white fade border (bottom)
@@ -1691,10 +1706,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     start_color: Color::from_rgba(200, 200, 200, 255),
                     end_color: Color::from_rgba(200, 200, 200, 0),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        Default::default()
+        Default::default(),
     );
 
     // scrollbar socket
@@ -1710,10 +1725,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     start_color: Color::from_rgba(0, 0, 0, 32),
                     end_color: Color::from_rgba(0, 0, 0, 92),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        Default::default()
+        Default::default(),
     );
 
     let scrollh = (h / stackh) * (h - 8.0);
@@ -1723,7 +1738,7 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
             path.rounded_rect(
                 (x + w - 12.0 + 1.0, y + 4.0 + 1.0 + (h - 8.0 - scrollh) * u),
                 (8.0 - 2.0, scrollh - 2.0),
-                2.0
+                2.0,
             );
             path.fill(
                 Gradient::Box {
@@ -1734,10 +1749,10 @@ fn draw_thumbnails(frame: &Frame, images: &Vec<Image>, x: f32, y: f32, w: f32, h
                     start_color: Color::from_rgba(220, 220, 220, 255),
                     end_color: Color::from_rgba(128, 128, 128, 255),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        Default::default()
+        Default::default(),
     );
 }
 
@@ -1760,26 +1775,26 @@ fn draw_spinner(frame: &Frame, options: PathOptions, cx: f32, cy: f32, r: f32, t
                     start: (ax, ay),
                     end: (bx, by),
                     start_color: Color::from_rgba(0, 0, 0, 0),
-                    end_color: Color::from_rgba(0, 0, 0, 128)
+                    end_color: Color::from_rgba(0, 0, 0, 128),
                 },
-                Default::default()
+                Default::default(),
             );
         },
-        options
+        options,
     );
 }
 
 enum GraphRenderStyle {
     Fps,
     Ms,
-    Percent
+    Percent,
 }
 
 struct PerformanceGraph {
     style: GraphRenderStyle,
     name: String,
     values: [f32; GRAPH_HISTORY_COUNT],
-    head: usize
+    head: usize,
 }
 
 impl PerformanceGraph {
@@ -1807,7 +1822,7 @@ impl PerformanceGraph {
                 path.rect((x, y), (w, h));
                 path.fill(Color::from_rgba(0, 0, 0, 128), Default::default());
             },
-            Default::default()
+            Default::default(),
         );
 
         frame.path(
@@ -1822,7 +1837,7 @@ impl PerformanceGraph {
                             let vy = y + h - ((v / 80.0) * h);
                             path.line_to((vx, vy));
                         }
-                    },
+                    }
                     GraphRenderStyle::Ms => {
                         for i in 0..self.values.len() {
                             let v = self.values[(self.head + i) % self.values.len()] * 1000.0;
@@ -1831,7 +1846,7 @@ impl PerformanceGraph {
                             let vy = y + h - ((v / 20.0) * h);
                             path.line_to((vx, vy));
                         }
-                    },
+                    }
                     GraphRenderStyle::Percent => {
                         for i in 0..self.values.len() {
                             let v = self.values[(self.head + i) % self.values.len()] * 1.0;
@@ -1847,15 +1862,20 @@ impl PerformanceGraph {
 
                 path.fill(Color::from_rgba(255, 192, 0, 128), Default::default());
             },
-            Default::default()
+            Default::default(),
         );
 
-        frame.text(font, (x + 3.0, y + 1.0), &self.name, TextOptions {
-            color: Color::from_rgba(240, 240, 240, 192),
-            align: Alignment::new().left().top(),
-            size: 14.0,
-            ..Default::default()
-        });
+        frame.text(
+            font,
+            (x + 3.0, y + 1.0),
+            &self.name,
+            TextOptions {
+                color: Color::from_rgba(240, 240, 240, 192),
+                align: Alignment::new().left().top(),
+                size: 14.0,
+                ..Default::default()
+            },
+        );
 
         match self.style {
             GraphRenderStyle::Fps => {
@@ -1868,7 +1888,7 @@ impl PerformanceGraph {
                         color: Color::from_rgba(240, 240, 240, 255),
                         align: Alignment::new().right().top(),
                         ..Default::default()
-                    }
+                    },
                 );
 
                 frame.text(
@@ -1880,9 +1900,9 @@ impl PerformanceGraph {
                         color: Color::from_rgba(240, 240, 240, 160),
                         align: Alignment::new().right().bottom(),
                         ..Default::default()
-                    }
+                    },
                 );
-            },
+            }
             GraphRenderStyle::Ms => {
                 frame.text(
                     font,
@@ -1893,22 +1913,20 @@ impl PerformanceGraph {
                         color: Color::from_rgba(240, 240, 240, 255),
                         align: Alignment::new().right().top(),
                         ..Default::default()
-                    }
+                    },
                 );
-            },
-            GraphRenderStyle::Percent => {
-                frame.text(
-                    font,
-                    (x + w - 3.0, y + 1.0),
-                    format!("{:.1} %", average * 1.0),
-                    TextOptions {
-                        size: 18.0,
-                        color: Color::from_rgba(240, 240, 240, 255),
-                        align: Alignment::new().right().top(),
-                        ..Default::default()
-                    }
-                )
             }
+            GraphRenderStyle::Percent => frame.text(
+                font,
+                (x + w - 3.0, y + 1.0),
+                format!("{:.1} %", average * 1.0),
+                TextOptions {
+                    size: 18.0,
+                    color: Color::from_rgba(240, 240, 240, 255),
+                    align: Alignment::new().right().top(),
+                    ..Default::default()
+                },
+            ),
         }
     }
 

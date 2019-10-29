@@ -6,12 +6,12 @@ extern crate rand;
 #[macro_use]
 extern crate lazy_static;
 
-use std::time::Instant;
 use glutin::GlContext;
-use nanovg::{Color, Frame, Solidity, Winding, Transform, PathOptions, StrokeOptions};
-use rand::{Rng, Rand, thread_rng};
+use nanovg::{Color, Frame, PathOptions, Solidity, StrokeOptions, Transform, Winding};
+use rand::{thread_rng, Rand, Rng};
 use std::collections::HashMap;
 use std::f32::consts::PI;
+use std::time::Instant;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (1200, 825);
 
@@ -141,8 +141,7 @@ impl ShapeCache {
 
         if a >= b {
             a * a + a + b
-        }
-        else {
+        } else {
             a + b * b
         }
     }
@@ -210,7 +209,9 @@ impl Shape {
         let pos = (x + half_size, y + half_size);
         match self.kind {
             ShapeKind::Polygon(sides) => Shape::render_polygon(frame, pos, size, self.rotation, self.color, sides),
-            ShapeKind::Squiggle(phi) => Shape::render_squiggle(frame, pos, (size, size / 3.0), self.rotation, self.color, phi),
+            ShapeKind::Squiggle(phi) => {
+                Shape::render_squiggle(frame, pos, (size, size / 3.0), self.rotation, self.color, phi)
+            }
         };
     }
 
@@ -236,7 +237,7 @@ impl Shape {
             PathOptions {
                 transform: Some(Transform::new().with_translation(cx, cy).rotate(rotation)),
                 ..Default::default()
-            }
+            },
         );
     }
 
@@ -266,13 +267,13 @@ impl Shape {
                     StrokeOptions {
                         width: 3.0,
                         ..Default::default()
-                    }
+                    },
                 );
             },
             PathOptions {
                 transform: Some(Transform::new().with_translation(cx, cy).rotate(rotation)),
                 ..Default::default()
-            }
+            },
         );
     }
 
@@ -312,7 +313,7 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
             path.close();
             path.fill(Color::from_rgba(255, 255, 255, 255), Default::default());
         },
-        Default::default()
+        Default::default(),
     );
 
     frame.path(
@@ -324,7 +325,7 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
             path.close();
             path.fill(Color::from_rgba(90, 94, 100, 25), Default::default());
         },
-        Default::default()
+        Default::default(),
     );
 
     frame.path(
@@ -337,7 +338,7 @@ fn render_cutout(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), (mx, my)
 
             path.fill(Color::from_rgba(0, 0, 0, 25), Default::default());
         },
-        Default::default()
+        Default::default(),
     );
 }
 
@@ -348,6 +349,6 @@ fn render_rectangle(frame: &Frame, (x, y): (f32, f32), (w, h): (f32, f32), color
             path.rect((x, y), (w, h));
             path.fill(color, Default::default());
         },
-        Default::default()
+        Default::default(),
     );
 }
