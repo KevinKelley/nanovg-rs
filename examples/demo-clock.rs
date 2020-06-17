@@ -1,15 +1,16 @@
-extern crate glutin;
-extern crate gl;
-extern crate nanovg;
 extern crate chrono;
+extern crate gl;
+extern crate glutin;
+extern crate nanovg;
 
-use std::f32::consts::PI;
-use glutin::GlContext;
-use nanovg::{StrokeOptions, Color, CompositeOperation, Gradient,
-             BasicCompositeOperation, PathOptions, TextOptions, Font, Transform, Alignment };
 use chrono::prelude::*;
+use glutin::GlContext;
+use nanovg::{
+    Alignment, BasicCompositeOperation, Color, CompositeOperation, Font, Gradient, PathOptions, StrokeOptions,
+    TextOptions, Transform,
+};
+use std::f32::consts::PI;
 use std::{thread, time};
-
 
 const INIT_WINDOW_SIZE: (u32, u32) = (480, 480);
 
@@ -30,28 +31,26 @@ fn main() {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
 
-    let context = nanovg::ContextBuilder::new().stencil_strokes().build().expect("Initialization of NanoVG failed!");
-    let roboto_font =
-        Font::from_file(&context, "Roboto", "resources/Roboto-Regular.ttf")
-            .expect("Failed to load font 'Roboto-Regular.ttf'");
+    let context = nanovg::ContextBuilder::new()
+        .stencil_strokes()
+        .build()
+        .expect("Initialization of NanoVG failed!");
+    let roboto_font = Font::from_file(&context, "Roboto", "resources/Roboto-Regular.ttf")
+        .expect("Failed to load font 'Roboto-Regular.ttf'");
 
     let mut running = true;
 
     let mut prev_second = -1.0;
 
-    while running 
-    {
+    while running {
         events_loop.poll_events(|event| match event {
-            glutin::Event::WindowEvent { event, .. } => {
-                match event {
-                    glutin::WindowEvent::Closed => running = false,
-                    glutin::WindowEvent::Resized(w, h) => gl_window.resize(w, h),
-                    _ => {}
-                }
-            }
+            glutin::Event::WindowEvent { event, .. } => match event {
+                glutin::WindowEvent::Closed => running = false,
+                glutin::WindowEvent::Resized(w, h) => gl_window.resize(w, h),
+                _ => {}
+            },
             _ => {}
         });
-
 
         let dt: DateTime<Local> = Local::now(); // e.g. `2014-11-28T21:45:59.324310806+09:00`
         let hour = dt.hour();
@@ -67,8 +66,7 @@ fn main() {
         if second == prev_second {
             let frame_time = time::Duration::from_millis(33);
             thread::sleep(frame_time);
-        }
-        else {
+        } else {
             prev_second = second;
         }
 
@@ -77,47 +75,40 @@ fn main() {
 
         unsafe {
             gl::Viewport(0, 0, width, height);
-            gl::Clear(
-                gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT,
-            );
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT | gl::STENCIL_BUFFER_BIT);
         }
-
 
         // round clock size is minimum of height and width
         let clock_size = width.min(height) - 2;
 
         let font_size = 24.0;
 
-        let origin = (0.0, 0.0);  // upper-left corner
+        let origin = (0.0, 0.0); // upper-left corner
         let dial_center = (f64::from(width) as f32 / 2.0, f64::from(height) as f32 / 2.0);
         let dial_radius: f32 = f64::from(clock_size / 2) as f32;
         let second_hand_len = dial_radius * 0.9;
         let minute_hand_len = dial_radius * 0.8;
-        let hour_hand_len   = dial_radius * 0.6;
+        let hour_hand_len = dial_radius * 0.6;
 
         let two_pi = 2.0 * PI;
         let radians_per_sec = two_pi / 60.0;
         let radians_per_hour = two_pi / 12.0;
 
-
-        let white:     Color = Color::new(1.0, 1.0, 1.0, 1.0);
-        let silver:    Color = Color::from_rgb(196,199,206);
-        let darksilver:Color = Color::from_rgb(148,152,161);
-        let darkgray:  Color = Color::from_rgb(169,169,169);
+        let white: Color = Color::new(1.0, 1.0, 1.0, 1.0);
+        let silver: Color = Color::from_rgb(196, 199, 206);
+        let darksilver: Color = Color::from_rgb(148, 152, 161);
+        let darkgray: Color = Color::from_rgb(169, 169, 169);
         let dial_color = Color::new(0.2, 0.0, 0.8, 1.0);
 
-
-
         context.frame((width as f32, height as f32), gl_window.hidpi_factor(), |frame| {
-
             // hour/minute markers
 
             //let sigils = ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-            let sigils: Vec<String> = (0..13).map(|n| { format!("{}", n) }).collect();
+            let sigils: Vec<String> = (0..13).map(|n| format!("{}", n)).collect();
             for h in 1..13 {
                 let j = f64::from(h) as f32;
-                let x = dial_center.0 + (second_hand_len * (j*radians_per_hour).sin());
-                let y = dial_center.1 - (second_hand_len * (j*radians_per_hour).cos());
+                let x = dial_center.0 + (second_hand_len * (j * radians_per_hour).sin());
+                let y = dial_center.1 - (second_hand_len * (j * radians_per_hour).cos());
                 frame.text(
                     roboto_font,
                     (x, y),
@@ -131,7 +122,9 @@ fn main() {
                 );
             }
             'ticks: for m in 1..61 {
-                if m % 5 == 0 { continue 'ticks; }
+                if m % 5 == 0 {
+                    continue 'ticks;
+                }
                 let m = f64::from(m) as f32;
                 let ticks_radius = dial_radius * 0.925;
                 let tick_len = 3.0;
@@ -139,21 +132,25 @@ fn main() {
                 frame.path(
                     |path| {
                         path.move_to((0.0, -ticks_radius));
-                        path.line_to((0.0, -ticks_radius-tick_len));
+                        path.line_to((0.0, -ticks_radius - tick_len));
                         path.close();
                         path.stroke(
                             white,
                             StrokeOptions {
                                 width: tick_width,
                                 ..Default::default()
-                            }
+                            },
                         );
                         path.fill(white, Default::default());
                     },
                     PathOptions {
                         composite_operation: CompositeOperation::Basic(BasicCompositeOperation::Lighter),
                         alpha: 1.0,
-                        transform: Some(Transform::new().translate(dial_center.0, dial_center.1).rotate(m * radians_per_sec)),
+                        transform: Some(
+                            Transform::new()
+                                .translate(dial_center.0, dial_center.1)
+                                .rotate(m * radians_per_sec),
+                        ),
                         ..Default::default()
                     },
                 );
@@ -165,20 +162,7 @@ fn main() {
                 frame.text(
                     roboto_font,
                     (dial_center.0, dial_center.1 + dial_radius * 0.7 - font_size),
-                    format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM"}  else { "PM" }),
-                        TextOptions {
-                            color: silver,
-                            size: font_size,
-                            align: Alignment::new().center().baseline(),
-                            ..Default::default()
-                        },
-                    );
-            }
-            // date-string
-            frame.text(
-                roboto_font,
-                (dial_center.0, dial_center.1 + dial_radius * 0.7),
-                format!("{:4}-{:02}-{:02}", year, month, day),
+                    format!("{}:{:02}:{:02} {}", hour, minute, second, if am { "AM" } else { "PM" }),
                     TextOptions {
                         color: silver,
                         size: font_size,
@@ -186,7 +170,19 @@ fn main() {
                         ..Default::default()
                     },
                 );
-
+            }
+            // date-string
+            frame.text(
+                roboto_font,
+                (dial_center.0, dial_center.1 + dial_radius * 0.7),
+                format!("{:4}-{:02}-{:02}", year, month, day),
+                TextOptions {
+                    color: silver,
+                    size: font_size,
+                    align: Alignment::new().center().baseline(),
+                    ..Default::default()
+                },
+            );
 
             //Draw the dial
             frame.path(
@@ -197,7 +193,7 @@ fn main() {
                         StrokeOptions {
                             width: 3.0,
                             ..Default::default()
-                        }
+                        },
                     );
                     path.fill(dial_color, Default::default());
                 },
@@ -220,7 +216,7 @@ fn main() {
                             StrokeOptions {
                                 width: width,
                                 ..Default::default()
-                            }
+                            },
                         );
                         path.fill(white, Default::default());
                     },
@@ -244,7 +240,6 @@ fn main() {
             draw_hand(minute_angle, minute_hand_len, 3.0);
             draw_hand(hour_angle, hour_hand_len, 5.0);
 
-
             //Draw the boss
             frame.path(
                 |path| {
@@ -255,7 +250,7 @@ fn main() {
                         StrokeOptions {
                             width: 1.0,
                             ..Default::default()
-                        }
+                        },
                     );
                     path.fill(
                         Gradient::Radial {
@@ -265,7 +260,7 @@ fn main() {
                             start_color: silver,
                             end_color: darksilver,
                         },
-                        Default::default()
+                        Default::default(),
                     );
                 },
                 PathOptions {
@@ -275,7 +270,6 @@ fn main() {
                     ..Default::default()
                 },
             );
-
         });
 
         gl_window.swap_buffers().unwrap();
