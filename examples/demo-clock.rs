@@ -11,6 +11,7 @@ use nanovg::{
 };
 use std::f32::consts::PI;
 use std::{thread, time};
+use std::env;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (480, 480);
 
@@ -30,11 +31,16 @@ fn main() {
         gl::load_with(|symbol| gl_window.get_proc_address(symbol) as *const _);
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
-
     let context = nanovg::ContextBuilder::new()
         .stencil_strokes()
         .build()
         .expect("Initialization of NanoVG failed!");
+
+    match env::current_exe() {
+        Ok(exe_path) => println!("Path of this executable is: {}",
+                                    exe_path.display()),
+        Err(e) => println!("failed to get current exe path: {e}"),
+    };        
     let roboto_font = Font::from_file(&context, "Roboto", "resources/Roboto-Regular.ttf")
         .expect("Failed to load font 'Roboto-Regular.ttf'");
 
