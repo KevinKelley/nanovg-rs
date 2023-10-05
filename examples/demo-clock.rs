@@ -15,8 +15,9 @@ use std::env;
 
 const INIT_WINDOW_SIZE: (u32, u32) = (480, 480);
 
+//fn main() -> Result<(), Box<dyn Err + Send + Sync + 'static>>  {
 fn main() {
-    let mut events_loop = glutin::EventsLoop::new();
+        let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("NanoVG Clock")
         .with_dimensions(INIT_WINDOW_SIZE.0, INIT_WINDOW_SIZE.1);
@@ -36,13 +37,35 @@ fn main() {
         .build()
         .expect("Initialization of NanoVG failed!");
 
-    match env::current_exe() {
-        Ok(exe_path) => println!("Path of this executable is: {}",
-                                    exe_path.display()),
-        Err(e) => println!("failed to get current exe path: {e}"),
-    };        
-    let roboto_font = Font::from_file(&context, "Roboto", "resources/Roboto-Regular.ttf")
+    // match env::current_exe() {
+    //     Ok(exe_path) => println!("Path of this executable is: {}",
+    //                                 exe_path.display()),
+    //     Err(e) => println!("failed to get current exe path: {e}"),
+    // };  
+
+    let exe_path = env::current_exe().expect("can't find current dir");
+    println!("Path of this executable is: {}", exe_path.display());
+
+    let path = exe_path.parent().expect("doesn't seem to have a parent?!");
+    println!("Parent path is: {}", path.display());
+    
+    let mut filename = path.to_path_buf();
+    filename.push("resources");
+    println!("resourses path is: {}", filename.display());
+    
+    filename.push("Roboto-Regular.ttf");
+    println!("font file is: {}", filename.display());
+
+    let filename = filename.to_str().expect("opps");
+    println!("{}", filename);
+    
+    let roboto_font = Font::from_file(&context, "Roboto", filename)
         .expect("Failed to load font 'Roboto-Regular.ttf'");
+
+
+
+    // let roboto_font = Font::from_file(&context, "Roboto", "resources/Roboto-Regular.ttf")
+    //     .expect("Failed to load font 'Roboto-Regular.ttf'");
 
     let mut running = true;
 
